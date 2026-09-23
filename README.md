@@ -1,59 +1,225 @@
 # Holdfill
 
-Hold through the lockup. Fill before the deadline.
+**Hold through the lockup. Fill before the deadline.**
 
-Holdfill gives PreStocks holders standing orders on Solana. Tokens stay in the holder's wallet until a fill meets their terms, and an on-chain program enforces the approved amount, the minimum output, the fallback terms, and the issuer deadline. Three order types share one program:
+Holdfill gives PreStocks holders standing orders on Solana. A holder sets their terms once: the least they will accept, a fallback for the final weeks, and a hard stop at the issuer's deadline. Tokens stay in the holder's wallet until the market meets those terms, then an on-chain program sells through Meteora and checks that the holder received at least their minimum.
 
-- **Conversion:** SpaceX PreStocks (SPACEX) into SpaceX xStock (SPCXx) before the issuer deadline, at no worse than the holder's limit.
-- **Price order:** any PreStocks token into USDC at a price the holder sets. Jupiter's trigger API refuses every PreStocks mint because of its transfer fee.
-- **Arm for the IPO:** terms set today for a token whose issuer has not named a successor. The keeper activates the order when the issuer registers the event.
+[Live app](https://holdfill.vercel.app) · [Order app](https://holdfill.vercel.app/app) · [Wallet-free demo](https://holdfill.vercel.app/demo) · [Proof](https://holdfill.vercel.app/proof) · [Markets](https://holdfill.vercel.app/markets) · [Docs](https://holdfill.vercel.app/docs)
 
-Orders execute on Solana devnet against replica tokens. Market data is live mainnet. A separate local-validator proof runs the same program against cloned mainnet mints and pools.
+Built for [Stocklana](https://hackathons.solana.com/hackathons/stocklana): main track and the PreStocks bounty. Orders execute on Solana devnet against replicas of the real tokens; market data is live mainnet.
 
-Built for [Stocklana](https://hackathons.solana.com/hackathons/stocklana) (Solana Foundation), main track and PreStocks bounty.
+---
 
-## Try it
+## Contents
 
-- [Live app](https://holdfill.vercel.app/): SpaceX, Anthropic, and OpenAI markets in the [order app](https://holdfill.vercel.app/app), with an in-app devnet faucet
-- [Wallet-free walkthrough](https://holdfill.vercel.app/demo) of recorded devnet transactions
-- [Every PreStocks market, live](https://holdfill.vercel.app/markets) and the [issuer view](https://holdfill.vercel.app/issuer)
-- [Evidence](https://holdfill.vercel.app/evidence), [proof](https://holdfill.vercel.app/proof), and [docs](https://holdfill.vercel.app/docs)
+- [The problem](#the-problem)
+- [The solution](#the-solution)
+- [Try it in two minutes](#try-it-in-two-minutes)
+- [Why Solana](#why-solana)
+- [How it works](#how-it-works)
+- [Integrations](#integrations)
+- [Architecture](#architecture)
+- [Security model](#security-model)
+- [Evidence and proof](#evidence-and-proof)
+- [Tests](#tests)
+- [Run it locally](#run-it-locally)
+- [Open-source components](#open-source-components)
+- [Limits and roadmap](#limits-and-roadmap)
 
-## Built with
+---
 
-| Service | How Holdfill uses it |
-|---|---|
-| [Solana](https://solana.com) | The order program (Anchor 1.2) on devnet. Token-2022 mints carry the issuer's transfer fee, pause, and delegate rules. |
-| [PreStocks](https://www.prestocks.com) | The tokens holders convert or sell. The PreStocks API supplies mark prices and supply; issuer terms are quoted from its pages. |
-| [Meteora](https://www.meteora.ag) | Every fill is a DLMM `swap2` the order program signs as the holder's delegate. The TypeScript SDK builds quotes and swap accounts. |
-| [Jupiter](https://jup.ag) | Price API and Tokens API for prices, holders, and volume; a live Trigger API call shows it refuses PreStocks mints. |
-| [Helius](https://www.helius.dev) | RPC for mainnet reads and devnet orders, with a separate key for the keeper. |
-| [xStocks](https://xstocks.fi) | SPCXx, the listed SpaceX token SpaceX PreStocks convert into. |
-| [GeckoTerminal](https://www.geckoterminal.com) | Daily closes for the gap history and backtest. |
-| [Next.js](https://nextjs.org) on [Vercel](https://vercel.com) | The web app and API routes. Solana Wallet Adapter connects Phantom, Solflare, and Backpack. |
+## The problem
+
+PreStocks are tokenized pre-IPO shares. When the company lists, holders must convert before a deadline the issuer sets, or the tokens expire. SpaceX was the first:
+
+> "SpaceX PreStocks tokens must be swapped into $SPCXx or any other token before 11:59pm UTC on 12 March 2027, or they will expire worthless." ([prestocks.com/spacex](https://www.prestocks.com/spacex))
+
+Conversion happens through normal trading, so the price a holder gets depends on the day they sell. On chain, that price has been well below what the tokens convert into:
+
+| Measured on mainnet | Value | Source |
+|---|---|---|
+| SpaceX PreStocks holders | 10,043 wallets | Jupiter Tokens API, 23 Sep 2026 |
+| Pool payout vs the issuer's conversion amount | 29.8% under, fees included | Live Meteora quote, 23 Sep 2026 |
+| Daily gap since listing | 14.0% to 38.9% | 71 daily closes, [data/haircut-history.json](data/haircut-history.json) |
+| Monthly average gap | June 32.8%, July 27.9%, August 23.9%, September 23.4% | same |
+| One real sale | 2,419.9 shares sold in 171 swaps on 12 July for 1,543.0 SPCXx, 36.24% under | [data/case-study.json](data/case-study.json) |
+| That day vs later | The daily gap first fell to 20% on 4 August, 23 days later | same |
+| XAI, the previous deadline | 1,473 wallets still held 2,078.5 XAI after its 12 September deadline passed | on-chain count, same file |
+
+The gap narrows as lockups end, but unevenly. A holder who wants a fair price has to watch the pool every day for months, and a holder who forgets loses everything at the deadline.
+
+The usual answer is a limit order. None exists for these tokens: every PreStocks mint carries a 1% Token-2022 transfer fee, and Jupiter's Trigger API refuses mints with a transfer fee. Holdfill checks this live for all eight PreStocks markets on the [markets page](https://holdfill.vercel.app/markets): 8 of 8 refused, "Mint ... has transfer fee".
+
+Across all eight markets, about 109,000 holder accounts hold roughly $22 million at the PreStocks mark (live figures on the markets page).
+
+## The solution
+
+Holdfill is a non-custodial standing order for PreStocks, with three order types in one Solana program:
+
+| Order type | For | The holder sets | The program guarantees |
+|---|---|---|---|
+| Conversion | SpaceX PreStocks today | Largest gap accepted, fallback date, fallback floor | Output of at least entitlement x (1 - limit), then at least the floor from the fallback date, and nothing after the issuer deadline |
+| Price order | Any PreStocks token, into USDC | Least USDC per token, expiry | Output of at least the holder's price, on a pool the program has checked trades exactly that pair |
+| Arm for the IPO | Tokens whose issuer has not named a successor (Anthropic, OpenAI) | Largest gap from the future entitlement, fallback days before the future deadline, floor | Nothing sells until the issuer registers the event; then the holder's own terms apply |
+
+What stays true for every order:
+
+- Tokens never leave the holder's wallet until a fill. The holder approves the order account as a delegate for the order size only.
+- Revoke is one transaction and takes effect at once.
+- Fills are permissionless. The keeper is a convenience; anyone can call `execute`, because the program, not the caller, enforces the terms.
+- The program stops a fill if the issuer pauses the token or changes the transfer fee after the holder signed.
+
+For issuers, the [issuer view](https://holdfill.vercel.app/issuer) shows how many holders have orders, how much those orders cover with a live approval, and what already converted, next to each market's holder count and deadline.
+
+## Try it in two minutes
+
+1. Open the [order app](https://holdfill.vercel.app/app) and connect Phantom, Solflare, or Backpack. The wallet only signs; Holdfill relays to devnet, so its network setting doesn't matter.
+2. Press "Get replica SPACEX". The faucet sends 1 replica token (5 shares) and a little devnet SOL.
+3. Set the largest gap you accept (the pool currently pays about 29% under, so a 35% limit fills), sign once, and watch the order card. The keeper checks every 10 seconds, or press Check now.
+4. Switch to Anthropic or OpenAI to place a price order into USDC, or arm an order for a future IPO.
+5. Revoke or close any order from its card.
+
+No wallet? The [demo page](https://holdfill.vercel.app/demo) walks through recorded devnet transactions for every path, each linked to Solana Explorer.
+
+## Why Solana
+
+- **Token-2022 rules are readable on chain.** The PreStocks transfer fee and pause switch live in the mint account. The program reads them on every fill and refuses when they changed, which no off-chain limit order can promise.
+- **Delegate approvals make it non-custodial.** An SPL approval lets the order account move exactly the approved amount and nothing more, so there is no vault, escrow, or pooled balance.
+- **Composable liquidity.** The program calls Meteora DLMM's `swap2` directly through CPI and signs as the holder's delegate, then measures the holder's own balance change.
+- **Cost and speed.** Checking every open order every 10 seconds, and filling in parts as liquidity appears, only makes sense with sub-cent fees and fast confirmation.
+- **The tokens are here.** PreStocks, xStocks, and their liquidity are Solana assets.
 
 ## How it works
 
-1. The holder signs one transaction: it creates the order account and approves the order program as delegate for that amount only.
-2. The keeper checks open orders every 10 seconds and quotes the pool. It sends `execute` only when the quote meets the holder's minimum.
-3. The program derives every pool account itself, swaps through Meteora as the delegate, and measures what reached the holder. Anything below the minimum reverts.
-4. Revoke closes the order and removes the approval in one transaction.
+```mermaid
+sequenceDiagram
+    participant H as Holder wallet
+    participant A as Holdfill app
+    participant P as Order program
+    participant K as Keeper
+    participant M as Meteora DLMM
+    H->>A: Set terms
+    A->>H: Unsigned transaction: create order + approve order PDA for the size
+    H->>P: Sign once (relayed to devnet)
+    loop every 10 seconds
+        K->>M: Quote the pool for the order's size
+        K->>P: execute(amount), only when the quote meets the minimum
+        P->>P: Check status, deadline, pause, fee, approval, pool accounts
+        P->>M: swap2 via CPI, signed by the order PDA as delegate
+        M-->>H: Output to the holder's own account
+        P->>P: Reload balance, revert if below the minimum
+    end
+    H->>P: Revoke: close order and remove approval
+```
+
+For armed orders, the issuer's lifecycle event (successor token, conversion amount, pool, deadline) is written on chain by the event admin. On its next tick after that, the keeper calls the permissionless `activate`, which copies the event's terms into the order while keeping the holder's limit, floor, and size. The keeper also creates the holder's account for the successor token if it doesn't exist.
+
+The minimum is computed only from stored terms:
 
 ```
-programs/holdfill_orders   Anchor program: orders, lifecycle events, execute
-keeper/                    fill worker (also behind the app's "Check now")
-web/                       Next.js app and API routes
-scripts/                   devnet setup, proofs, data refresh
-tests/                     local-validator program suite
-config/devnet.json         every devnet address the app uses
-data/                      proof records and market history
+haircut  = now < fallback_ts ? limit_bps : 10000 - fallback_floor_bps
+required = ceil(amount_in x ratio_num x (10000 - haircut) / (ratio_den x 10000))   (u128, one division, rounds up)
 ```
 
-[ARCHITECTURE.md](docs/ARCHITECTURE.md) covers accounts, instructions, trust boundaries, API routes, and replica differences.
+A price order stores the holder's price as the ratio with a 0% limit, so the same check covers every order type.
+
+## Integrations
+
+| Service | How Holdfill uses it |
+|---|---|
+| [Solana](https://solana.com) | The order program (Anchor 1.2) on devnet. Token-2022 mint extensions, SPL delegate approvals, PDAs. |
+| [PreStocks](https://www.prestocks.com) | The tokens holders convert or sell. The PreStocks API supplies mark prices and supply for all eight markets; issuer terms are quoted from the PreStocks pages. Only PreStocks pre-IPO tokens are used. |
+| [Meteora](https://www.meteora.ag) | Every fill is a DLMM `swap2`, called through CPI. The DLMM TypeScript SDK builds quotes and swap accounts; devnet replica markets are DLMM pools priced from the mainnet pools. |
+| [Jupiter](https://jup.ag) | Price API v3 and Tokens API v2 for prices, holder counts, and volume. A live Trigger API V1 request per market shows it refuses PreStocks mints. |
+| [Helius](https://www.helius.dev) | RPC for mainnet reads and devnet orders, with a separate key for the keeper. |
+| [xStocks](https://xstocks.fi) | SPCXx, the listed SpaceX token that SpaceX PreStocks convert into. |
+| [GeckoTerminal](https://www.geckoterminal.com) | Daily closes for the gap history and the backtest. |
+| [Vercel](https://vercel.com) | Hosts the web app and API routes. |
+
+## Architecture
+
+```mermaid
+flowchart LR
+    W[Holder wallet] -->|signs| APP[Next.js app on Vercel]
+    APP -->|builds and relays transactions| DEV[(Solana devnet)]
+    APP -->|reads prices, balances, pools| MAIN[(Solana mainnet)]
+    APP --> JUP[Jupiter APIs]
+    APP --> PRE[PreStocks API]
+    KEEP[Keeper worker] -->|quotes and execute| DEV
+    subgraph DEV_PROGRAMS[devnet]
+      PROG[holdfill_orders program] -->|swap2 CPI| DLMM[Meteora DLMM pools]
+    end
+    DEV --- DEV_PROGRAMS
+```
+
+| Part | Path | Role |
+|---|---|---|
+| Order program | [programs/holdfill_orders](programs/holdfill_orders) | Anchor program: `register_event`, `create_order`, `create_price_order`, `arm_order`, `activate`, `execute`, `cancel_order` |
+| Keeper | [keeper/](keeper) | Scans open orders, sizes the largest fill that meets the minimum (binary search over quotes), activates armed orders, sends `execute`. Holds no tokens. |
+| Web app | [web/](web) | Next.js 16 app and API routes: live market data, order tickets, faucet, transaction builders, relay, issuer view |
+| Scripts | [scripts/](scripts) | Devnet market setup, proof recorders, fork proof, data refresh |
+| Tests | [tests/](tests) | Local-validator program suite |
+| Config and data | [config/devnet.json](config/devnet.json), [data/](data) | Every devnet address; proof records and market history |
+
+Accounts:
+
+- `LifecycleEvent`, PDA `["event", input_mint]`: issuer terms (successor mint, pool, conversion ratio, deadline). Written once by the event admin.
+- `Order`, PDA `["order", owner, input_mint]`: the holder's terms, size, fills, and status (Active, Filled, Armed). One order per wallet per token, because a token account can approve only one delegate.
+
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) documents every instruction, check, error, event, API route, and the threat model in full.
+
+## Security model
+
+The program checks, on every fill:
+
+- the order is active, the deadline or expiry has not passed, and the amount fits the remaining size
+- the token is not paused, and the transfer fee equals the fee the holder signed with
+- the pool is the order's pool; reserves, oracle, bitmap, and event authority are PDAs the program derives itself
+- the input token program is Token-2022, and the output token program owns the output mint
+- no host fee account is passed
+- input and output accounts are the holder's own associated token accounts, and the order account is the approved delegate for enough
+- after the swap, the holder's output balance rose by at least the minimum
+
+A price order is created only on a Meteora DLMM account whose token X and token Y are exactly the input and output mints, and it can't outlive an existing issuer deadline.
+
+Off chain: the server builds unsigned transactions and relays only holder-signed transactions that touch Holdfill, token, and system programs. Routes that call RPC have per-client limits. The faucet has per-wallet and global caps and keeps a SOL reserve. Keys live only in server environment variables.
+
+The program is unaudited and deployed only on devnet. Accepted risks are listed in the [threat model](docs/ARCHITECTURE.md#10-security-review-threat-model).
+
+## Evidence and proof
+
+**On devnet**, recorded transactions for every path, each linked to Solana Explorer:
+
+- [data/proof-devnet.json](data/proof-devnet.json): conversion order created; filled at 0.354 SPCXx for 0.1 raw token against a 0.325 minimum; a 10% limit refused on chain; revoked; a fill after revoke refused.
+- [data/proof-devnet-v2.json](data/proof-devnet-v2.json): a price order filled at 926.42 USDC per token against an 800 minimum; a 2,000 USDC order refused on chain; a demo token armed with no event, activated by the keeper after a simulated issuer event, and filled 24.4% under entitlement against a 30% limit. The demo token and its event are simulated and labeled so; no real issuer announced them.
+
+**On cloned mainnet state**, `npm run proof:fork` runs the same program binary as the devnet deployment against the real mints and pools, 7 of 7 passing ([data/proof-fork.json](data/proof-fork.json)):
+
+| Check | Result |
+|---|---|
+| Fill at the holder's price on the real SPACEX/SPCXx pool | 0.1 raw SPACEX filled 29.8% under entitlement; the real 1% fee withheld exactly |
+| Issuer pause | refused with `MintPaused` |
+| Holder revokes | refused with `DelegateMismatch` |
+| Price below the holder's minimum | refused on chain |
+| Issuer raises the transfer fee | refused with `FeeChanged` |
+| Price order on the real OpenAI/USDC pool | 0.05 OpenAI sold for 96.33 USDC against an 86.65 minimum |
+| Price above what the pool pays | refused on chain |
+
+## Tests
+
+| Suite | Command | Result | Who can run it |
+|---|---|---|---|
+| Order math (Rust) | `npm run test:program` | 9 of 9 | anyone |
+| Keeper math matches the program | `npm run test:keeper-math` | 7 of 7 | anyone |
+| Backtest | `npm run test:backtest` | 6 of 6 | anyone |
+| Fork proof on cloned mainnet state | `npm run proof:fork` | 7 of 7 | anyone with a Helius key and the toolchain |
+| Program suite on a local validator cloned from the devnet markets | `npm run test:local` | 40 of 40 ([result](data/program-local.json)) | maintainers: it registers lifecycle events, which needs the event admin key |
+
+The program suite covers fills, partial fills, the fallback floor, the deadline, fee changes, substituted token programs, host fees, wrong reserves and output accounts, overfills, revoke, price orders into classic-token USDC, pools that trade another pair, expiry, arming, activation before and after an event, and the keeper's own paths.
 
 ## Run it locally
 
-Requirements: Node 22 or later, and a free [Helius](https://www.helius.dev) API key. The program toolchain is only needed for the tests and proofs below.
+Requirements: Node 22 or later, and a free [Helius](https://www.helius.dev) API key. The program toolchain is needed only for the tests and proofs: Rust 1.89 (pinned in `rust-toolchain.toml`), Anchor 1.2, and the Solana CLI 4.x with `solana-test-validator`.
 
 ```bash
 git clone https://github.com/mystiquemide/holdfill.git
@@ -78,7 +244,7 @@ Start the app at http://localhost:3000:
 npm run dev:web
 ```
 
-Your local app uses the same devnet program, replica tokens, and pools as the live app (addresses in `config/devnet.json`). The replica mints belong to the project's issuer key, so a local faucet can't mint. Get replica tokens from the live app's faucet with your wallet, then set orders from your local app.
+Your local app uses the same devnet program, replica tokens, and pools as the live app (addresses in `config/devnet.json`). The replica mints belong to the project's issuer key, so a local faucet can't mint: get replica tokens from the live app's faucet with your wallet, then set orders from your local app.
 
 Run the keeper so orders fill without pressing Check now:
 
@@ -86,41 +252,45 @@ Run the keeper so orders fill without pressing Check now:
 HELIUS_API_KEY=your_helius_key KEEPER_KEYPAIR_PATH=./keeper.json npm run keeper
 ```
 
-## Tests and proofs
-
-Anyone with the toolchain can run these. They need Rust 1.89 (pinned in `rust-toolchain.toml`), Anchor 1.2, and the Solana CLI 4.x with `solana-test-validator`.
+Run the tests and the fork proof:
 
 ```bash
-npm run test:program        # Rust unit tests for the order math (9)
-npm run test:keeper-math    # keeper math matches the program (7)
-npm run test:backtest       # backtest over the gap history (6)
-npm run build:program       # builds the program and copies the IDL
-HELIUS_API_KEY=your_key npm run proof:fork
+npm run test:program
+npm run test:keeper-math
+npm run test:backtest
+npm run build:program
+HELIUS_API_KEY=your_helius_key npm run proof:fork
 ```
 
-`proof:fork` starts a local validator with cloned mainnet state (the real SpaceX mint and pool, and the real OpenAI mint, USDC, and OpenAI/USDC pool), runs seven checks, stops the validator, and writes [data/proof-fork.json](data/proof-fork.json). It sends nothing to mainnet.
+`proof:fork` starts and stops its own local validator on port 8999 and sends nothing to mainnet.
 
-The full program suite (`npm run test:local`, 40 checks, run against a local validator started from `npm run local:args`) registers lifecycle events, so it needs the event admin key and runs in the maintainers' environment. Its latest result is in [data/program-local.json](data/program-local.json).
+### Deploy your own
 
-Recorded devnet transactions, each linked to Solana Explorer:
+Change `declare_id!` in `programs/holdfill_orders/src/lib.rs` and `EVENT_ADMIN` in `programs/holdfill_orders/src/constants.rs` to your keys, then build and deploy the program to devnet. With `ISSUER_KEYPAIR_PATH` pointing at your issuer keypair, run `npm run devnet:setup` (replica SPACEX and SPCXx, and a DLMM pool at the mainnet price), `npm run devnet:proof` (registers the SPACEX lifecycle event and records proof transactions), and `npm run devnet:markets -- ANTHROPIC OPENAI` (replica USDC markets). Each script writes its addresses to `config/devnet.json`, which the app and keeper read.
 
-- [data/proof-devnet.json](data/proof-devnet.json): conversion order created, filled above its minimum, a fill below the minimum refused on chain, revoked, and a fill after revoke refused.
-- [data/proof-devnet-v2.json](data/proof-devnet-v2.json): a price order filled into USDC, a price the pool can't pay refused, and an armed order activated by a simulated issuer event on a separate demo token, then filled.
+## Open-source components
 
-## Devnet deployment
+Holdfill is original work, built during the hackathon. It uses these open-source libraries: [Anchor](https://github.com/solana-foundation/anchor) and anchor-spl, [@solana/web3.js](https://www.npmjs.com/package/@solana/web3.js), [@solana/spl-token](https://www.npmjs.com/package/@solana/spl-token), [Meteora DLMM SDK](https://github.com/MeteoraAg/dlmm-sdk), [Solana Wallet Adapter](https://github.com/anza-xyz/wallet-adapter), [Next.js](https://github.com/vercel/next.js), [React](https://github.com/facebook/react), and [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss). Photos are credited on the site.
 
-- Order program: [`A6UhawZdBQiMwpDYzFXKzTJD5voF29rLmrViUT6WaSGV`](https://explorer.solana.com/address/A6UhawZdBQiMwpDYzFXKzTJD5voF29rLmrViUT6WaSGV?cluster=devnet). It is upgradeable; the authority is the demo issuer key, shown live on the proof page.
-- Replica markets: SPACEX into SPCXx, and Anthropic and OpenAI into USDC, each on a Meteora DLMM pool priced from mainnet. `npm run devnet:sync` re-aligns the SPACEX pool with the mainnet price.
+## Limits and roadmap
 
-To run your own deployment, change `declare_id!` in `programs/holdfill_orders/src/lib.rs` and `EVENT_ADMIN` in `constants.rs` to your keys, deploy the program, then run `npm run devnet:setup`, `npm run devnet:proof` (registers the SPACEX lifecycle event), and `npm run devnet:markets -- ANTHROPIC OPENAI` with `ISSUER_KEYPAIR_PATH` pointing at your issuer keypair. Each script writes its addresses to `config/devnet.json`, which the app and keeper read.
+Current limits:
 
-## Limits
-
-- The keeper fills only while it runs. If it stops, orders stay open and tokens stay in the holder's wallet. Anyone can call the permissionless `execute`, and the app's Check now runs one pass.
+- Execution runs on devnet. Replica tokens keep the 1% transfer fee, but Meteora's devnet pools reject the pause, delegate, and scaled-amount extensions without an admin badge, so the fork proof covers the real mints.
 - Devnet pools charge a 10% fee (the only devnet preset), so devnet fills pay less than mainnet quotes.
-- The devnet replicas keep the 1% transfer fee. Meteora's devnet pools reject the pause, delegate, and scaled-amount extensions without an admin badge; the fork proof covers the real mints.
-- PreStocks give economic exposure, not ownership rights, and secondary-market liquidity isn't guaranteed. They are unavailable in the U.S. and to U.S. persons. See the [issuer's terms](https://prestocks.com/faq?tab=legal).
+- The keeper fills only while it runs. If it stops, orders stay open and tokens stay in the wallet; anyone can still call `execute`, and the app's Check now runs one pass.
+- The program is unaudited and upgradeable; the authority is the demo issuer key, shown live on the proof page.
+
+Next:
+
+- Security review, then a mainnet deployment of the same program.
+- Lifecycle events for Anthropic, OpenAI, and the other PreStocks markets as issuers announce them, so armed orders activate on their own.
+- Notifications when an order fills or its fallback window starts.
+
+## Disclaimer
+
+PreStocks give economic exposure, not ownership rights, and secondary-market liquidity isn't guaranteed. They are unavailable in the U.S. and to U.S. persons; see the [issuer's terms](https://prestocks.com/faq?tab=legal). Holdfill is not affiliated with SpaceX, PreStocks, xStocks, Meteora, Jupiter, or Helius. Nothing here is financial advice.
 
 ## License
 
-MIT
+[MIT](LICENSE)
