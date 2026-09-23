@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { BackHome } from "@/components/chrome";
 import { ButtonLink, NetBadge, SectionHead, Source } from "@/components/ui";
 import { day, explorerAddr, int, signedPct, usdCompact, utcTime } from "@/lib/format";
 import { getMarkets, type MarketRow, type Markets } from "@/server/markets";
 
 export const metadata: Metadata = { title: "Markets", description: "Every PreStocks market live: holders, value, pool price against the PreStocks mark, issuer fee, and conversion deadlines." };
+
+/** Token logo from PreStocks, self-hosted in public/logos/markets. */
+function MarketLogo({ symbol, size = 32 }: { symbol: string; size?: number }) {
+  return <Image src={`/logos/markets/${symbol.toLowerCase()}.png`} alt="" width={size} height={size} className="shrink-0 rounded-full border border-hairline" />;
+}
 
 const orNa = <T,>(v: T | null, f: (v: T) => string) => (v === null ? "n/a" : f(v));
 
@@ -33,8 +39,8 @@ function Table({ data }: { data: Markets }) {
       <ul className="flex flex-col gap-3 xl:hidden">
         {data.markets.map((m) => (
           <li key={m.mint} className="rounded-[var(--radius-card)] border border-hairline p-4">
-            <div className="flex items-baseline justify-between gap-3">
-              <p className="text-base">{m.name}</p>
+            <div className="flex items-center justify-between gap-3">
+              <p className="flex items-center gap-3 text-base"><MarketLogo symbol={m.symbol} />{m.name}</p>
               <a href={explorerAddr(m.mint, "mainnet")} target="_blank" rel="noreferrer" className="mono text-xs text-slate underline underline-offset-4">{m.symbol}</a>
             </div>
             <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
@@ -67,8 +73,13 @@ function Table({ data }: { data: Markets }) {
             {data.markets.map((m) => (
               <tr key={m.mint} className={m.event ? "bg-vellum/60" : ""}>
                 <th scope="row" className="p-4 font-normal">
-                  <span className="block">{m.name}</span>
-                  <a href={explorerAddr(m.mint, "mainnet")} target="_blank" rel="noreferrer" className="mono text-xs text-slate underline underline-offset-4">{m.symbol}</a>
+                  <span className="flex items-center gap-3">
+                    <MarketLogo symbol={m.symbol} />
+                    <span>
+                      <span className="block">{m.name}</span>
+                      <a href={explorerAddr(m.mint, "mainnet")} target="_blank" rel="noreferrer" className="mono text-xs text-slate underline underline-offset-4">{m.symbol}</a>
+                    </span>
+                  </span>
                 </th>
                 <td className="num p-4 text-right">{orNa(m.holders, int)}</td>
                 <td className="num p-4 text-right">{usdCompact(m.markValueUsd)}</td>
@@ -131,7 +142,7 @@ export default async function MarketsPage() {
           {xai && (
             <div className="mt-12 rounded-[var(--radius-card-lg)] border border-hairline bg-paper p-6 sm:p-8">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-2xl tracking-[-0.01em]">Expired: XAI</h2>
+                <h2 className="flex items-center gap-3 text-2xl tracking-[-0.01em]"><MarketLogo symbol="XAI" size={36} />Expired: XAI</h2>
                 <span className="inline-flex h-6 items-center rounded-full bg-[#f7e3dc] px-2.5 text-xs font-medium uppercase tracking-[0.06em] text-deadline">Deadline passed {day(xai.deadline)}</span>
               </div>
               <blockquote className="mt-4 max-w-2xl border-l-2 border-hairline pl-4 text-sm leading-relaxed text-slate">
