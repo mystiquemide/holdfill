@@ -1,4 +1,4 @@
-// Gate G2 and program behavior against a local validator that clones the devnet market.
+// Program test suite against a local validator that clones the devnet market (gate G2 included).
 // Proves the order PDA can sign Meteora DLMM swap2 through CPI as the holder's token delegate,
 // and that every enforcement path rejects what it should.
 import fs from "node:fs";
@@ -8,8 +8,8 @@ import {
 } from "@solana/web3.js";
 import {
   TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, createApproveCheckedInstruction,
-  createAssociatedTokenAccountIdempotentInstruction, createRevokeInstruction, getAccount,
-  getAssociatedTokenAddressSync, mintTo,
+  createAssociatedTokenAccountIdempotentInstruction, createMint, createRevokeInstruction,
+  createSetTransferFeeInstruction, getAccount, getAssociatedTokenAddressSync, mintTo,
 } from "@solana/spl-token";
 import { AnchorProvider, BN, Program, Wallet } from "@anchor-lang/core";
 import { buildExecuteIx, OrderAccount } from "../keeper/execute-ix";
@@ -54,6 +54,20 @@ async function expectReject(name: string, expected: string[], fn: () => Promise<
     results.push({ name, pass: ok, detail: code });
     console.log(`${ok ? "PASS" : "FAIL"}  ${name}: rejected with ${code}${ok ? "" : ` (expected ${expected.join(" or ")})`}`);
   }
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function waitUntilChainTime(unix: number) {
+  for (;;) {
+    const t = await conn.getBlockTime(await conn.getSlot("confirmed"));
+    if (t !== null && t >= unix) return;
+    await sleep(1000);
+  }
+}
+
+async function waitUntilEpoch(epoch: number) {
+  while ((await conn.getEpochInfo("confirmed")).epoch < epoch) await sleep(1000);
 }
 
 async function newHolder(rawTokens: bigint): Promise<Keypair> {
@@ -170,10 +184,90 @@ async function main() {
     await createOrder(c, new BN(100_000_000), 7000);
   });
 
+  // Holder D: wrong output account, then filling the whole order.
+  const d = await newHolder(1_000_000_000n);
+  const pdaD = await createOrder(d, new BN(200_000_000), 4000);
+  await expectReject("output sent to someone else's SPCXx account", ["WrongOwnerAccount"], () =>
+    execute(pdaD, new BN(100_000_000), { userTokenOut: ata(a.publicKey, SPCXX) }));
+  await expectPass("order fills its full size and becomes Filled", async () => {
+    await execute(pdaD, new BN(200_000_000));
+    const order = await (program.account as any).order.fetch(pdaD);
+    if (!("filled" in order.status)) throw new Error(`status ${JSON.stringify(order.status)}`);
+    return `filled ${order.filled}/${order.size}, status Filled, received ${order.received}`;
+  });
+  await expectReject("fill on a filled order", ["OrderNotActive"], () =>
+    execute(pdaD, new BN(100_000_000)));
+
+  // Holder E: limit unreachable (10%) but the fallback date arrives, so the 50% floor applies.
+  const e = await newHolder(1_000_000_000n);
+  const pdaE = PublicKey.findProgramAddressSync([Buffer.from("order"), e.publicKey.toBuffer(), SPACEX.toBuffer()], program.programId)[0];
+  const fallbackSoon = Math.floor(Date.now() / 1000) + 20;
+  await sendAndConfirmTransaction(conn, new Transaction().add(
+    await program.methods
+      .createOrder({ size: new BN(100_000_000), limitBps: 1000, fallbackTs: new BN(fallbackSoon), fallbackFloorBps: 5000 })
+      .accountsStrict({ owner: e.publicKey, event: eventPda, inputMint: SPACEX, ownerTokenIn: ata(e.publicKey, SPACEX), order: pdaE, systemProgram: SystemProgram.programId })
+      .instruction(),
+    createApproveCheckedInstruction(ata(e.publicKey, SPACEX), SPACEX, pdaE, e.publicKey, 100_000_000n, 9, [], TOKEN_2022_PROGRAM_ID),
+  ), [e]);
+  await expectReject("before the fallback date, a 10% limit does not fill", ["ExceededAmountSlippageTolerance", "InsufficientOutput"], () =>
+    execute(pdaE, new BN(100_000_000)));
+  await waitUntilChainTime(fallbackSoon + 2);
+  await expectPass("after the fallback date, the 50% floor applies and the order fills", async () => {
+    await execute(pdaE, new BN(100_000_000));
+    const order = await (program.account as any).order.fetch(pdaE);
+    return `filled ${order.filled}/${order.size} at the fallback floor, received ${order.received}`;
+  });
+
+  // A second input token whose issuer deadline passes during the test.
+  const expiringMint = await createMint(conn, issuer, issuer.publicKey, null, 9, Keypair.generate(), { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
+  const shortEvent = PublicKey.findProgramAddressSync([Buffer.from("event"), expiringMint.toBuffer()], program.programId)[0];
+  const shortExpiry = Math.floor(Date.now() / 1000) + 30;
+  await program.methods
+    .registerEvent({ outputMint: SPCXX, pool: POOL, ratioNum: new BN(1), ratioDen: new BN(2), expiryTs: new BN(shortExpiry) })
+    .accountsStrict({ admin: issuer.publicKey, inputMint: expiringMint, event: shortEvent, systemProgram: SystemProgram.programId })
+    .rpc();
+  const f = Keypair.generate();
+  await conn.confirmTransaction(await conn.requestAirdrop(f.publicKey, LAMPORTS_PER_SOL), "confirmed");
+  await sendAndConfirmTransaction(conn, new Transaction().add(
+    createAssociatedTokenAccountIdempotentInstruction(f.publicKey, ata(f.publicKey, expiringMint), f.publicKey, expiringMint, TOKEN_2022_PROGRAM_ID),
+    createAssociatedTokenAccountIdempotentInstruction(f.publicKey, ata(f.publicKey, SPCXX), f.publicKey, SPCXX, TOKEN_2022_PROGRAM_ID),
+  ), [f]);
+  await mintTo(conn, issuer, expiringMint, ata(f.publicKey, expiringMint), issuer, 1_000_000_000n, [], { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
+  const pdaF = PublicKey.findProgramAddressSync([Buffer.from("order"), f.publicKey.toBuffer(), expiringMint.toBuffer()], program.programId)[0];
+  await sendAndConfirmTransaction(conn, new Transaction().add(
+    await program.methods
+      .createOrder({ size: new BN(100_000_000), limitBps: 4000, fallbackTs: new BN(shortExpiry - 10), fallbackFloorBps: 5000 })
+      .accountsStrict({ owner: f.publicKey, event: shortEvent, inputMint: expiringMint, ownerTokenIn: ata(f.publicKey, expiringMint), order: pdaF, systemProgram: SystemProgram.programId })
+      .instruction(),
+    createApproveCheckedInstruction(ata(f.publicKey, expiringMint), expiringMint, pdaF, f.publicKey, 100_000_000n, 9, [], TOKEN_2022_PROGRAM_ID),
+  ), [f]);
+  await waitUntilChainTime(shortExpiry + 2);
+  await expectReject("fill after the issuer deadline", ["IssuerDeadlinePassed"], async () => {
+    // Pool accounts come from the SPACEX pool; the order's own mint and token account are swapped in.
+    const orderF = (await (program.account as any).order.fetch(pdaF)) as OrderAccount;
+    const { ix } = await buildExecuteIx({
+      program, connection: conn, orderPda: pdaF, order: { ...orderF, inputMint: SPACEX }, amountIn: new BN(100_000_000),
+      keeper: keeper.publicKey, cluster: "devnet",
+      overrides: { tokenXMint: expiringMint, userTokenIn: ata(f.publicKey, expiringMint) },
+    });
+    await sendAndConfirmTransaction(conn, new Transaction().add(ix), [keeper]);
+  });
+
+  // Issuer raises the transfer fee; it takes effect two epochs later.
+  const g = await newHolder(1_000_000_000n);
+  const pdaG = await createOrder(g, new BN(100_000_000), 4000);
+  await sendAndConfirmTransaction(conn, new Transaction().add(
+    createSetTransferFeeInstruction(SPACEX, issuer.publicKey, [], 200, BigInt("18446744073709551615"), TOKEN_2022_PROGRAM_ID),
+  ), [issuer]);
+  const feeEpoch = (await conn.getEpochInfo()).epoch + 2;
+  await waitUntilEpoch(feeEpoch);
+  await expectReject("fill after the issuer changed the transfer fee", ["FeeChanged"], () =>
+    execute(pdaG, new BN(100_000_000)));
+
   const passed = results.filter((r) => r.pass).length;
   console.log(`\n${passed}/${results.length} checks passed`);
   fs.mkdirSync(path.join(ROOT, "data"), { recursive: true });
-  fs.writeFileSync(path.join(ROOT, "data/g2-local.json"), JSON.stringify({ ranAt: new Date().toISOString(), network: "local validator cloned from devnet", results }, null, 2) + "\n");
+  fs.writeFileSync(path.join(ROOT, "data/program-local.json"), JSON.stringify({ ranAt: new Date().toISOString(), network: "local validator cloned from devnet", results }, null, 2) + "\n");
   process.exit(passed === results.length ? 0 : 1);
 }
 main().catch((e) => { console.error("TEST ERROR", errorCode(e)); process.exit(2); });

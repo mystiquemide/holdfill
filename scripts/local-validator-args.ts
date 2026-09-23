@@ -26,6 +26,8 @@ async function main() {
   const programId = JSON.parse(fs.readFileSync(path.join(ROOT, "target/idl/holdfill_orders.json"), "utf8")).address;
   const args = [
     "--reset", "--quiet", "--ledger", path.join(ROOT, "test-ledger"),
+    // Short epochs so a transfer-fee change (effective two epochs later) can be tested in seconds.
+    "--slots-per-epoch", "32",
     "--url", `https://devnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY}`,
     "--clone-upgradeable-program", DLMM_PROGRAM_ID.toBase58(),
     "--bpf-program", programId, path.join(ROOT, "target/deploy/holdfill_orders.so"),

@@ -17,7 +17,8 @@
     "devnet:sync": "tsx scripts/sync-devnet-price.ts",
     "devnet:probe-extensions": "tsx scripts/probe-dlmm-extensions.ts",
     "local:args": "tsx scripts/local-validator-args.ts",
-    "test:local": "tsx tests/g2-local.ts"
+    "test:local": "tsx tests/program-local.ts",
+    "devnet:proof": "tsx scripts/devnet-proof.ts"
   },
   "dependencies": {
     "@anchor-lang/core": "1.2.0",

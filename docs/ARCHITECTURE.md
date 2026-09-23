@@ -133,7 +133,7 @@ PDA seeds: `["order", owner, input_mint]`. One active order per holder per token
 
 ### 4.5 Gate G2 (first program task): passed 23 Sep 2026
 
-`npm run test:local` (tests/g2-local.ts) against a local validator that clones the devnet market: 13 of 13 checks pass. The order PDA signs DLMM `swap2` through CPI as the holder's delegate; substituted token program, host fee account, wrong reserve, overfill, below-minimum fill, and fill after revoke are all rejected. Results in `data/g2-local.json`.
+`npm run test:local` (tests/program-local.ts) against a local validator that clones the devnet market: 13 of 13 checks pass. The order PDA signs DLMM `swap2` through CPI as the holder's delegate; substituted token program, host fee account, wrong reserve, overfill, below-minimum fill, and fill after revoke are all rejected. Results in `data/program-local.json`.
 
 Original gate definition:
 
