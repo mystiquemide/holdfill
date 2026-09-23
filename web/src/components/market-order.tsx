@@ -5,7 +5,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import type { MarketPosition, MarketOrder } from "@/server/usdc-markets";
 import type { Markets } from "@/server/markets";
 import type { OrderEvent, OrderHistory } from "@/server/orders";
-import { day, explainError, explorerTx, int, num, pct, shortAddr, signedPct, usd, usdCompact, utcTime } from "@/lib/format";
+import { day, explainError, explainSkip, explorerTx, int, num, pct, shortAddr, signedPct, usd, usdCompact, utcTime } from "@/lib/format";
 import { Modal, WalletButton } from "./chrome";
 import { Activity, Line, Stat, usePolling, useSubmit } from "./order";
 import { useToasts } from "./providers";
@@ -49,7 +49,7 @@ function MainnetCard({ symbol }: { symbol: string }) {
           <Source>{error ? "Couldn't refresh. Showing the last values." : `Updated ${utcTime(data!.asOf)}`}</Source>
         </>
       ) : (
-        <p className="py-8 text-sm text-slate">{error ? "Couldn't reach the market data sources." : "Reading mainnet..."}</p>
+        <p className="py-8 text-sm text-slate">{error ? "Couldn't load market data. Retrying every minute." : "Reading mainnet..."}</p>
       )}
     </div>
   );
@@ -68,7 +68,7 @@ function Fact({ label, value, source }: { label: string; value: string; source: 
 function describe(e: OrderEvent): string {
   if (e.kind === "created") return `${num(Number(e.sizeRaw ?? 0) / BASE)} tokens, at least ${usd(e.pricePerToken ?? 0)} each`;
   if (e.kind === "armed") return `${num(Number(e.sizeRaw ?? 0) / BASE)} tokens, largest gap ${pct((e.limitBps ?? 0) / 100, 0)}`;
-  if (e.kind === "activated") return "issuer terms copied in";
+  if (e.kind === "activated") return "Issuer named a successor. Your order is active.";
   if (e.kind === "filled") return e.outAmount !== undefined
     ? `${num(Number(e.amountInRaw ?? 0) / BASE)} tokens for ${num(e.outAmount)} successor tokens`
     : `${num(Number(e.amountInRaw ?? 0) / BASE)} tokens at ${usd(e.pricePerToken ?? 0)} each`;
@@ -101,7 +101,18 @@ function PositionPanel({ symbol }: { symbol: string }) {
     );
   }
   const p = pos.data;
-  if (!p) return shell(<p className="py-10 text-sm text-slate">{pos.error ? "Couldn't reach Solana. Retrying in 10 seconds." : "Reading your devnet wallet..."}</p>);
+  if (!p) {
+    return shell(pos.error
+      ? <p className="py-10 text-sm text-slate">Couldn&apos;t reach Solana. Retrying in 10 seconds.</p>
+      : (
+        <div className="flex flex-col gap-4" aria-busy="true" aria-label="Reading your devnet wallet">
+          <div className="grid grid-cols-2 gap-4">{[0, 1].map((i) => <div key={i} className="h-16 animate-pulse rounded-[14px] bg-vellum" />)}</div>
+          <div className="h-10 animate-pulse rounded-full bg-vellum" />
+          <div className="h-24 animate-pulse rounded-[14px] bg-vellum" />
+          <span className="sr-only">Reading your devnet wallet...</span>
+        </div>
+      ));
+  }
 
   const events = hist.data?.events ?? [];
   const banner = ended && !p.devnet.order ? (
@@ -151,8 +162,9 @@ function Faucet({ position, soldOut, onDone }: { position: MarketPosition; soldO
       if (res.ok) {
         toasts.push({ tone: "ok", title: `Sent 1 replica ${position.symbol}${body.sentSol > 0 ? " and 0.02 devnet SOL for fees" : ""}.`, href: body.explorer });
         onDone();
-      } else if (res.status === 429 && body.retryAt) {
-        setLimited(`${body.error} Try again at ${utcTime(body.retryAt)}.`);
+      } else if (res.status === 429) {
+        // Limits stay on screen until they lift; a toast would vanish and leave no reason.
+        setLimited(body.error.includes(" UTC") || !body.retryAt ? body.error : `${body.error} Try again at ${utcTime(body.retryAt)}.`);
       } else {
         toasts.push({ tone: "error", title: body.error ?? "The faucet couldn't send tokens right now." });
       }
@@ -212,14 +224,14 @@ function Ticket({ position, onDone }: { position: MarketPosition; onDone: () => 
   };
 
   const tab = (m: "price" | "arm", label: string) => (
-    <button type="button" role="tab" aria-selected={mode === m} onClick={() => setMode(m)}
+    <button type="button" aria-pressed={mode === m} onClick={() => setMode(m)}
       className={`h-10 flex-1 rounded-full px-4 text-sm font-medium transition-colors duration-150 ${mode === m ? "bg-ink text-paper" : "text-ink hover:bg-hairline"}`}>{label}</button>
   );
 
   return (
     <div className="rounded-[var(--radius-card)] border border-hairline bg-paper p-5 shadow-[var(--shadow-lift)] sm:p-6">
       <div className="mb-5 flex items-center justify-between gap-2"><h2 className="text-lg">Order ticket</h2><NetBadge net="devnet" /></div>
-      <div role="tablist" aria-label="Order type" className="mb-5 flex gap-1 rounded-full bg-vellum p-1">
+      <div role="group" aria-label="Order type" className="mb-5 flex gap-1 rounded-full bg-vellum p-1">
         {tab("price", "Sell at your price")}
         {tab("arm", "Arm for the IPO")}
       </div>
@@ -253,7 +265,9 @@ function Ticket({ position, onDone }: { position: MarketPosition; onDone: () => 
               </div>
             </div>
             <div className="rounded-[14px] bg-vellum p-4 text-sm leading-relaxed">
-              Sells when the pool pays at least <span className="num">{usd(usdPerToken || 0)}</span> per token, after fees. {quote !== null && usdPerToken > 0 && (usdPerToken <= quote ? "Today's pool price already meets it, so the keeper can fill on its next check." : `That is ${pct((usdPerToken / quote - 1) * 100)} above today's pool price.`)}
+              {usdPerToken > 0
+                ? <>Sells when the pool pays at least <span className="num">{usd(usdPerToken)}</span> per token, after fees. {quote !== null && (usdPerToken <= quote ? "Today's pool price already meets it, so the keeper can fill on its next check." : `That is ${pct((usdPerToken / quote - 1) * 100)} above today's pool price.`)}</>
+                : "Enter a price to see when this order fills."}
             </div>
           </>
         ) : (
@@ -267,15 +281,15 @@ function Ticket({ position, onDone }: { position: MarketPosition; onDone: () => 
             </div>
             <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">
               <div>
-                <label htmlFor="m-days" className="text-sm">Fallback, before the deadline</label>
+                <label htmlFor="m-days" className="text-sm">Fallback starts</label>
                 <select id="m-days" value={days} onChange={(e) => setDays(Number(e.target.value))} className="num mt-2 w-full rounded-[var(--radius-input)] bg-vellum px-3 py-3 text-sm outline-none focus:outline-2 focus:outline-ink">
-                  {FALLBACK_DAYS.map((d) => <option key={d} value={d}>{d} days</option>)}
+                  {FALLBACK_DAYS.map((d) => <option key={d} value={d}>{d} days before the deadline</option>)}
                 </select>
               </div>
               <div>
-                <label htmlFor="m-floor" className="text-sm">Fallback floor, of entitlement</label>
+                <label htmlFor="m-floor" className="text-sm">Least you&apos;ll accept after that</label>
                 <select id="m-floor" value={floor} onChange={(e) => setFloor(Number(e.target.value))} className="num mt-2 w-full rounded-[var(--radius-input)] bg-vellum px-3 py-3 text-sm outline-none focus:outline-2 focus:outline-ink">
-                  {FLOORS.map((f) => <option key={f} value={f}>{f / 100}%</option>)}
+                  {FLOORS.map((f) => <option key={f} value={f}>{f / 100}% of what it converts into</option>)}
                 </select>
               </div>
             </div>
@@ -349,10 +363,14 @@ function OrderCard({ position, order, onChange, onEnded }: { position: MarketPos
       const res = await post("/api/keeper/tick", { order: order.address });
       const body = await res.json();
       const at = utcTime(body.checkedAt ?? new Date().toISOString());
-      if (res.status === 429) { setCheck({ tone: "wait", text: `Checked moments ago. Try again in ${Math.ceil((body.retryAfterMs ?? 5000) / 1000)} seconds.` }); return; }
+      if (res.status === 429) {
+        const wait = Math.ceil((body.retryAfterMs ?? 5000) / 1000);
+        setCheck({ tone: "wait", text: String(body.error ?? "").startsWith("You're going") ? body.error : `Checked moments ago. Try again in ${wait} seconds.` });
+        return;
+      }
       if (!res.ok) { setCheck({ tone: "error", text: "Couldn't reach the keeper. Try again in a moment." }); return; }
       const a = body.attempts?.[0];
-      if (!a) { setCheck({ tone: "wait", text: armed ? `Checked ${at}. No issuer event yet.` : `Checked ${at}. Nothing to do.` }); return; }
+      if (!a) { setCheck({ tone: "wait", text: armed ? `Checked ${at}. No issuer event yet.` : `Checked ${at}. This order has nothing left to fill.` }); return; }
       if (a.action === "filled") {
         toasts.push({ tone: "ok", title: `Filled. About ${num(Number(a.quotedOut ?? 0) / 10 ** order.outDecimals, 2)} ${out} landed in your wallet.`, href: explorerTx(a.signature, "devnet") });
         setCheck({ tone: "ok", text: `Filled at ${at}.` });
@@ -362,9 +380,16 @@ function OrderCard({ position, order, onChange, onEnded }: { position: MarketPos
         setCheck({ tone: "ok", text: `Activated at ${at}. The keeper fills it once the pool meets your limit.` });
         onChange();
       } else if (a.action === "waiting") {
-        setCheck({ tone: "wait", text: `Checked ${at}. ${a.reason.charAt(0).toUpperCase()}${a.reason.slice(1)}. No fill yet.` });
+        const inTokens = Number(a.amountIn ?? 0) / BASE;
+        const poolPrice = inTokens > 0 ? Number(a.quotedOut ?? 0) / 10 ** order.outDecimals / inTokens : null;
+        const text = order.minUsdcPerToken !== null && poolPrice !== null
+          ? `Checked ${at}. The pool pays ${usd(poolPrice)} per token, ${pct(Math.max(0, (1 - poolPrice / order.minUsdcPerToken) * 100))} below your price. Your order waits and fills once it reaches ${usd(order.minUsdcPerToken)}.`
+          : `Checked ${at}. The pool doesn't meet your ${pct(order.limitBps / 100, 0)} limit yet. Your order waits and fills once it does.`;
+        setCheck({ tone: "wait", text });
+      } else if (a.action === "skipped") {
+        setCheck({ tone: "error", text: `Checked ${at}. ${explainSkip(a.reason)}` });
       } else {
-        setCheck({ tone: "error", text: `Checked ${at}. ${a.action === "skipped" ? a.reason : explainError(a.reason)}` });
+        setCheck({ tone: "error", text: `Checked ${at}. ${explainError(a.reason)}` });
       }
     } catch {
       setCheck({ tone: "error", text: "Couldn't reach the keeper. Try again in a moment." });

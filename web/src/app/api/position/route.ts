@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   try {
     owner = new PublicKey(raw);
   } catch {
-    return Response.json({ error: "owner must be a Solana address" }, { status: 400 });
+    return Response.json({ error: "The owner must be a Solana address." }, { status: 400 });
   }
   const market = request.nextUrl.searchParams.get("market");
   if (market && market.toUpperCase() !== "SPACEX") {
@@ -21,12 +21,12 @@ export async function GET(request: NextRequest) {
     try {
       return Response.json(await getMarketPosition(owner, m), { headers: { "Cache-Control": "private, max-age=5" } });
     } catch (e) {
-      return Response.json({ error: "position unavailable", detail: String((e as Error).message).slice(0, 200) }, { status: 503 });
+      return Response.json({ error: "Couldn't read this position. Try again in a moment.", detail: String((e as Error).message).slice(0, 200) }, { status: 503 });
     }
   }
   try {
     return Response.json(await getPosition(owner), { headers: { "Cache-Control": "private, max-age=5" } });
   } catch (e) {
-    return Response.json({ error: "position unavailable", detail: String((e as Error).message).slice(0, 200) }, { status: 503 });
+    return Response.json({ error: "Couldn't read this position. Try again in a moment.", detail: String((e as Error).message).slice(0, 200) }, { status: 503 });
   }
 }

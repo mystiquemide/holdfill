@@ -19,7 +19,7 @@ export function rateLimit(request: Request, bucket: string, perMinute: number): 
     const retryAfterMs = WINDOW_MS - (now - hits[0]);
     windows.set(key, hits);
     return Response.json(
-      { error: "Too many requests. Wait a moment and try again.", retryAfterMs },
+      { error: `You're going a little fast. Try again in ${Math.ceil(retryAfterMs / 1000)} seconds.`, retryAfterMs },
       { status: 429, headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) } },
     );
   }

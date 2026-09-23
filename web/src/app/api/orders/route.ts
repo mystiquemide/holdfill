@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   try {
     owner = new PublicKey(request.nextUrl.searchParams.get("owner") ?? "");
   } catch {
-    return Response.json({ error: "owner must be a Solana address" }, { status: 400 });
+    return Response.json({ error: "The owner must be a Solana address." }, { status: 400 });
   }
   const market = request.nextUrl.searchParams.get("market");
   let mint;
@@ -21,6 +21,6 @@ export async function GET(request: NextRequest) {
   try {
     return Response.json(await getOrderHistory(owner, mint), { headers: { "Cache-Control": "private, max-age=5" } });
   } catch (e) {
-    return Response.json({ error: "order history unavailable", detail: String((e as Error).message).slice(0, 200) }, { status: 503 });
+    return Response.json({ error: "Couldn't read order history. Try again in a moment.", detail: String((e as Error).message).slice(0, 200) }, { status: 503 });
   }
 }

@@ -23,6 +23,6 @@ export async function GET() {
     });
     return Response.json(body, { headers: { "Cache-Control": "public, s-maxage=60" } });
   } catch (e) {
-    return Response.json({ error: "program state unavailable", detail: String((e as Error).message).slice(0, 200) }, { status: 503 });
+    return Response.json({ error: "Couldn't read the program state. Try again in a moment.", detail: String((e as Error).message).slice(0, 200) }, { status: 503 });
   }
 }

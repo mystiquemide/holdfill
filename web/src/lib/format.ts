@@ -40,6 +40,21 @@ export const explorerAddr = (a: string, cluster: "mainnet" | "devnet") =>
 
 export const daysUntil = (iso: string, from = Date.now()) => Math.max(0, Math.ceil((Date.parse(iso) - from) / 86_400_000));
 
+/** Plain-language versions of the keeper's reasons for skipping an order. */
+export function explainSkip(reason: string): string {
+  const r = reason.toLowerCase();
+  const fee = r.match(/from (\d+) to (\d+) bps/);
+  if (r.includes("paused")) return "The issuer paused this token. Your order can't fill until it resumes.";
+  if (r.includes("transfer fee")) {
+    const change = fee ? ` (from ${Number(fee[1]) / 100}% to ${Number(fee[2]) / 100}%)` : "";
+    return `The issuer changed the transfer fee since you signed${change}. Revoke and set a new order to accept it.`;
+  }
+  if (r.includes("approval")) return "Your approval was removed. Revoke to close the order.";
+  if (r.includes("expired")) return "This order expired. Revoke to close it and get its deposit back.";
+  if (r.includes("deadline")) return "The issuer deadline passed. This order can no longer fill.";
+  return "This order can't fill right now. Revoke it and set a new one.";
+}
+
 /** Plain-language versions of program and keeper error codes. */
 export function explainError(code?: string): string {
   switch (code) {
@@ -61,6 +76,16 @@ export function explainError(code?: string): string {
       return "The order was closed before this check.";
     case "BlockhashExpired":
       return "The signature took too long. Try again.";
+    case "NotArmed":
+      return "This order is already active.";
+    case "InvalidExpiry":
+      return "Pick an expiry within 400 days, before any issuer deadline.";
+    case "WrongPoolMints":
+      return "This pool doesn't trade this token against USDC. Reload the page and try again.";
+    case "EventAlreadyRegistered":
+      return "This token already has a conversion event. Set a regular order instead.";
+    case "InvalidPrice":
+      return "Enter a price above zero.";
     default:
       // Program error codes are single words. Anything else (a failed simulation, a timeout) never reached the chain.
       if (code && /^\w+$/.test(code)) return `Rejected on chain (${code}).`;

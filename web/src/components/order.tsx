@@ -6,7 +6,7 @@ import { Transaction } from "@solana/web3.js";
 import type { Position } from "@/server/position";
 import type { OrderHistory, OrderEvent } from "@/server/orders";
 import { backtest, type HistoryDay } from "@/server/backtest";
-import { daysUntil, day, explainError, explorerTx, num, pct, shortAddr, usd, utcTime } from "@/lib/format";
+import { daysUntil, day, explainError, explainSkip, explorerTx, num, pct, shortAddr, usd, utcTime } from "@/lib/format";
 import { GapBar, GapExplanation } from "./gap-bar";
 import { Modal, WalletButton } from "./chrome";
 import { useLimit, useMarket, useToasts } from "./providers";
@@ -204,8 +204,9 @@ function Faucet({ position, soldOut, onDone }: { position: Position; soldOut: bo
       if (res.ok) {
         toasts.push({ tone: "ok", title: `Sent 1 replica SPACEX (5 shares)${body.sentSol > 0 ? " and 0.02 devnet SOL for fees" : ""}.`, href: body.explorer });
         onDone();
-      } else if (res.status === 429 && body.retryAt) {
-        setLimited(`${body.error} Try again at ${utcTime(body.retryAt)}.`);
+      } else if (res.status === 429) {
+        // Limits stay on screen until they lift; a toast would vanish and leave no reason.
+        setLimited(body.error.includes(" UTC") || !body.retryAt ? body.error : `${body.error} Try again at ${utcTime(body.retryAt)}.`);
       } else {
         toasts.push({ tone: "error", title: body.error ?? "The faucet couldn't send tokens right now." });
       }
@@ -332,9 +333,9 @@ function Ticket({ position, history, onDone }: { position: Position; history: Hi
             <input id="ticket-fallback" type="date" min={tomorrow} max="2027-03-11" value={fallback} onChange={(e) => setFallback(e.target.value)} className="num mt-2 w-full rounded-[var(--radius-input)] bg-vellum px-3 py-3 text-sm outline-none focus:outline-2 focus:outline-ink" />
           </div>
           <div>
-            <label htmlFor="ticket-floor" className="text-sm">Fallback floor, of entitlement</label>
+            <label htmlFor="ticket-floor" className="text-sm">Least you&apos;ll accept after that</label>
             <select id="ticket-floor" value={floorBps} onChange={(e) => setFloorBps(Number(e.target.value))} className="num mt-2 w-full rounded-[var(--radius-input)] bg-vellum px-3 py-3 text-sm outline-none focus:outline-2 focus:outline-ink">
-              {FLOORS.map((f) => <option key={f} value={f}>{f / 100}%</option>)}
+              {FLOORS.map((f) => <option key={f} value={f}>{f / 100}% of what it converts into</option>)}
             </select>
           </div>
         </div>
@@ -409,7 +410,11 @@ function OrderCard({ position, order, onChange, onEnded }: { position: Position;
       const res = await fetch("/api/keeper/tick", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ order: order.address }) });
       const body = await res.json();
       const at = utcTime(body.checkedAt ?? new Date().toISOString());
-      if (res.status === 429) { setCheck({ tone: "wait", text: `Checked moments ago. Try again in ${Math.ceil((body.retryAfterMs ?? 5000) / 1000)} seconds.` }); return; }
+      if (res.status === 429) {
+        const wait = Math.ceil((body.retryAfterMs ?? 5000) / 1000);
+        setCheck({ tone: "wait", text: String(body.error ?? "").startsWith("You're going") ? body.error : `Checked moments ago. Try again in ${wait} seconds.` });
+        return;
+      }
       if (!res.ok) { setCheck({ tone: "error", text: "Couldn't reach the keeper. Try again in a moment." }); return; }
       const a = body.attempts?.[0];
       if (!a) { setCheck({ tone: "wait", text: `Checked ${at}. No active order at this address.` }); return; }
@@ -422,12 +427,7 @@ function OrderCard({ position, order, onChange, onEnded }: { position: Position;
         setCheck({ tone: "wait", text: `Checked ${at}. Pool pays ${gap !== undefined ? pct(gap) : "more than your limit"} under entitlement. Your limit is ${pct(a.haircutBps / 100, 0)}. No fill yet.` });
       } else if (a.action === "skipped") {
         const r = String(a.reason);
-        const text = r.includes("paused") ? "The issuer paused this token. Your order can't fill until it resumes."
-          : r.includes("transfer fee") ? `The issuer changed the transfer fee since you signed (${r.replace(/.*from /, "from ")}). Revoke and create a new order to accept it.`
-          : r.includes("approval") ? "Your approval was removed. Revoke to close the order."
-          : r.includes("deadline") ? "The issuer deadline passed. This order can no longer fill."
-          : r.includes("output token account") ? "Your SPCXx account is missing. Revoke and set the order again to recreate it."
-          : `Checked ${at}. ${r}.`;
+        const text = explainSkip(r);
         setCheck({ tone: "blocked", text });
       } else {
         setCheck({ tone: "error", text: `Checked ${at}. ${explainError(a.reason)}` });

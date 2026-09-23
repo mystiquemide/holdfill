@@ -28,12 +28,12 @@ export async function POST(request: NextRequest) {
     try {
       order = new PublicKey(body.order ?? "");
     } catch {
-      return Response.json({ error: "order must be a Holdfill order address" }, { status: 400 });
+      return Response.json({ error: "The order must be a Holdfill order address." }, { status: 400 });
     }
     const key = order.toBase58();
     const last = lastCheck.get(key) ?? 0;
     const wait = MIN_INTERVAL_MS - (Date.now() - last);
-    if (wait > 0) return Response.json({ error: "checked moments ago", retryAfterMs: wait }, { status: 429 });
+    if (wait > 0) return Response.json({ error: "This order was checked moments ago.", retryAfterMs: wait }, { status: 429 });
     lastCheck.set(key, Date.now());
   }
 
@@ -47,6 +47,6 @@ export async function POST(request: NextRequest) {
     }
     return Response.json({ network: "devnet", checkedAt: new Date().toISOString(), attempts });
   } catch (e) {
-    return Response.json({ error: "keeper check failed", detail: String((e as Error).message).slice(0, 200) }, { status: 503 });
+    return Response.json({ error: "The keeper check failed. Try again in a moment.", detail: String((e as Error).message).slice(0, 200) }, { status: 503 });
   }
 }

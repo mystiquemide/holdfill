@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     owner = new PublicKey(String(b.owner ?? ""));
     sizeRaw = BigInt(String(b.sizeRaw ?? ""));
   } catch {
-    return Response.json({ error: "owner and sizeRaw are required" }, { status: 400 });
+    return Response.json({ error: "The owner and sizeRaw fields are required." }, { status: 400 });
   }
   try {
     const built = await buildPriceOrder({ owner, symbol: String(b.market ?? ""), sizeRaw, usdPerToken: Number(b.usdPerToken), expiryDays: Number(b.expiryDays) });

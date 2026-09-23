@@ -7,12 +7,12 @@ import { getIssuerView, type IssuerMarket, type IssuerView } from "@/server/issu
 export const metadata: Metadata = { title: "Issuer view", description: "How many PreStocks holders have a standing order, how much it covers, and what already converted." };
 
 function Coverage({ m }: { m: IssuerMarket }) {
-  if (!m.ordersOpen) return <span className="text-slate">Not open yet</span>;
+  if (!m.ordersOpen) return <span className="text-slate">No devnet market</span>;
   return <span className="num">{num(m.coveredShares, 2)} shares <span className="text-slate">({usdCompact(m.coveredUsd)})</span></span>;
 }
 
 const counts = (m: IssuerMarket) => {
-  if (!m.ordersOpen) return "none";
+  if (!m.ordersOpen) return "No orders";
   const kinds = [m.price ? `${m.price} at a price` : "", m.armed ? `${m.armed} armed for the IPO` : ""].filter(Boolean).join(", ");
   return `${m.live} live, ${m.filled} filled${m.blocked ? `, ${m.blocked} blocked` : ""}${kinds ? ` (${kinds})` : ""}`;
 };
@@ -29,7 +29,7 @@ function MarketTable({ data }: { data: IssuerView }) {
               <dt className="text-slate">Deadline</dt><dd>{m.deadline ? `${day(m.deadline, true)}, ${m.daysLeft} days` : <span className="text-slate">None announced</span>}</dd>
               <dt className="text-slate">Devnet orders</dt><dd>{counts(m)}</dd>
               <dt className="text-slate">Covered</dt><dd><Coverage m={m} /></dd>
-              <dt className="text-slate">Converted</dt><dd className="num">{m.ordersOpen ? `${num(m.filledShares, 2)} shares, ${num(m.received, 2)} ${m.receivedSymbol}` : "none"}</dd>
+              <dt className="text-slate">Converted</dt><dd className="num">{m.ordersOpen ? `${num(m.filledShares, 2)} shares, ${num(m.received, 2)} ${m.receivedSymbol}` : "No orders"}</dd>
             </dl>
           </li>
         ))}
@@ -54,7 +54,7 @@ function MarketTable({ data }: { data: IssuerView }) {
                 <td className="p-4">{m.deadline ? `${day(m.deadline, true)}, ${m.daysLeft} days` : <span className="text-slate">None announced</span>}</td>
                 <td className={`p-4 ${m.ordersOpen ? "" : "text-slate"}`}>{counts(m)}</td>
                 <td className="p-4"><Coverage m={m} /></td>
-                <td className="num p-4 text-right">{m.ordersOpen ? `${num(m.filledShares, 2)} shares, ${num(m.received, 2)} ${m.receivedSymbol}` : <span className="text-slate">none</span>}</td>
+                <td className="num p-4 text-right">{m.ordersOpen ? `${num(m.filledShares, 2)} shares, ${num(m.received, 2)} ${m.receivedSymbol}` : <span className="text-slate">No orders</span>}</td>
               </tr>
             ))}
           </tbody>

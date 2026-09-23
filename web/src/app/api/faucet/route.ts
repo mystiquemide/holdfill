@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   try {
     owner = new PublicKey(body.owner ?? "");
   } catch {
-    return Response.json({ error: "owner must be a Solana address" }, { status: 400 });
+    return Response.json({ error: "The owner must be a Solana address." }, { status: 400 });
   }
   let market;
   try {

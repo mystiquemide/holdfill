@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
   try {
     owner = new PublicKey(b.owner ?? "");
   } catch {
-    return Response.json({ error: "owner must be a Solana address" }, { status: 400 });
+    return Response.json({ error: "The owner must be a Solana address." }, { status: 400 });
   }
   let mint;
   if (b.market && b.market.toUpperCase() !== "SPACEX") {
