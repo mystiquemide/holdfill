@@ -217,7 +217,7 @@ No database. State lives on chain (orders, fills) or in read-through caches:
 | `NEXT_PUBLIC_REPLICA_SPACEX` | client | Replica mint |
 | `NEXT_PUBLIC_REPLICA_SPCXX` | client | Replica mint |
 | `NEXT_PUBLIC_REPLICA_POOL` | client | Devnet DLMM pair |
-| `ISSUER_KEYPAIR` | server | Base58 or JSON secret for the faucet and the sync script. Never exposed to the client. |
+| `FAUCET_KEYPAIR` | server | JSON secret of the replica mint authority, used by the faucet. Separate from the issuer key, which is the program upgrade authority and never leaves the maintainer machine. Never exposed to the client. |
 | `KEEPER_KEYPAIR` | server | Fee payer for keeper transactions. Holds SOL only. |
 | `KEEPER_TICK_SECRET` | server | Required header for scheduled tick calls. Manual UI checks use a rate-limited public path. |
 
@@ -237,7 +237,7 @@ No database. State lives on chain (orders, fills) or in read-through caches:
 | Issuer uses the permanent delegate | Outside Holdfill's control. Disclosed on the order ticket. |
 | Sandwich around a fill | Holder always receives at least `required`. Documented as the guarantee boundary. |
 | Rounding against the holder | `required` is computed with a single division and rounds up. u128 math, checked arithmetic. |
-| Faucet abuse | Per-wallet and global limits, with slots taken before any network call so concurrent requests can't pass the same check. Replica tokens only. The issuer key keeps a reserve: no grants below 0.2 devnet SOL, no SOL top-ups below 0.5 SOL, at most six top-ups an hour. |
+| Faucet abuse | Per-wallet and global limits, with slots taken before any network call so concurrent requests can't pass the same check. Replica tokens only. A dedicated faucet key, not the issuer, is the replica mint authority and pays for grants; it keeps a reserve (no grants below 0.05 devnet SOL, no SOL top-ups below 0.15), and at most six top-ups an hour. |
 | Scripted requests exhaust the shared RPC quota | Per-client budgets per minute on every route that calls Solana RPC (position and orders 60, transactions 30, check now 20, faucet 6), answered with 429 and Retry-After. The client is the first `X-Forwarded-For` entry, which the Caddy proxy overwrites for untrusted clients (checked with spoofed values on the live preview). |
 | Price order outlives an issuer event registered after it | Accepted. `create_price_order` refuses an expiry past an existing event's deadline, but `execute` does not re-read events, so an event registered later does not shorten the order. The holder is not harmed: the order sells a token that is about to expire. |
 | Armed order activates inside its fallback window | By design. If the issuer's deadline is closer than the holder's fallback offset, the floor applies at once. The swap still pays the pool price; the floor is only the minimum. The app limits floors to 40 to 70%. |

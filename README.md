@@ -240,7 +240,7 @@ Create `web/.env.local`:
 HELIUS_API_KEY=your_helius_key
 KEEPER_KEYPAIR=[...]          # any devnet keypair with a little SOL, as a JSON array; pays for "Check now" fills
 KEEPER_TICK_SECRET=any-random-string
-# ISSUER_KEYPAIR=[...]        # only the replica mint authority can run the faucet; see below
+# FAUCET_KEYPAIR=[...]        # only the replica mint authority can run the faucet; see below
 ```
 
 Make a keeper keypair with `solana-keygen new -o keeper.json --no-bip39-passphrase`, fund it at [faucet.solana.com](https://faucet.solana.com), and paste the file's contents as `KEEPER_KEYPAIR`.

@@ -9,7 +9,7 @@ import {
 } from "@solana/spl-token";
 import { BN } from "@anchor-lang/core";
 import { loadProgram } from "../keeper/program";
-import { devnet, issuerKeypair, loadKeypair, readConfig } from "./lib/env";
+import { devnet, issuerKeypair, faucetKeypair, loadKeypair, readConfig } from "./lib/env";
 
 async function main() {
   const [holderPath, sizeArg, limitArg] = process.argv.slice(2);
@@ -34,7 +34,7 @@ async function main() {
     createAssociatedTokenAccountIdempotentInstruction(holder.publicKey, ata(SPCXX), holder.publicKey, SPCXX, TOKEN_2022_PROGRAM_ID),
   ), [holder]);
   const bal = (await getAccount(conn, ata(SPACEX), "confirmed", TOKEN_2022_PROGRAM_ID)).amount;
-  if (bal < size) await mintTo(conn, issuer, SPACEX, ata(SPACEX), issuer, size - bal, [], { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
+  if (bal < size) await mintTo(conn, issuer, SPACEX, ata(SPACEX), faucetKeypair(), size - bal, [], { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
 
   const tx = new Transaction();
   if (await conn.getAccountInfo(order)) {

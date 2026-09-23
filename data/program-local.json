@@ -1,11 +1,11 @@
 {
-  "ranAt": "2026-09-23T14:10:14.509Z",
+  "ranAt": "2026-09-23T17:36:34.078Z",
   "network": "local validator cloned from devnet",
   "results": [
     {
       "name": "register lifecycle event (SPACEX -> SPCXx, 5 shares per token, 12 Mar 2027)",
       "pass": true,
-      "detail": "5mZW1qDHeD2nh7NW"
+      "detail": "3LY15PSUNgfuJKRt"
     },
     {
       "name": "register event from a non-admin key",
@@ -15,7 +15,7 @@
     {
       "name": "holder A creates order: 0.5 raw, 40% limit, approval to order PDA",
       "pass": true,
-      "detail": "order 3iNwMhcW, delegate = order PDA, allowance 500000000"
+      "detail": "order GeJWVZRA, delegate = order PDA, allowance 500000000"
     },
     {
       "name": "substituted token program (legacy SPL Token)",
@@ -40,12 +40,12 @@
     {
       "name": "G2: order PDA signs DLMM swap2 through CPI as delegate (0.1 raw)",
       "pass": true,
-      "detail": "spent 0.1 raw, received 0.35135939 SPCXx (29.7% gap), order filled 100000000/500000000, keeper holds nothing, sig 2mcwddS4LvjVazTJ"
+      "detail": "spent 0.1 raw, received 0.34995746 SPCXx (30.0% gap), order filled 100000000/500000000, keeper holds nothing, sig 65PfQ4Ltq5cmRfPJ"
     },
     {
       "name": "second partial fill accumulates (0.2 raw)",
       "pass": true,
-      "detail": "filled 300000000/500000000, received 105407818"
+      "detail": "filled 300000000/500000000, received 104933025"
     },
     {
       "name": "holder A revokes and cancels in one transaction",
@@ -55,7 +55,7 @@
     {
       "name": "fill after revoke and cancel",
       "pass": true,
-      "detail": "Account does not exist or has no data 3iNwMhcW3kju4WzWNJHX7RtCpHRmcF8HpR86esqHCZk1"
+      "detail": "Account does not exist or has no data GeJWVZRA3XTNxAbwEeoPxqMBHmnBJcaDK4d62GSZ7kgC"
     },
     {
       "name": "fill below the holder's minimum (10% limit)",
@@ -75,7 +75,7 @@
     {
       "name": "order fills its full size and becomes Filled",
       "pass": true,
-      "detail": "filled 200000000/200000000, status Filled, received 70257039"
+      "detail": "filled 200000000/200000000, status Filled, received 69921571"
     },
     {
       "name": "fill on a filled order",
@@ -90,7 +90,7 @@
     {
       "name": "after the fallback date, the 50% floor applies and the order fills",
       "pass": true,
-      "detail": "filled 100000000/100000000 at the fallback floor, received 35100838"
+      "detail": "filled 100000000/100000000 at the fallback floor, received 34960785"
     },
     {
       "name": "fill after the issuer deadline",
@@ -100,7 +100,7 @@
     {
       "name": "price order: 0.5 ANTHROPIC at a $800 minimum, approval to order PDA",
       "pass": true,
-      "detail": "order 891sVVs4, min 800 USDC per token, expiry in 300 days"
+      "detail": "order AFfuRcaB, min 800 USDC per token, expiry in 300 days"
     },
     {
       "name": "output token program swapped for Token-2022 while USDC is classic",
@@ -110,7 +110,7 @@
     {
       "name": "price order fills into classic-token USDC above the holder's price (0.2 token)",
       "pass": true,
-      "detail": "0.2 token -> 184.544204 USDC (922.72 per token, min 800)"
+      "detail": "0.2 token -> 183.807869 USDC (919.04 per token, min 800)"
     },
     {
       "name": "keeper fills the rest of the price order into USDC",
@@ -140,7 +140,7 @@
     {
       "name": "arm an ANTHROPIC order before any issuer event (20% limit, fallback 30 days before)",
       "pass": true,
-      "detail": "order EmdTo5Tb armed, approval to order PDA, no output or pool yet"
+      "detail": "order 2Xq8Gnsw armed, approval to order PDA, no output or pool yet"
     },
     {
       "name": "revoke an armed order",
@@ -170,7 +170,7 @@
     {
       "name": "issuer registers the event: ANTHROPIC into USDC at 1,100 per token (local only)",
       "pass": true,
-      "detail": "21sfpNPcHkWnoEcS"
+      "detail": "3QKSFg55TsvWyqex"
     },
     {
       "name": "anyone activates the armed order with the issuer's terms",
@@ -180,7 +180,7 @@
     {
       "name": "the activated order fills above its 20% limit (0.1 token)",
       "pass": true,
-      "detail": "0.1 token -> 92.179922 USDC (min 88 = 1,100 x 0.1 x 80%)"
+      "detail": "0.1 token -> 91.812122 USDC (min 88 = 1,100 x 0.1 x 80%)"
     },
     {
       "name": "activate an order that is already active",
@@ -195,7 +195,7 @@
     {
       "name": "keeper creates the holder's output account when it is missing, then fills",
       "pass": true,
-      "detail": "account created for the holder, 92.179922 USDC received, keeper holds nothing"
+      "detail": "account created for the holder, 91.812122 USDC received, keeper holds nothing"
     },
     {
       "name": "fill after the issuer changed the transfer fee",

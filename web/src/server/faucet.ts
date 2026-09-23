@@ -14,10 +14,11 @@ const SOL_TOPUP = 0.02 * LAMPORTS_PER_SOL;   // covers order rent and fees
 const SOL_TOPUP_BELOW = 0.005 * LAMPORTS_PER_SOL;
 const WALLET_COOLDOWN_MS = 60 * 60 * 1000;
 const GLOBAL_LIMIT_PER_HOUR = 20;
-// The issuer key also pays ATA rent for every grant. Keep a reserve so fresh wallets can't drain it.
+// The faucet key pays ATA rent and SOL top-ups. It holds nothing else, so the reserves only keep it
+// from running dry mid-transaction.
 const SOL_TOPUPS_PER_HOUR = 6;
-const ISSUER_RESERVE_FOR_TOPUPS = 0.5 * LAMPORTS_PER_SOL;
-const ISSUER_RESERVE_FOR_GRANTS = 0.2 * LAMPORTS_PER_SOL;
+const ISSUER_RESERVE_FOR_TOPUPS = 0.15 * LAMPORTS_PER_SOL;
+const ISSUER_RESERVE_FOR_GRANTS = 0.05 * LAMPORTS_PER_SOL;
 const HOUR = 60 * 60 * 1000;
 const hhmm = (ms: number) => new Date(ms).toISOString().slice(11, 16);
 
@@ -52,10 +53,10 @@ export async function grant(owner: PublicKey, market?: UsdcMarket): Promise<Fauc
   if (balance >= HOLDING_CAP_RAW) {
     return { ok: false, status: 429, error: `You already have ${Number(balance) / 1e9} replica ${symbol}, enough to set an order.` };
   }
-  if (!process.env.ISSUER_KEYPAIR) {
+  if (!process.env.FAUCET_KEYPAIR) {
     return { ok: false, status: 503, error: "This copy of Holdfill has no faucet key. Get replica tokens from the faucet at holdfill.midelabs.xyz, then set orders here." };
   }
-  const issuer = keypairFromEnv("ISSUER_KEYPAIR");
+  const issuer = keypairFromEnv("FAUCET_KEYPAIR"); // replica mint authority, not the program upgrade authority
   const issuerLamports = await conn.getBalance(issuer.publicKey, "confirmed");
   if (issuerLamports < ISSUER_RESERVE_FOR_GRANTS) {
     return { ok: false, status: 503, error: "The devnet faucet is out of SOL for now. Try the recorded demo, or come back later." };

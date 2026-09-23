@@ -7,7 +7,7 @@ import { Keypair, PublicKey, sendAndConfirmTransaction } from "@solana/web3.js";
 import { BADGE_GATED, type MintSpec, createReplicaMint, mintInventory } from "./lib/replica";
 import BN from "bn.js";
 import DLMM, { StrategyType, deriveLbPairWithPresetParamWithIndexKey } from "@meteora-ag/dlmm";
-import { DLMM_PROGRAM_ID, MAINNET, devnet, issuerKeypair, mainnet, readConfig, writeConfig } from "./lib/env";
+import { DLMM_PROGRAM_ID, MAINNET, devnet, issuerKeypair, faucetKeypair, mainnet, readConfig, writeConfig } from "./lib/env";
 
 const BIN_STEP = 10;               // only bin step with a preset on devnet (checked 23 Sep 2026)
 const BINS_PER_POSITION = 69;
@@ -52,7 +52,7 @@ async function main() {
   const spacex = new PublicKey(cfg.replicaSpacex);
   const spcxx = new PublicKey(cfg.replicaSpcxx);
 
-  await mintInventory(conn, issuer, spacex, INVENTORY_SPACEX);
+  await mintInventory(conn, issuer, spacex, INVENTORY_SPACEX, faucetKeypair());
   await mintInventory(conn, issuer, spcxx, INVENTORY_SPCXX);
   console.log("inventory minted");
 

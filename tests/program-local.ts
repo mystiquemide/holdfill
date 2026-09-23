@@ -14,7 +14,7 @@ import {
 import { AnchorProvider, BN, Program, Wallet } from "@anchor-lang/core";
 import { buildExecuteIx, OrderAccount } from "../keeper/execute-ix";
 import { tick } from "../keeper/tick";
-import { ROOT, issuerKeypair, readConfig } from "../scripts/lib/env";
+import { ROOT, faucetKeypair, issuerKeypair, readConfig } from "../scripts/lib/env";
 
 const conn = new Connection("http://127.0.0.1:8899", "confirmed");
 const cfg = readConfig();
@@ -31,6 +31,7 @@ const FALLBACK = Math.floor(Date.parse("2027-03-01T00:00:00Z") / 1000);
 const idl = JSON.parse(fs.readFileSync(path.join(ROOT, "idl/holdfill_orders.json"), "utf8"));
 
 const issuer = issuerKeypair();
+const faucet = faucetKeypair(); // mint authority of the cloned replica mints
 const keeper = Keypair.generate();
 const program = new Program(idl, new AnchorProvider(conn, new Wallet(issuer), { commitment: "confirmed" }));
 const results: { name: string; pass: boolean; detail: string }[] = [];
@@ -83,7 +84,7 @@ async function newHolder(rawTokens: bigint): Promise<Keypair> {
     createAssociatedTokenAccountIdempotentInstruction(h.publicKey, ata(h.publicKey, SPACEX), h.publicKey, SPACEX, TOKEN_2022_PROGRAM_ID),
     createAssociatedTokenAccountIdempotentInstruction(h.publicKey, ata(h.publicKey, SPCXX), h.publicKey, SPCXX, TOKEN_2022_PROGRAM_ID),
   ), [h]);
-  await mintTo(conn, issuer, SPACEX, ata(h.publicKey, SPACEX), issuer, rawTokens, [], { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
+  await mintTo(conn, issuer, SPACEX, ata(h.publicKey, SPACEX), faucet, rawTokens, [], { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
   return h;
 }
 
@@ -272,7 +273,7 @@ async function main() {
       createAssociatedTokenAccountIdempotentInstruction(h.publicKey, ata(h.publicKey, ANTH), h.publicKey, ANTH, TOKEN_2022_PROGRAM_ID),
       createAssociatedTokenAccountIdempotentInstruction(h.publicKey, usdcAta(h.publicKey), h.publicKey, USDC, TOKEN_PROGRAM_ID),
     ), [h]);
-    await mintTo(conn, issuer, ANTH, ata(h.publicKey, ANTH), issuer, raw, [], { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
+    await mintTo(conn, issuer, ANTH, ata(h.publicKey, ANTH), faucet, raw, [], { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
     return h;
   }
 
@@ -378,7 +379,7 @@ async function main() {
   await sendAndConfirmTransaction(conn, new Transaction().add(
     createAssociatedTokenAccountIdempotentInstruction(r3.publicKey, ata(r3.publicKey, ANTH), r3.publicKey, ANTH, TOKEN_2022_PROGRAM_ID),
   ), [r3]);
-  await mintTo(conn, issuer, ANTH, ata(r3.publicKey, ANTH), issuer, 1_000_000_000n, [], { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
+  await mintTo(conn, issuer, ANTH, ata(r3.publicKey, ANTH), faucet, 1_000_000_000n, [], { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
   const pdaR3 = await armOrder(r3, { size: 100_000_000n, limitBps: 2000, days: 30 });
   await expectPass("keeper leaves an armed order alone while no event exists", async () => {
     const out = await tick({ connection: conn, program, keeper, cluster: "devnet", onlyOrder: pdaR2 });

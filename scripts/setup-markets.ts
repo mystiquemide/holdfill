@@ -8,7 +8,7 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID, createMint, getOrCreateAssociatedTokenAccount, mintTo } from "@solana/spl-token";
 import DLMM from "@meteora-ag/dlmm";
-import { devnet, issuerKeypair, mainnet, readConfig, writeConfig } from "./lib/env";
+import { devnet, issuerKeypair, faucetKeypair, mainnet, readConfig, writeConfig } from "./lib/env";
 import { createPair, seedLiquidity } from "./lib/pool";
 import { createReplicaMint, mintInventory } from "./lib/replica";
 
@@ -66,7 +66,7 @@ async function main() {
       writeConfig(cfg);
     }
     const mint = new PublicKey(m.mint);
-    await mintInventory(conn, issuer, mint, TOKEN_INVENTORY);
+    await mintInventory(conn, issuer, mint, TOKEN_INVENTORY, faucetKeypair());
 
     if (!m.pool) {
       const live = await DLMM.create(mainnet(), new PublicKey(main.usdcPool));

@@ -30,6 +30,10 @@ export function loadKeypair(envName: string, fallbackPath: string): Keypair {
 
 export const issuerKeypair = () => loadKeypair("ISSUER_KEYPAIR_PATH", "/root/.config/holdfill/issuer.json");
 
+/** Mint authority of the replica PreStocks (SPACEX, ANTHROPIC, OPENAI). Kept apart from the issuer,
+ * which is the program's upgrade authority, so the web faucet never holds that key. */
+export const faucetKeypair = () => loadKeypair("FAUCET_KEYPAIR_PATH", "/root/.config/holdfill/faucet.json");
+
 export type DevnetConfig = {
   cluster: "devnet";
   issuer?: string;

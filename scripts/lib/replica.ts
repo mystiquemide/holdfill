@@ -54,10 +54,11 @@ export async function createReplicaMint(conn: Connection, issuer: Keypair, spec:
   return mint.publicKey;
 }
 
-export async function mintInventory(conn: Connection, issuer: Keypair, mint: PublicKey, amount: bigint) {
+/** Tops up the issuer's inventory of `mint`. `authority` is the mint authority (the issuer unless given). */
+export async function mintInventory(conn: Connection, issuer: Keypair, mint: PublicKey, amount: bigint, authority: Keypair = issuer) {
   const ata = await getOrCreateAssociatedTokenAccount(conn, issuer, mint, issuer.publicKey, false, "confirmed", undefined, TOKEN_2022_PROGRAM_ID);
   if (ata.amount >= amount) return ata.address;
-  await mintTo(conn, issuer, mint, ata.address, issuer, amount - ata.amount, [], { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
+  await mintTo(conn, issuer, mint, ata.address, authority, amount - ata.amount, [], { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
   return ata.address;
 }
 

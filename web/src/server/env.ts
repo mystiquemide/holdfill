@@ -43,7 +43,7 @@ export const mainnet = () => (mainnetConn ??= new Connection(`https://mainnet.he
 export const devnet = () => (devnetConn ??= new Connection(`https://devnet.helius-rpc.com/?api-key=${heliusKey()}`, "confirmed"));
 
 /** Reads a keypair from an env var holding the JSON secret key array. */
-export function keypairFromEnv(name: "KEEPER_KEYPAIR" | "ISSUER_KEYPAIR"): Keypair {
+export function keypairFromEnv(name: "KEEPER_KEYPAIR" | "FAUCET_KEYPAIR"): Keypair {
   const raw = process.env[name];
   if (!raw) throw new Error(`${name} is not set`);
   return Keypair.fromSecretKey(Uint8Array.from(JSON.parse(raw)));

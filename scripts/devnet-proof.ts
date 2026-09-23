@@ -14,7 +14,7 @@ import {
 } from "@solana/spl-token";
 import { AnchorProvider, BN, Program, Wallet } from "@anchor-lang/core";
 import { buildExecuteIx, OrderAccount } from "../keeper/execute-ix";
-import { ROOT, devnet, issuerKeypair, loadKeypair, readConfig, writeConfig } from "./lib/env";
+import { ROOT, devnet, issuerKeypair, faucetKeypair, loadKeypair, readConfig, writeConfig } from "./lib/env";
 
 const EXPIRY = Math.floor(Date.parse("2027-03-12T23:59:00Z") / 1000);
 const FALLBACK = Math.floor(Date.parse("2027-03-01T00:00:00Z") / 1000);
@@ -72,7 +72,7 @@ async function main() {
       createAssociatedTokenAccountIdempotentInstruction(h.publicKey, ata(h.publicKey, SPCXX), h.publicKey, SPCXX, TOKEN_2022_PROGRAM_ID),
     ), [h]);
     const bal = (await getAccount(conn, ata(h.publicKey, SPACEX), "confirmed", TOKEN_2022_PROGRAM_ID)).amount;
-    if (bal < 1_000_000_000n) await mintTo(conn, issuer, SPACEX, ata(h.publicKey, SPACEX), issuer, 1_000_000_000n - bal, [], { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
+    if (bal < 1_000_000_000n) await mintTo(conn, issuer, SPACEX, ata(h.publicKey, SPACEX), faucetKeypair(), 1_000_000_000n - bal, [], { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
   }
 
   async function createOrderTx(h: Keypair, size: BN, limitBps: number): Promise<string> {

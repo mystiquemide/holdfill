@@ -18,7 +18,7 @@ import {
 import { AnchorProvider, BN, Program, Wallet } from "@anchor-lang/core";
 import { buildExecuteIx, OrderAccount } from "../keeper/execute-ix";
 import { tick } from "../keeper/tick";
-import { ROOT, devnet, issuerKeypair, loadKeypair, readConfig, writeConfig } from "./lib/env";
+import { ROOT, devnet, issuerKeypair, faucetKeypair, loadKeypair, readConfig, writeConfig } from "./lib/env";
 import { createPair, seedLiquidity } from "./lib/pool";
 import { createReplicaMint, mintInventory } from "./lib/replica";
 
@@ -83,7 +83,7 @@ async function main() {
     createAssociatedTokenAccountIdempotentInstruction(holder.publicKey, usdcAta(holder.publicKey), holder.publicKey, USDC, TOKEN_PROGRAM_ID),
   ), [holder]);
   const anthBal = (await getAccount(conn, ata2022(holder.publicKey, ANTH), "confirmed", TOKEN_2022_PROGRAM_ID)).amount;
-  if (anthBal < 1_000_000_000n) await mintTo(conn, issuer, ANTH, ata2022(holder.publicKey, ANTH), issuer, 1_000_000_000n - anthBal, [], { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
+  if (anthBal < 1_000_000_000n) await mintTo(conn, issuer, ANTH, ata2022(holder.publicKey, ANTH), faucetKeypair(), 1_000_000_000n - anthBal, [], { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
 
   const priceOrder = async (size: bigint, usd: number) => {
     const pda = orderFor(holder.publicKey, ANTH);
