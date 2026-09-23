@@ -27,7 +27,8 @@
     "test:keeper-devnet": "tsx tests/keeper-devnet.ts",
     "test:backtest": "tsx --test web/src/server/backtest.test.ts",
     "history:refresh": "tsx scripts/refresh-history.ts",
-    "case-study": "tsx scripts/case-study.ts"
+    "case-study": "tsx scripts/case-study.ts",
+    "test:props": "cargo test -p holdfill_orders --test math_props && tsx --test keeper/props.test.ts keeper/parity.test.ts"
   },
   "dependencies": {
     "@anchor-lang/core": "1.2.0",
@@ -39,6 +40,7 @@
   "devDependencies": {
     "@types/bn.js": "5.2.0",
     "@types/node": "26.6.2",
+    "fast-check": "4.10.2",
     "tsx": "4.23.15",
     "typescript": "5.9.3"
   },

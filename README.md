@@ -221,8 +221,11 @@ The program is unaudited and deployed only on devnet. Accepted risks are listed 
 | Order math (Rust) | `npm run test:program` | 9 of 9 | anyone |
 | Keeper math matches the program | `npm run test:keeper-math` | 7 of 7 | anyone |
 | Backtest | `npm run test:backtest` | 6 of 6 | anyone |
+| Property tests: 8 on the program math, 4 on keeper fill sizing, 10,000 random cases each, plus 20,000 vectors replayed from Rust through the keeper | `npm run test:props` | 14 of 14 | anyone |
 | Fork proof on cloned mainnet state | `npm run proof:fork` | 7 of 7 | anyone with a Helius key and the toolchain |
 | Program suite on a local validator cloned from the devnet markets | `npm run test:local` | 40 of 40 ([result](data/program-local.json)) | maintainers: it registers lifecycle events, which needs the event admin key |
+
+The property tests check that every minimum is the exact ceiling of the holder's terms (never below, never a unit above), that minimums grow with size and never shrink when a fill is split, that price orders never discount, that the fallback schedule stays in bounds, and that every fill the keeper picks meets the minimum and is the largest size that does. Planting a rounding bug in either the program or the keeper makes them fail.
 
 The program suite covers fills, partial fills, the fallback floor, the deadline, fee changes, substituted token programs, host fees, wrong reserves and output accounts, overfills, revoke, price orders into classic-token USDC, pools that trade another pair, expiry, arming, activation before and after an event, and the keeper's own paths.
 
@@ -267,6 +270,7 @@ Run the tests and the fork proof:
 npm run test:program
 npm run test:keeper-math
 npm run test:backtest
+npm run test:props
 npm run build:program
 HELIUS_API_KEY=your_helius_key npm run proof:fork
 ```

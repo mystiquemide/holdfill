@@ -39,3 +39,18 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Rust unit tests
         run: cargo test -p holdfill_orders --lib
+
+  properties:
+    name: Property tests and Rust/keeper parity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.89.0
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 8 Rust and 4 keeper properties, 10,000 cases each, plus 20,000 parity vectors
+        run: npm run test:props
