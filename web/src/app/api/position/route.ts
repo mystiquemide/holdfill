@@ -2,8 +2,11 @@ import { PublicKey } from "@solana/web3.js";
 import type { NextRequest } from "next/server";
 import { getPosition } from "@/server/position";
 import { getMarketPosition, usdcMarket } from "@/server/usdc-markets";
+import { rateLimit } from "@/server/rate-limit";
 
 export async function GET(request: NextRequest) {
+  const limited = rateLimit(request, "position", 60);
+  if (limited) return limited;
   const raw = request.nextUrl.searchParams.get("owner") ?? "";
   let owner: PublicKey;
   try {

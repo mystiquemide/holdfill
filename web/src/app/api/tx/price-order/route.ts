@@ -2,9 +2,12 @@ import { PublicKey } from "@solana/web3.js";
 import type { NextRequest } from "next/server";
 import { TxInputError } from "@/server/tx";
 import { buildPriceOrder } from "@/server/usdc-markets";
+import { rateLimit } from "@/server/rate-limit";
 
 /** POST { owner, market, sizeRaw, usdPerToken, expiryDays } returns an unsigned devnet price order for the holder to sign. */
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, "tx", 30);
+  if (limited) return limited;
   const b = (await request.json().catch(() => ({}))) as Record<string, unknown>;
   let owner: PublicKey;
   let sizeRaw: bigint;

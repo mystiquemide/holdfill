@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { loadProgram } from "../../../../../../keeper/program";
 import { tick } from "../../../../../../keeper/tick";
 import { devnet, keypairFromEnv } from "@/server/env";
+import { rateLimit } from "@/server/rate-limit";
 
 // A fill waits for a devnet confirmation, so allow more than the default duration.
 export const maxDuration = 60;
@@ -16,6 +17,8 @@ const MIN_INTERVAL_MS = 5_000;
  * agreed to. A scheduled full pass needs the KEEPER_TICK_SECRET header.
  */
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, "tick", 20);
+  if (limited) return limited;
   const body = (await request.json().catch(() => ({}))) as { order?: string };
   const secret = process.env.KEEPER_TICK_SECRET;
   const fullPass = !!secret && request.headers.get("x-keeper-secret") === secret;

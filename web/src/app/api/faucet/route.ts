@@ -3,11 +3,14 @@ import type { NextRequest } from "next/server";
 import { grant } from "@/server/faucet";
 import { TxInputError } from "@/server/tx";
 import { usdcMarket } from "@/server/usdc-markets";
+import { rateLimit } from "@/server/rate-limit";
 
 export const maxDuration = 60;
 
 /** POST { owner, market? } sends 1 replica token, SPACEX by default (and a little devnet SOL if the wallet is empty). Devnet only. */
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, "faucet", 6);
+  if (limited) return limited;
   const body = (await request.json().catch(() => ({}))) as { owner?: string; market?: string };
   let owner: PublicKey;
   try {

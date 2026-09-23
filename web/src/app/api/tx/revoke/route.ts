@@ -2,9 +2,12 @@ import { PublicKey } from "@solana/web3.js";
 import type { NextRequest } from "next/server";
 import { buildRevoke } from "@/server/tx";
 import { usdcMarket } from "@/server/usdc-markets";
+import { rateLimit } from "@/server/rate-limit";
 
 /** POST { owner, market? } returns an unsigned devnet transaction that closes the order and removes the approval. */
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, "tx", 30);
+  if (limited) return limited;
   const b = (await request.json().catch(() => ({}))) as { owner?: string; market?: string };
   let owner: PublicKey;
   try {
