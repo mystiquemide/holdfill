@@ -22,7 +22,9 @@
     "proof:fork": "tsx scripts/proof-fork.ts",
     "keeper": "tsx keeper/worker.ts",
     "test:keeper-math": "tsx --test keeper/math.test.ts",
-    "test:keeper-devnet": "tsx tests/keeper-devnet.ts"
+    "test:keeper-devnet": "tsx tests/keeper-devnet.ts",
+    "test:backtest": "tsx --test web/src/server/backtest.test.ts",
+    "history:refresh": "tsx scripts/refresh-history.ts"
   },
   "dependencies": {
     "@anchor-lang/core": "1.2.0",

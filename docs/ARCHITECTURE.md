@@ -160,7 +160,7 @@ The fork test proved a keypair delegate can swap from the owner's account. G2 pr
 - SPCXx USD: Jupiter price API.
 - Executable gap: `1 - quote.outAmount / entitlement` for a stated size, including the 1% transfer fee and slippage. Used for the hero, ticket, and order card.
 - Mid gap: from the pool's active bin price. Shown only as a secondary line labeled "pool mid".
-- Daily close gap: from GeckoTerminal daily closes. Used only by the history chart and backtest.
+- Daily close gap: `1 - close / 5`, where close is the pool's daily close priced in SPCXx (GeckoTerminal OHLCV with `currency=token`): SPCXx received per raw SPACEX on the day's last trade, fees included, no USD conversion. Days without a trade are absent. Used only by the history chart and backtest. The backtest counts a day as a fill when its close gap is at or under the limit.
 - Pyth was evaluated and dropped on 23 Sep: stock and xStock feeds require a Pyth Pro entitlement the project does not have. The order program never depended on an oracle.
 
 ## 7. API routes
@@ -182,7 +182,7 @@ All return JSON with `network` and `asOf` fields.
 
 No database. State lives on chain (orders, fills) or in read-through caches:
 - `data/haircut-history.json`: committed snapshot of daily closes from GeckoTerminal, refreshed by `scripts/refresh-history.ts`.
-- In-memory cache per route: market 15 s, history 10 min.
+- In-memory cache: market 15 s. History and backtest read the committed snapshot; only the live point in `/api/history` comes from the market cache.
 - `data/case-study.json` and `data/proof-fork.json`: committed outputs of the case-study and fork-proof scripts, each with the command, slot, and timestamp that produced it.
 - Fork proof state: everything is cloned from mainnet except three disclosed substitutions, listed in `data/proof-fork.json`. The holder's SPACEX account is a copy of the pool's real reserve account with 1 raw token. The lifecycle event is written into genesis, so no admin key is needed. The mint's pause and fee authorities point at a local key, so the run can act as the issuer through the real Token-2022 program. Epochs are 32 slots starting at mainnet's epoch, so the fee in force matches mainnet.
 - Rate limit store for the faucet: in-memory map plus a devnet memo check of recent faucet transfers so limits survive cold starts.

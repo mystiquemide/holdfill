@@ -97,7 +97,7 @@ DEADLINE     12 Mar 2027                                    171 days left
 ### 6.3 Order ticket (`OrderTicket`)
 Fields, in order:
 1. Amount to convert: number input in displayed SPACEX shares, with MAX. Helper: "= 0.2000 raw tokens".
-2. Maximum haircut: slider 0 to 60% in 1% steps plus number input. Default 20%. Helper shows today's gap and the backtest line: "Would have filled on 6 of 71 days since listing."
+2. Maximum haircut: slider 0 to 60% in 1% steps plus number input. Default 20%. Helper shows today's gap and the backtest line: "Would have filled on 11 of 71 trading days since listing." (from `/api/backtest`, never hard-coded)
 3. Fallback date: date input. Default 1 Mar 2027. Max 11 Mar 2027.
 4. Fallback floor: select 40%, 50%, 60%, 70% of entitlement. Default 50%.
 Preview block: "You will receive at least 0.8000 SPCXx per share before 1 Mar 2027, and at least 0.5000 after. Nothing converts after 12 Mar 2027."
@@ -114,7 +114,7 @@ Label on top, value in Geist Mono 28px, one-line source under it ("Jupiter token
 Time, event (Created, Filled, Check, Rejected, Revoked), amount in, amount out, realized haircut, signature link to Solana Explorer with the right cluster.
 
 ### 6.7 History chart (`HaircutChart`)
-Line of daily haircut since 12 Jun 2026. Y axis 0 to 45%, inverted is not allowed. Horizontal `--hold` line at the viewer's limit. Days at or below the limit get a `--fill` marker. Vertical dashed markers for lockup release dates (9 Sep, 24 Sep, 9 Oct, 24 Oct, 8 Dec). Tooltip: date, haircut, pool volume. Hand-built SVG, no chart library.
+Line of daily haircut since 12 Jun 2026. Y axis 0 to 45%, inverted is not allowed. Horizontal `--hold` line at the viewer's limit. Days at or below the limit get a `--fill` marker. Vertical dashed markers for the dated lockup releases in `/api/history` (6 Aug, 20 Aug, 9 Sep, 24 Sep, 9 Oct, 24 Oct, 8 Dec). Tooltip: date, haircut, pool volume. Hand-built SVG, no chart library.
 
 ### 6.8 Buttons
 Primary: `--hold` fill. Secondary: `--surface-2` fill, `--line` border. Destructive text button: `--deadline`. Heights 40 desktop, 44 mobile.
@@ -231,7 +231,7 @@ Partial: label PARTIAL, "Filled 2.0000 / 5.0000 shares. Waiting for liquidity at
 +------------------------------------------------------------------------+
 | EVIDENCE  LIVE MAINNET                                                 |
 | The gap since listing       [HaircutChart, limit line, unlock markers] |
-| Your limit would have filled on 6 of 71 days. First: 13 Jun 2026.      |
+| Your limit would have filled on 11 of 71 trading days. First: 4 Aug.   |
 |------------------------------------------------------------------------|
 | No order type exists today   [ Run check ]                             |
 | POST lite-api.jup.ag/trigger/v1/createOrder  (checked 14:02 UTC)       |

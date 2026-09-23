@@ -1,0 +1,473 @@
+{
+  "network": "mainnet",
+  "pool": "F9oJK3UC6bLVcAoYEZPHNteZACb7YzdZw7FHad4KFC6B",
+  "source": "GeckoTerminal daily OHLCV for F9oJK3UC6bLVcAoYEZPHNteZACb7YzdZw7FHad4KFC6B, priced in SPCXx (close), volume in USD",
+  "method": "gapPct = 1 - close / 5, where close is SPCXx received per raw SPACEX on the day's last trade (fees included) and 5 SPCXx is the entitlement per raw token",
+  "fetchedAt": "2026-09-23T06:50:54.993Z",
+  "firstDay": "2026-06-12",
+  "lastDay": "2026-09-22",
+  "days": [
+    {
+      "date": "2026-06-12",
+      "closeSpcxxPerToken": 3.286061,
+      "gapPct": 34.28,
+      "volumeUsd": 229922
+    },
+    {
+      "date": "2026-06-13",
+      "closeSpcxxPerToken": 3.892004,
+      "gapPct": 22.16,
+      "volumeUsd": 44334
+    },
+    {
+      "date": "2026-06-15",
+      "closeSpcxxPerToken": 3.500201,
+      "gapPct": 30,
+      "volumeUsd": 59830
+    },
+    {
+      "date": "2026-06-16",
+      "closeSpcxxPerToken": 3.055533,
+      "gapPct": 38.89,
+      "volumeUsd": 61876
+    },
+    {
+      "date": "2026-06-17",
+      "closeSpcxxPerToken": 3.666181,
+      "gapPct": 26.68,
+      "volumeUsd": 137351
+    },
+    {
+      "date": "2026-06-18",
+      "closeSpcxxPerToken": 3.24351,
+      "gapPct": 35.13,
+      "volumeUsd": 30610
+    },
+    {
+      "date": "2026-06-19",
+      "closeSpcxxPerToken": 3.21139,
+      "gapPct": 35.77,
+      "volumeUsd": 13582
+    },
+    {
+      "date": "2026-06-20",
+      "closeSpcxxPerToken": 3.148119,
+      "gapPct": 37.04,
+      "volumeUsd": 15893
+    },
+    {
+      "date": "2026-06-21",
+      "closeSpcxxPerToken": 3.116947,
+      "gapPct": 37.66,
+      "volumeUsd": 1256
+    },
+    {
+      "date": "2026-06-22",
+      "closeSpcxxPerToken": 3.523103,
+      "gapPct": 29.54,
+      "volumeUsd": 96155
+    },
+    {
+      "date": "2026-06-23",
+      "closeSpcxxPerToken": 3.308705,
+      "gapPct": 33.83,
+      "volumeUsd": 47967
+    },
+    {
+      "date": "2026-06-24",
+      "closeSpcxxPerToken": 3.308704,
+      "gapPct": 33.83,
+      "volumeUsd": 2808
+    },
+    {
+      "date": "2026-06-25",
+      "closeSpcxxPerToken": 3.308704,
+      "gapPct": 33.83,
+      "volumeUsd": 9552
+    },
+    {
+      "date": "2026-06-26",
+      "closeSpcxxPerToken": 3.308701,
+      "gapPct": 33.83,
+      "volumeUsd": 176
+    },
+    {
+      "date": "2026-06-28",
+      "closeSpcxxPerToken": 3.308704,
+      "gapPct": 33.83,
+      "volumeUsd": 6073
+    },
+    {
+      "date": "2026-06-29",
+      "closeSpcxxPerToken": 3.275938,
+      "gapPct": 34.48,
+      "volumeUsd": 7590
+    },
+    {
+      "date": "2026-06-30",
+      "closeSpcxxPerToken": 3.629856,
+      "gapPct": 27.4,
+      "volumeUsd": 16421
+    },
+    {
+      "date": "2026-07-01",
+      "closeSpcxxPerToken": 3.684069,
+      "gapPct": 26.32,
+      "volumeUsd": 206001
+    },
+    {
+      "date": "2026-07-02",
+      "closeSpcxxPerToken": 3.702816,
+      "gapPct": 25.94,
+      "volumeUsd": 3747
+    },
+    {
+      "date": "2026-07-03",
+      "closeSpcxxPerToken": 3.308702,
+      "gapPct": 33.83,
+      "volumeUsd": 2548
+    },
+    {
+      "date": "2026-07-06",
+      "closeSpcxxPerToken": 3.702817,
+      "gapPct": 25.94,
+      "volumeUsd": 1586
+    },
+    {
+      "date": "2026-07-07",
+      "closeSpcxxPerToken": 3.739846,
+      "gapPct": 25.2,
+      "volumeUsd": 7512
+    },
+    {
+      "date": "2026-07-08",
+      "closeSpcxxPerToken": 3.781462,
+      "gapPct": 24.37,
+      "volumeUsd": 15050
+    },
+    {
+      "date": "2026-07-09",
+      "closeSpcxxPerToken": 3.408437,
+      "gapPct": 31.83,
+      "volumeUsd": 798
+    },
+    {
+      "date": "2026-07-11",
+      "closeSpcxxPerToken": 3.777276,
+      "gapPct": 24.45,
+      "volumeUsd": 0
+    },
+    {
+      "date": "2026-07-12",
+      "closeSpcxxPerToken": 3.086088,
+      "gapPct": 38.28,
+      "volumeUsd": 274445
+    },
+    {
+      "date": "2026-07-13",
+      "closeSpcxxPerToken": 3.419489,
+      "gapPct": 31.61,
+      "volumeUsd": 24476
+    },
+    {
+      "date": "2026-07-14",
+      "closeSpcxxPerToken": 3.419489,
+      "gapPct": 31.61,
+      "volumeUsd": 1092
+    },
+    {
+      "date": "2026-07-15",
+      "closeSpcxxPerToken": 3.453683,
+      "gapPct": 30.93,
+      "volumeUsd": 23798
+    },
+    {
+      "date": "2026-07-16",
+      "closeSpcxxPerToken": 3.618396,
+      "gapPct": 27.63,
+      "volumeUsd": 19681
+    },
+    {
+      "date": "2026-07-17",
+      "closeSpcxxPerToken": 3.512255,
+      "gapPct": 29.75,
+      "volumeUsd": 13081
+    },
+    {
+      "date": "2026-07-18",
+      "closeSpcxxPerToken": 3.485019,
+      "gapPct": 30.3,
+      "volumeUsd": 5965
+    },
+    {
+      "date": "2026-07-20",
+      "closeSpcxxPerToken": 3.872455,
+      "gapPct": 22.55,
+      "volumeUsd": 8659
+    },
+    {
+      "date": "2026-07-21",
+      "closeSpcxxPerToken": 3.443051,
+      "gapPct": 31.14,
+      "volumeUsd": 10023
+    },
+    {
+      "date": "2026-07-22",
+      "closeSpcxxPerToken": 3.891697,
+      "gapPct": 22.17,
+      "volumeUsd": 8638
+    },
+    {
+      "date": "2026-07-25",
+      "closeSpcxxPerToken": 3.891697,
+      "gapPct": 22.17,
+      "volumeUsd": 132
+    },
+    {
+      "date": "2026-07-27",
+      "closeSpcxxPerToken": 3.891712,
+      "gapPct": 22.17,
+      "volumeUsd": 1825
+    },
+    {
+      "date": "2026-07-28",
+      "closeSpcxxPerToken": 3.547379,
+      "gapPct": 29.05,
+      "volumeUsd": 1717
+    },
+    {
+      "date": "2026-07-30",
+      "closeSpcxxPerToken": 3.654868,
+      "gapPct": 26.9,
+      "volumeUsd": 12916
+    },
+    {
+      "date": "2026-08-03",
+      "closeSpcxxPerToken": 3.841287,
+      "gapPct": 23.17,
+      "volumeUsd": 12220
+    },
+    {
+      "date": "2026-08-04",
+      "closeSpcxxPerToken": 4.090213,
+      "gapPct": 18.2,
+      "volumeUsd": 11176
+    },
+    {
+      "date": "2026-08-05",
+      "closeSpcxxPerToken": 4.257153,
+      "gapPct": 14.86,
+      "volumeUsd": 11377
+    },
+    {
+      "date": "2026-08-06",
+      "closeSpcxxPerToken": 4.298863,
+      "gapPct": 14.02,
+      "volumeUsd": 810
+    },
+    {
+      "date": "2026-08-07",
+      "closeSpcxxPerToken": 3.803269,
+      "gapPct": 23.93,
+      "volumeUsd": 5226
+    },
+    {
+      "date": "2026-08-08",
+      "closeSpcxxPerToken": 3.728036,
+      "gapPct": 25.44,
+      "volumeUsd": 3618
+    },
+    {
+      "date": "2026-08-09",
+      "closeSpcxxPerToken": 3.72833,
+      "gapPct": 25.43,
+      "volumeUsd": 2382
+    },
+    {
+      "date": "2026-08-10",
+      "closeSpcxxPerToken": 4.172611,
+      "gapPct": 16.55,
+      "volumeUsd": 5296
+    },
+    {
+      "date": "2026-08-11",
+      "closeSpcxxPerToken": 3.654762,
+      "gapPct": 26.9,
+      "volumeUsd": 1685
+    },
+    {
+      "date": "2026-08-12",
+      "closeSpcxxPerToken": 3.618625,
+      "gapPct": 27.63,
+      "volumeUsd": 2458
+    },
+    {
+      "date": "2026-08-17",
+      "closeSpcxxPerToken": 3.582852,
+      "gapPct": 28.34,
+      "volumeUsd": 1269
+    },
+    {
+      "date": "2026-08-18",
+      "closeSpcxxPerToken": 3.582848,
+      "gapPct": 28.34,
+      "volumeUsd": 1
+    },
+    {
+      "date": "2026-08-19",
+      "closeSpcxxPerToken": 3.582853,
+      "gapPct": 28.34,
+      "volumeUsd": 1662
+    },
+    {
+      "date": "2026-08-20",
+      "closeSpcxxPerToken": 3.98631,
+      "gapPct": 20.27,
+      "volumeUsd": 7356
+    },
+    {
+      "date": "2026-08-21",
+      "closeSpcxxPerToken": 4.00962,
+      "gapPct": 19.81,
+      "volumeUsd": 263
+    },
+    {
+      "date": "2026-08-25",
+      "closeSpcxxPerToken": 3.582853,
+      "gapPct": 28.34,
+      "volumeUsd": 2363
+    },
+    {
+      "date": "2026-08-27",
+      "closeSpcxxPerToken": 3.582609,
+      "gapPct": 28.35,
+      "volumeUsd": 0
+    },
+    {
+      "date": "2026-08-28",
+      "closeSpcxxPerToken": 3.582853,
+      "gapPct": 28.34,
+      "volumeUsd": 820
+    },
+    {
+      "date": "2026-08-30",
+      "closeSpcxxPerToken": 3.571893,
+      "gapPct": 28.56,
+      "volumeUsd": 5668
+    },
+    {
+      "date": "2026-09-01",
+      "closeSpcxxPerToken": 3.525077,
+      "gapPct": 29.5,
+      "volumeUsd": 8962
+    },
+    {
+      "date": "2026-09-03",
+      "closeSpcxxPerToken": 3.477481,
+      "gapPct": 30.45,
+      "volumeUsd": 3542
+    },
+    {
+      "date": "2026-09-05",
+      "closeSpcxxPerToken": 4.157049,
+      "gapPct": 16.86,
+      "volumeUsd": 13646
+    },
+    {
+      "date": "2026-09-06",
+      "closeSpcxxPerToken": 4.172426,
+      "gapPct": 16.55,
+      "volumeUsd": 5711
+    },
+    {
+      "date": "2026-09-07",
+      "closeSpcxxPerToken": 4.050443,
+      "gapPct": 18.99,
+      "volumeUsd": 7190
+    },
+    {
+      "date": "2026-09-08",
+      "closeSpcxxPerToken": 3.654478,
+      "gapPct": 26.91,
+      "volumeUsd": 3097
+    },
+    {
+      "date": "2026-09-09",
+      "closeSpcxxPerToken": 4.009619,
+      "gapPct": 19.81,
+      "volumeUsd": 420
+    },
+    {
+      "date": "2026-09-10",
+      "closeSpcxxPerToken": 3.600582,
+      "gapPct": 27.99,
+      "volumeUsd": 13
+    },
+    {
+      "date": "2026-09-11",
+      "closeSpcxxPerToken": 4.04972,
+      "gapPct": 19.01,
+      "volumeUsd": 248
+    },
+    {
+      "date": "2026-09-16",
+      "closeSpcxxPerToken": 4.049718,
+      "gapPct": 19.01,
+      "volumeUsd": 192
+    },
+    {
+      "date": "2026-09-20",
+      "closeSpcxxPerToken": 3.948958,
+      "gapPct": 21.02,
+      "volumeUsd": 6730
+    },
+    {
+      "date": "2026-09-21",
+      "closeSpcxxPerToken": 3.547022,
+      "gapPct": 29.06,
+      "volumeUsd": 11
+    },
+    {
+      "date": "2026-09-22",
+      "closeSpcxxPerToken": 3.547021,
+      "gapPct": 29.06,
+      "volumeUsd": 39
+    }
+  ],
+  "unlocks": {
+    "source": [
+      "https://purepowerpicks.com/spacex-lockup-schedule/",
+      "https://darrowwealthmanagement.com/blog/spacex-ipo-employee-lockup-release-dates/"
+    ],
+    "dates": [
+      {
+        "date": "2026-08-06",
+        "label": "First release, 20% of the 180-day block"
+      },
+      {
+        "date": "2026-08-20",
+        "label": "Up to 7% of the block"
+      },
+      {
+        "date": "2026-09-09",
+        "label": "Up to 7% of the block"
+      },
+      {
+        "date": "2026-09-24",
+        "label": "Up to 7% of the block"
+      },
+      {
+        "date": "2026-10-09",
+        "label": "Up to 7% of the block"
+      },
+      {
+        "date": "2026-10-24",
+        "label": "Up to 7% of the block"
+      },
+      {
+        "date": "2026-12-08",
+        "label": "180-day lockup expires"
+      }
+    ]
+  }
+}
