@@ -146,6 +146,7 @@ export default async function MarketsPage() {
 
           <div className="mt-12 flex flex-wrap items-center gap-3">
             <ButtonLink href="/app">Set a SpaceX order</ButtonLink>
+            <ButtonLink href="/issuer" variant="secondary">Issuer view</ButtonLink>
             <ButtonLink href="/evidence" variant="secondary">See the SpaceX evidence</ButtonLink>
           </div>
         </>

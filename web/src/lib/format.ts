@@ -10,9 +10,9 @@ export const usd = (value: number, decimals = 2) => `$${num(value, decimals)}`;
 export const pct = (value: number, decimals = 1) => `${value.toFixed(decimals)}%`;
 export const int = (value: number) => Math.round(value).toLocaleString("en-US");
 
-/** "$7.75M", "$546K" */
+/** "$7.75M", "$546K", "$1,141" */
 export const usdCompact = (value: number) =>
-  value >= 1e6 ? `$${(value / 1e6).toFixed(2)}M` : value >= 1e3 ? `$${Math.round(value / 1e3)}K` : `$${Math.round(value)}`;
+  value >= 1e6 ? `$${(value / 1e6).toFixed(2)}M` : value >= 1e4 ? `$${Math.round(value / 1e3)}K` : `$${int(value)}`;
 
 /** "+25.1%" or "-2.0%" */
 export const signedPct = (value: number, decimals = 1) => `${value > 0 ? "+" : ""}${value.toFixed(decimals)}%`;

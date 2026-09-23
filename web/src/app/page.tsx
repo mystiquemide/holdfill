@@ -35,7 +35,7 @@ export default function Home() {
               <span className="block text-[#4a4a4a]">Fill before the deadline.</span>
             </h1>
             <p className="rise-2 mt-6 max-w-xl text-lg leading-relaxed text-ink">
-              Set your price once. Holdfill waits to convert SpaceX PreStocks into SPCXx at your terms. This demo executes with devnet replicas; the market snapshot uses live mainnet data.
+              Set your price once. Holdfill waits to convert SpaceX PreStocks into SPCXx at your terms.
             </p>
             <div className="rise-3 mt-8 flex flex-wrap items-center justify-center gap-4">
               <div className="flex items-center gap-2"><AppEntryButton /><DemoBadge /></div>

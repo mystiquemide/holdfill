@@ -289,6 +289,7 @@ export function Footer() {
           <ul className="mt-1 flex flex-col">
             <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/how">How it works</Link></li>
             <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/markets">Markets</Link></li>
+            <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/issuer">Issuer view</Link></li>
             <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/evidence">Evidence</Link></li>
             <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/proof">Proof</Link></li>
             <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/docs">Docs</Link></li>
