@@ -58,11 +58,14 @@ Two networks, one rule: mainnet is only read, devnet is where orders execute. Ev
 
 | Item | Value |
 |---|---|
-| Replica SPACEX | Token-2022, 9 decimals. Extensions: TransferFeeConfig (100 bps, max fee u64::MAX), ScaledUiAmountConfig (multiplier 5), PermanentDelegate (issuer), PausableConfig (issuer), MetadataPointer + TokenMetadata (name "SpaceX PreStocks (devnet replica)", symbol "SPACEX"). |
-| Replica SPCXx | Token-2022, 8 decimals. Extensions: ScaledUiAmountConfig (multiplier 1), PermanentDelegate, PausableConfig, metadata "SpaceX xStock (devnet replica)". |
+| Replica SPACEX | `5cY1jzmozhRjZTQiCmNSUekcv8pnFV672L9Cm53TGhsu`. Token-2022, 9 decimals, no freeze authority. Extensions: TransferFeeConfig (100 bps, max fee u64::MAX), MetadataPointer + TokenMetadata ("SpaceX PreStocks (devnet replica)", "SPACEX"). |
+| Replica SPCXx | `4gG3VgCCugr3rG2emLp1VRsZweTwhbirXEEfp1FWHitZ`. Token-2022, 8 decimals, no freeze authority. Extensions: MetadataPointer + TokenMetadata ("SpaceX xStock (devnet replica)"). |
+| Differences from mainnet (gate G1 result) | Meteora DLMM on devnet rejects ScaledUiAmount (`UnsupportedMintExtension`, 6070) and PermanentDelegate, Pausable, or a freeze authority (`UnsupportedTokenMint`, 6073) without an admin token badge, which mainnet SPACEX has. Reproduced by `scripts/probe-dlmm-extensions.ts`. The replicas keep the 1% transfer fee. The app applies the issuer-stated 5x split for display. The order program treats a missing PausableConfig as not paused. The fork proof runs against the real mint with every extension. |
 | Authority | Issuer keypair `12fN9mtc7x93AyTCpwzLUDPdu2k5h5YswfNigayAYzDg` (throwaway, stored outside the repo). |
 | Pool | Meteora DLMM program `LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo` on devnet, `initialize_lb_pair2` with a v2 preset parameter. Devnet only has bin step 10 presets (checked 23 Sep: 4 presets, all bin step 10); the mainnet pool uses bin step 100. tokenX = replica SPACEX, tokenY = replica SPCXx, initial active bin = live mainnet active price at setup time. |
-| Seed liquidity | Spot distribution around the active bin. Size chosen so a 0.1 raw SPACEX fill moves price less than the mainnet pool would. |
+| Pool | `5XhZb6WKSu5cDMwGCV7qv7DTLPqcYMRnjZkeXn9fjLzM`, bin step 10, preset `4vP4DFDJLRz85NBCfJALYPNdieWwzQSstrUuTms1gekn`. Pool fee 10% (every devnet preset) vs 5% on the mainnet pool. |
+| Seed liquidity | 7 Spot positions: 600 SPCXx from -20% to the active bin, 150 SPACEX from the active bin to +15%. |
+| Price matching | `scripts/sync-devnet-price.ts` matches the executable quote for 0.1 raw SPACEX (fees included), not the mid price, so the devnet gap equals the mainnet gap despite the fee difference. |
 | Gate G1 | Primary path: `createLbPair2` with an existing bin step 10 `PresetParameter2` on devnet (4 exist, checked 23 Sep). If it rejects the replica mints for missing token badges, recreate replicas without PermanentDelegate and Pausable; transfer fee and multiplier must stay. If the preset path fails for any other reason, use `createCustomizablePermissionlessLbPair2`, which takes bin step and fee directly and needs no preset account. Record the path taken in memory.md. |
 
 ## 4. Order program

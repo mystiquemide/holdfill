@@ -1,0 +1,46 @@
+{
+  "cluster": "devnet",
+  "issuer": "12fN9mtc7x93AyTCpwzLUDPdu2k5h5YswfNigayAYzDg",
+  "rejectedReplicas": {
+    "reason": "DLMM initialize_lb_pair2 returned UnsupportedTokenMint (6073) for replicas with PermanentDelegate + Pausable",
+    "replicaSpacex": "9eU5ABk7Be9DupZwjB33Nc8yoUfXh1Fn2NQvPSKBmAN4",
+    "replicaSpcxx": "6QZapRKApZAfs8eBHiSsk2FAeUNQ4ehvwdREtQpFtFn7"
+  },
+  "replicaExtensions": "TransferFee(SPACEX 100 bps), MetadataPointer, TokenMetadata. ScaledUiAmount, PermanentDelegate, Pausable, and freeze authority omitted: DLMM requires an admin token badge for them. The app applies the issuer-stated 5x split.",
+  "rejectedReplicas2": {
+    "reason": "UnsupportedMintExtension (6070): ScaledUiAmount",
+    "replicaSpacex": "CnG5Poyww8HU6TyLcHgc91hSB5vsQmqSJD4ubYAfY6f2",
+    "replicaSpcxx": "nEBWroUCDvywQg9k7TVzvAVLSJkkye3vRHA9ihCDxqB"
+  },
+  "rejectedReplicas3": {
+    "reason": "UnsupportedTokenMint (6073) with TransferFee+MetadataPointer+TokenMetadata+freeze authority",
+    "replicaSpacex": "4121MqY8uVakSt6UdLdPqFJvjo2oVkXkNdAJt7v14k4z",
+    "replicaSpcxx": "8VXC9ijNJfs1y6un4UR4rrMCekXoCZjhhMvECuSWfRkZ"
+  },
+  "replicaSpacex": "5cY1jzmozhRjZTQiCmNSUekcv8pnFV672L9Cm53TGhsu",
+  "replicaSpcxx": "4gG3VgCCugr3rG2emLp1VRsZweTwhbirXEEfp1FWHitZ",
+  "pool": "5XhZb6WKSu5cDMwGCV7qv7DTLPqcYMRnjZkeXn9fjLzM",
+  "presetParameter": "4vP4DFDJLRz85NBCfJALYPNdieWwzQSstrUuTms1gekn",
+  "binStep": 10,
+  "initialActiveId": -976,
+  "poolPath": "createLbPair2",
+  "positions": [
+    "8WKSYCQ3nbUuPiVQWEJ3c3qfBgvPjHqPrXzaKnsEtenZ",
+    "Ed537kYibyrdjfnoCCkMshDvKLsSYKZvS1V1fBRrx7FT",
+    "Jooxukasrv4dizTnGDvQMMwgQkJdPm1iuR53JUjvUEC",
+    "EaXBHyG3arcokYLi2GTeBJHqs11vcHW4pMaAtbCMfk3t",
+    "4yuJMMEPPG67MAPjECM1DuGAeGq8kMRhkHZdx67sr3en",
+    "6YH7HMCNZWjVrJH6pTmdSjjymWzf9n7shYtx9iWbkXNc",
+    "m7GVbHw6wGpJCz4nR17vwMX42T3bQFA61ywSCvLLpaR"
+  ],
+  "proofTransactions": {
+    "poolFeeCheck": "3ppyg3MGJJMsxTpiba1bkPjdfK4BTgTMmjDUuFDbJvMxX2es5Py5FYgYdromtwLScJjNfEexTw5wo4VbJiRRDWpk"
+  },
+  "lastSync": {
+    "at": "2026-09-23T00:16:06.725Z",
+    "mainnetPrice": 0.35470243,
+    "devnetPrice": 0.35396549,
+    "diffPct": -0.208
+  },
+  "syncBasis": "executable quote for 0.1 raw SPACEX incl. fees"
+}

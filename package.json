@@ -10,6 +10,23 @@
     "build:program": "anchor build",
     "test:program": "cargo test -p holdfill_orders",
     "build:web": "npm --prefix web run build",
-    "dev:web": "npm --prefix web run dev"
+    "dev:web": "npm --prefix web run dev",
+    "typecheck": "tsc -p tsconfig.json",
+    "devnet:setup": "tsx scripts/setup-devnet.ts",
+    "devnet:check": "tsx scripts/check-devnet-pool.ts",
+    "devnet:sync": "tsx scripts/sync-devnet-price.ts",
+    "devnet:probe-extensions": "tsx scripts/probe-dlmm-extensions.ts"
+  },
+  "dependencies": {
+    "@meteora-ag/dlmm": "1.9.14",
+    "@solana/spl-token": "0.4.15",
+    "@solana/web3.js": "1.98.4",
+    "bn.js": "5.2.2"
+  },
+  "devDependencies": {
+    "@types/bn.js": "5.2.0",
+    "@types/node": "26.6.2",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2"
   }
 }
