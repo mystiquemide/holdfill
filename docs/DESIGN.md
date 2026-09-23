@@ -1,293 +1,115 @@
 # Holdfill design system
 
-Version 1.0, 23 September 2026. Status: awaiting approval.
-
-This file is the complete design spec. Build from it alone.
+Version 2.0, 23 September 2026. This is the spec the page at `/` is built from.
 
 ## 1. Brand
 
-- Name: Holdfill, written `holdfill` in the wordmark and "Holdfill" in sentences.
+- Name: Holdfill, `holdfill` in the wordmark, "Holdfill" in sentences.
 - Tagline: "Hold through the lockup. Fill before the deadline."
-- One-line positioning: Standing exit orders for pre-IPO tokens. Set your price and your deadline once. Holdfill converts when the gap closes, never below your terms, never after the deadline.
-- Personality: calm, exact, trustworthy. A brokerage order ticket, not a trading game.
-- Voice: short sentences, plain words, real numbers. State facts, never hype. Never promise a price or a return.
-
-### Words to use and avoid
+- Positioning: standing exit orders for pre-IPO tokens. Set your price once. Holdfill converts when the pool pays it, never below your terms, never after the issuer deadline.
+- Personality: calm, exact, a little warm. Paper and ink, with a cream accent. Consumer friendly, never a trading game.
+- Voice: short sentences, plain words, real numbers with a source. Never promise a price or a return.
 
 | Use | Avoid |
 |---|---|
-| order, limit, fill, convert, deadline, entitlement, haircut, gap, revoke | moon, gains, profit, guaranteed, free money, risk-free |
+| order, limit, fill, convert, deadline, entitlement, gap, revoke | moon, gains, profit, guaranteed, risk-free |
 | "never below your terms" | "best price" |
-| "devnet replica" | "mock", "fake", "demo tokens" |
-| "live mainnet" | "real-time" without a timestamp |
-| "the conversion path PreStocks defined", "waits for your price" | "trapped", "stuck", "rug", "discount trap", "expire worthless" as a scare line |
-| the issuer's deadline text, quoted and linked | paraphrased deadline warnings |
+| "devnet replica", "live mainnet" | "mock", "fake", "demo tokens", "real-time" without a time |
+| the issuer's deadline text, quoted and linked | "trapped", "stuck", "rug", "expire worthless" as a scare line |
+
+Copy stays pro-holder and pro-issuer: state the conversion path PreStocks defined, then what Holdfill adds.
 
 ## 2. Logo
 
-- Mark: a capital H made of three rectangles. Left stem is an outline (the position you hold). Right stem is solid (the conversion once filled). Crossbar is the holder's limit line and uses the hold color.
-- Geometry on a 24 x 24 grid: stems 5 wide, 20 tall, at x 2 and x 17; outline stroke 1.5; crossbar 10 wide, 3 tall, at x 7, y 10.5.
-- Wordmark: `holdfill` lowercase Geist. `hold` weight 400, `fill` weight 600. Letter spacing -0.02em.
-- Lockup: mark left, wordmark right, gap equal to one stem width.
-- Favicon: the mark alone on the ground color.
-- Never: gradients, shadows, rotation, recoloring the stems, adding arrows or rockets.
+- Mark on a 24 grid: left stem is an outline (the position you hold), right stem is solid (the conversion), crossbar is a cream bar outlined in ink (the limit).
+- Wordmark: `hold` at 400, `fill` at 600, Geist, tracking -0.02em. Mark left, wordmark right, 5px gap.
+- Favicon: the mark on white, rounded square (`web/src/app/icon.svg`).
 
-## 3. Color tokens
+## 3. Color
 
-Dark is the default theme. A light theme uses the same tokens.
+Light theme. Marketing chrome is ink, paper, vellum, and cream only. State colors appear only inside product UI (gap bar, order card, ticket, chart, activity).
 
-| Token | Dark | Light | Use |
-|---|---|---|---|
-| `--ground` | #0B0D10 | #F6F4EF | page background |
-| `--surface` | #14171C | #FFFFFF | cards, ticket |
-| `--surface-2` | #1B1F26 | #F2EFE8 | inputs, table headers |
-| `--line` | #262B33 | #E2DED5 | borders, grid |
-| `--text` | #E8E6E1 | #15181D | primary text |
-| `--muted` | #8A909A | #6B7079 | labels, secondary |
-| `--hold` | #F5B544 | #B7791F | armed orders, limit line, brand accent |
-| `--fill` | #3DDC97 | #1F8A5B | filled, received |
-| `--deadline` | #FF6B4A | #C2410C | countdown, expiry risk, errors |
-| `--revoked` | #5B616B | #9CA3AF | cancelled |
+| Token | Hex | Use |
+|---|---|---|
+| `ink` | #171717 | text, primary buttons, dark CTA card |
+| `paper` | #FFFFFF | canvas, cards |
+| `vellum` | #F3F3F3 | secondary buttons, inputs, table column |
+| `hairline` | #E5E7EB | borders, dividers |
+| `slate` | #6F6F6F | secondary text (5.0:1 on white, 4.5:1 on vellum) |
+| `cream` | #FFE9BF | honesty strip, DEVNET REPLICA and ARMED chips |
+| `hold` | #845A0C | limit line and tick, ARMED text (6.1:1 white, 5.1:1 cream) |
+| `fill` | #17724B | filled, received, fill markers (5.9:1 white) |
+| `deadline` | #B93C12 | errors, BLOCKED, rejected (5.7:1 white) |
+| `revoked` | #6B7079 | closed orders, always with a text label |
 
-Rules: one meaning per state color. No gradients, no glow, no purple. Text on `--hold` and `--fill` fills uses `--ground`.
+No gradients except photo scrims. No purple, no blue.
 
-## 4. Typography
+## 4. Type
 
-| Role | Font | Size / line height | Weight |
-|---|---|---|---|
-| Display (hero) | Geist | 56/60, mobile 36/40 | 600, tracking -0.03em |
-| H1 | Geist | 32/38 | 600 |
-| H2 | Geist | 22/28 | 600 |
-| Body | Geist | 15/24 | 400 |
-| Label | Geist | 12/16, uppercase, tracking 0.06em | 500 |
-| Numbers | Geist Mono | inherit size | 500, tabular figures |
+- Geist 400 for everything, 500 for button and chip labels. Headlines at 400 with tracking -0.02 to -0.03em, second line in slate.
+- Scale: 12, 14, 15, 16, 18, 24, 36, 48, 60, 72. Display 72 desktop, 40 mobile, line height 1.0 to 1.1.
+- Numbers use tabular figures in Geist (`.num`). Geist Mono (`.mono`) only for addresses, signatures, and code.
+- Minimum text size 12px, including chart labels.
 
-Every price, ratio, amount, percentage, and countdown uses Geist Mono with `font-variant-numeric: tabular-nums`. Load both from Google Fonts via `next/font/google`.
+## 5. Layout and shape
 
-## 5. Layout
+- Container 1200px, 24px gutters, 16px side padding on mobile. Section spacing 96px.
+- Cards 20px radius, large cards and photo frames 24px, inputs 14px, buttons and chips fully rounded.
+- 1px hairline borders. One soft four-layer shadow (`--shadow-lift`) only on the live preview card, the order ticket, the order card, modals, and toasts.
+- Motion: 150ms ease-out on state changes, gap bar width 400ms, one rise-in on the hero. `prefers-reduced-motion` removes motion.
 
-- 12-column grid, max width 1200px, 24px gutters, 16px side padding on mobile.
-- Spacing scale: 4, 8, 12, 16, 24, 32, 48, 64, 96.
-- Radius: 6 on inputs and buttons, 10 on cards. No pill buttons.
-- Borders: 1px `--line`. Cards have no shadows.
-- Motion: 150ms ease-out on hover and state changes. The gap bar animates its fill width over 400ms when data changes. Respect `prefers-reduced-motion`.
+## 6. Imagery
 
-## 6. Components
+| Where | Photo | Credit |
+|---|---|---|
+| Hero frame | Launch trail at dusk | SpaceX on Unsplash |
+| Final CTA card | Launch arc through star trails | SpaceX on Unsplash |
+| One real deadline | Hourglass on white | Wilhelm Gunkel on Unsplash |
 
-### 6.1 Network label (`NetBadge`)
-Small uppercase label with a 1px border. Two variants only:
-- `LIVE MAINNET` in `--text` on `--surface-2`.
-- `DEVNET REPLICA` in `--hold` with `--hold` border.
-Every card that shows a number carries one. No colored dots.
+Full opacity, never blurred, a white scrim behind hero text and an ink scrim behind CTA text. Each photo carries a credit, and the footer states Holdfill is not affiliated with SpaceX or PreStocks.
 
-### 6.2 Gap bar (`GapBar`), the signature component
-Props: entitlement, market, limit_bps, fallback floor, status.
-```
-ENTITLEMENT  5.000 SPCXx                                          $771.52
-MARKET       3.547 SPCXx  ██████████████████████████░░░░░░░░░░░  29.1% gap
-YOUR LIMIT   20%                                      ▲
-DEADLINE     12 Mar 2027                                    171 days left
-```
-- Track: full width = entitlement. Solid segment = market share of entitlement in `--muted` while waiting, `--fill` once the market reaches the limit.
-- Hatched segment = the gap, `--line` hatch at 45 degrees.
-- Limit tick: 2px `--hold` line with a small triangle and label.
-- Fallback floor tick: dashed `--deadline` line, shown only when the fallback date is within 30 days or passed.
-- All values in Geist Mono. Height 12px on the track. Labels above and below, never inside.
+## 7. Components
 
-### 6.3 Order ticket (`OrderTicket`)
-Fields, in order:
-1. Amount to convert: number input in displayed SPACEX shares, with MAX. Helper: "= 0.2000 raw tokens".
-2. Maximum haircut: slider 0 to 60% in 1% steps plus number input. Default 20%. Helper shows today's gap and the backtest line: "Would have filled on 11 of 71 trading days since listing." (from `/api/backtest`, never hard-coded)
-3. Fallback date: date input. Default 1 Mar 2027. Max 11 Mar 2027.
-4. Fallback floor: select 40%, 50%, 60%, 70% of entitlement. Default 50%.
-Preview block: "You will receive at least 0.8000 SPCXx per share before 1 Mar 2027, and at least 0.5000 after. Nothing converts after 12 Mar 2027."
-Disclosures, always visible, muted 12px: "Holdfill never holds your tokens. You approve the order program for this amount only and can revoke at any time. The issuer controls a transfer fee, a pause switch, and a permanent delegate on this token."
-Primary button: "Sign order" in `--hold` fill, `--ground` text. Disabled with a specific reason when invalid.
-
-### 6.4 Order card (`OrderCard`)
-Shows status label (ARMED in `--hold`, FILLED in `--fill`, PARTIAL in `--fill` outline, REVOKED in `--revoked`, BLOCKED in `--deadline`), the gap bar for this order, filled / size, received, minimum per share now, time to fallback and deadline, and actions: "Check now" (secondary) and "Revoke" (text button in `--deadline`).
-
-### 6.5 Stat tile (`Stat`)
-Label on top, value in Geist Mono 28px, one-line source under it ("Jupiter tokens API, 23 Sep 14:02 UTC"). Never a chart inside a tile.
-
-### 6.6 Activity row (`TxRow`)
-Time, event (Created, Filled, Check, Rejected, Revoked), amount in, amount out, realized haircut, signature link to Solana Explorer with the right cluster.
-
-### 6.7 History chart (`HaircutChart`)
-Line of daily haircut since 12 Jun 2026. Y axis 0 to 45%, inverted is not allowed. Horizontal `--hold` line at the viewer's limit. Days at or below the limit get a `--fill` marker. Vertical dashed markers for the dated lockup releases in `/api/history` (6 Aug, 20 Aug, 9 Sep, 24 Sep, 9 Oct, 24 Oct, 8 Dec). Tooltip: date, haircut, pool volume. Hand-built SVG, no chart library.
-
-### 6.8 Buttons
-Primary: `--hold` fill. Secondary: `--surface-2` fill, `--line` border. Destructive text button: `--deadline`. Heights 40 desktop, 44 mobile.
-
-## 7. Page and screens
-
-One route, `/`. The page reads top to bottom as hero, product, evidence, proof. Header links scroll to sections. One page to polish, one URL to share.
-
-### 7.1 Hero (live mainnet)
-
-```
-+------------------------------------------------------------------------+
-| [H] holdfill          Product   Evidence   Proof    [ Connect wallet ] |
-+------------------------------------------------------------------------+
-| LIVE MAINNET                                                           |
-| SpaceX listed on 12 June. SpaceX PreStocks convert into SPCXx.         |
-| Holdfill waits for your price.                                         |
-| Hold through the lockup. Fill before the deadline.                     |
-|                                                                        |
-| [ GapBar, live mainnet, entitlement in USD from PreStocks mark, 20% ] |
-|                                                                        |
-| [ Set an order ]   [ See the proof ]                                   |
-+------------------------------------------------------------------------+
-| 10,059 holders | 29.1% gap today | 171 days to the deadline |          |
-| $771 entitlement per token (PreStocks mark)   (each Stat with source)  |
-+------------------------------------------------------------------------+
-```
-- Hero numbers come from `/api/market`. While loading, show the last cached values with their timestamp, never zeros.
-- The entitlement USD value is `5 x markPrice` per raw token from the PreStocks API (PreStocks' SpaceX mark tracks the listed SPCX price). Source line: "PreStocks mark, HH:MM UTC".
-- Two gap numbers exist and must never be mixed. **Executable gap**: from a live quote for a given size, including the 1% transfer fee and slippage. Used in the hero (quote for 1 raw token), the order ticket (quote for the ticket size), and the order card. **Daily close gap**: from pool daily close prices. Used only in the history chart and backtest. Each carries its label.
-- Copy stays pro-holder and pro-issuer: state the conversion path PreStocks defined, then what Holdfill adds. Never frame the gap as a flaw of PreStocks.
-
-### 7.2 Product section, disconnected
-
-```
-+------------------------------------------------------------------------+
-| PRODUCT                                                                |
-| MARKET  LIVE MAINNET                          | YOUR POSITION           |
-| [GapBar mainnet]                              | Connect a wallet to see |
-| Pool quote 1 raw  PreStocks mark  SPCXx price  | your SPACEX and set an |
-| SpaceX price  Holders  Supply                 | order on devnet.        |
-|                                               | [ Connect wallet ]      |
-+------------------------------------------------------------------------+
-```
-- SPCXx USD price from the Jupiter price API. Pool-implied value per share = SPCXx per share from the quote x SPCXx USD price, shown next to the PreStocks mark.
-
-### 7.3 Product section, connected, wallet on devnet with no replica tokens
-
-```
-| YOUR POSITION  DEVNET REPLICA                                          |
-| Mainnet SPACEX (read only): 0.0000                                     |
-| Devnet replica SPACEX: 0.0000                                          |
-| Get 1 replica SPACEX to try an order on devnet.                        |
-| [ Get replica SPACEX ]   You need a little devnet SOL for fees.        |
-```
-- Faucet success: "Sent 1 replica SPACEX (5 shares). View transaction."
-- Faucet limited: "One faucet request per wallet per hour. Try again at 15:40 UTC."
-- No devnet SOL: link to faucet.solana.com with the wallet address prefilled in a copy field.
-
-### 7.4 Product section, connected with replica tokens, no order
-
-```
-| YOUR POSITION  DEVNET REPLICA        | ORDER TICKET  DEVNET REPLICA    |
-| 1.0000 raw  =  5.0000 shares         | Amount   [ 5.0000 ] shares MAX  |
-| Entitlement  5.0000 SPCXx            | Max haircut  [====|----] 20%    |
-| Pool pays    3.5470 SPCXx            | Fallback date [ 2027-03-01 ]    |
-| Gap          29.1%                   | Fallback floor [ 50% v ]        |
-| [GapBar devnet with limit preview]   | Preview: at least 0.8000 SPCXx  |
-|                                      | per share before 1 Mar 2027...  |
-|                                      | Disclosures                     |
-|                                      | [ Sign order ]                  |
-```
-
-### 7.5 Product section, order armed
-
-```
-| ORDER  ARMED                                            DEVNET REPLICA |
-| [GapBar with limit tick]                                               |
-| Filled 0.0000 / 5.0000 shares   Received 0.0000 SPCXx                  |
-| Minimum now 0.8000 SPCXx per share   Fallback in 159 days             |
-| Waiting: pool pays 29.1% under entitlement, your limit is 20%.         |
-| [ Check now ]                                           Revoke         |
-```
-
-### 7.6 Product section, filled or partial
-
-```
-| ORDER  FILLED                                           DEVNET REPLICA |
-| [GapBar in fill color]                                                 |
-| Filled 5.0000 / 5.0000 shares   Received 4.1250 SPCXx                  |
-| Realized haircut 17.5% including the 1% issuer transfer fee            |
-| ACTIVITY                                                               |
-| 14:02 Filled  5.0000 -> 4.1250  17.5%  4xT...9Qa                       |
-| 13:55 Created size 5.0000 limit 20%    2mB...7Lk                        |
-```
-Partial: label PARTIAL, "Filled 2.0000 / 5.0000 shares. Waiting for liquidity at your limit."
-
-### 7.7 Blocked and error states
-
-| State | Message |
+| Component | Rules |
 |---|---|
-| Wallet on mainnet while signing | "Holdfill orders run on devnet for this build. Switch your wallet to devnet to sign." |
-| User rejects signature | "Signature cancelled. Nothing was sent." |
-| Insufficient devnet SOL | "You need about 0.01 devnet SOL for fees." plus faucet link |
-| Mint paused | BLOCKED: "The issuer paused this token. Your order cannot fill until it resumes." |
-| Fee changed | BLOCKED: "The issuer changed the transfer fee from 1.00% to X%. Revoke and create a new order to accept it." |
-| Deadline passed | "The issuer deadline passed. This order can no longer fill." |
-| RPC failure | "Couldn't reach Solana. Retrying in 10 seconds." Keep last good values with timestamp. |
-| Check now, not reachable | "Checked 14:05 UTC. Pool pays 27.8% under entitlement. Your limit is 20%. No fill." |
+| NetBadge | `LIVE MAINNET` on vellum or `DEVNET REPLICA` on cream. Every card with a number carries one. Never wraps. |
+| Button | Primary ink, secondary vellum, danger vellum with deadline text, light (on dark). 44px tall. No outline-only buttons. Disabled buttons state the reason and the next step as their label. |
+| GapBar | Entitlement row, pool-pays row with gap, track (solid share, hatched gap, hold tick with label), limit row with "not yet", "pool meets it now", or "filled", optional deadline row. The tick follows the viewer's shared limit. |
+| Stat | Value, label, source with time. |
+| Order ticket | Holdings line, devnet gap bar, amount with Max, limit slider (0 to 60%) with live backtest line, fallback date, floor (40 to 70%), preview, disclosures, Sign order. |
+| Order card | Chip (ARMED, PARTIAL, FILLED, BLOCKED), gap bar, four stats, one status line, Check now, Revoke (or Close and set a new order when filled). |
+| Activity | Time, event (Created, Filled, Closed, Rejected), detail, signature linked to Explorer. |
+| HaircutChart | Hand-built SVG, 0 to 45%, hold limit line, fill markers on days at or under the limit, dashed lockup lines explained in a legend, hover tooltip, full daily table in a disclosure. |
+| Modal | Title, close button, Escape closes, focus moves in and returns. |
+| Toast | Bottom right (bottom center on mobile), dot color by tone, optional transaction link. |
 
-### 7.8 Evidence section (live mainnet)
+## 8. Page
 
-```
-+------------------------------------------------------------------------+
-| EVIDENCE  LIVE MAINNET                                                 |
-| The gap since listing       [HaircutChart, limit line, unlock markers] |
-| Your limit would have filled on 11 of 71 trading days. First: 4 Aug.   |
-|------------------------------------------------------------------------|
-| No order type exists today   [ Run check ]                             |
-| POST lite-api.jup.ag/trigger/v1/createOrder  (checked 14:02 UTC)       |
-| {"error":"... Mint PreANx...fTh has transfer fee","code":2}            |
-|------------------------------------------------------------------------|
-| One real sale     [wallet] sold [n] SPACEX for [m] SPCXx on [date],    |
-|                   [x]% under entitlement. Next unlock [k] days later.  |
-|                   [ View on Solana Explorer ]                          |
-| One real deadline XAI conversion closed 12 Sep 2026.                   |
-|                   1,473 wallets still hold XAI (data/case-study.json). |
-+------------------------------------------------------------------------+
-```
-- The "one real sale" values come from `data/case-study.json`, produced from a real mainnet transaction. Ship real values or remove the block.
+One route `/` plus the 404 and error pages. Order: honesty strip (scrolls away), sticky nav, hero with live preview card, stats row, How it works, Your order, Evidence, Compared, Proof, What Holdfill never does, final CTA card, footer.
 
-### 7.9 Proof section
+The order section states, in order: not connected, loading, no replica tokens (faucet), holding (ticket), armed, partial, filled, blocked (paused, fee changed, deadline passed, approval removed), revoked banner. Transactions are built by the server, signed in the wallet, and relayed by the server to devnet.
 
-```
-+------------------------------------------------------------------------+
-| PROOF                                                                  |
-| On cloned mainnet state (real SPACEX, real pool, real 1% fee)          |
-|  PASS  Order fills from the holder's wallet, keeper holds nothing      |
-|  PASS  Issuer pause blocks the fill                                    |
-|  PASS  Fill after revoke rejected                                      |
-|  PASS  Fill below the holder's minimum rejected                        |
-|  PASS  Issuer fee change blocks the fill                               |
-|  Run it yourself: npm run proof:fork                                   |
-|------------------------------------------------------------------------|
-| On devnet   Program [id]   Upgrade authority: [status]                 |
-|  Created [sig]   Filled [sig]   Rejected [sig]   Revoked [sig]         |
-+------------------------------------------------------------------------+
-| Built for Stocklana. PreStocks tokens are not available to US persons. |
-| Holdfill does not set prices or guarantee conversion value.            |
-+------------------------------------------------------------------------+
-```
-- Program id and signatures come from `config/devnet.json`, `data/proof-devnet.json`, and `data/proof-fork.json`, written by the deploy and proof scripts. No hand-typed signatures.
+Every number shows its network and a time or source. Two gap measures are never mixed: the executable gap (a live quote for a stated size, fees included) and the daily close gap (history and backtest only).
 
-## 8. Microcopy
+## 9. Microcopy
 
 | Moment | Copy |
 |---|---|
-| Order created | "Order armed. Holdfill will fill when the pool pays at least 0.8000 SPCXx per share." |
-| Filled | "Filled. You received 4.1250 SPCXx. Realized haircut 17.5%." |
+| Order armed | "Order armed. Holdfill fills when the pool pays at least 0.8000 SPCXx per share." |
+| Waiting check | "Checked 08:03 UTC. Pool pays 29.3% under entitlement. Your limit is 10%. No fill yet." |
+| Filled | "Filled. You received 3.5358 SPCXx. Realized gap 29.3% including the 1% issuer transfer fee." |
 | Revoked | "Order revoked. The approval is removed and nothing else can fill." |
-| Empty activity | "No activity yet. Your first check runs within 10 seconds of signing." |
+| Signature cancelled | "Signature cancelled. Nothing was sent." |
+| Check that never reached the chain | "The fill didn't go through this time, and nothing moved. Try again in a few seconds." |
+| RPC down | "Couldn't reach Solana. Retrying in 10 seconds." Last values stay with their time. |
+| Empty activity | "No activity yet. The keeper's first check runs within 10 seconds of signing." |
 
-## 9. Mobile
+## 10. Mobile
 
-- Single column. Order ticket moves below the position card.
-- Gap bar keeps all labels, stacked above the track.
-- Tables become stacked rows with label and value pairs.
-- Primary button full width, 44px tall.
+Single column. The honesty strip scrolls away, the nav stays. The comparison becomes one block per question. Nothing scrolls sideways at 390px. Interactive targets are at least 24px or spaced 24px apart.
 
-## 10. Build rules
+## 11. Build rules
 
-- Build one section at a time. Verify it renders with real data before starting the next.
+- One section at a time, checked in the browser at 1440 and 390 before the next.
+- No placeholder copy, no illustrative numbers, no dead links, no em dashes.
 - Keep approved sections unchanged while building later ones.
-- Every number shows its network label and a timestamp or source line.
-- No placeholder copy, lorem ipsum, or dead links in any shipped screen.
-- No em dashes anywhere in UI copy.
