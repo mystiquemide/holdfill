@@ -253,10 +253,10 @@ Partial: label PARTIAL, "Filled 2.0000 / 5.0000 shares. Waiting for liquidity at
 | PROOF                                                                  |
 | On cloned mainnet state (real SPACEX, real pool, real 1% fee)          |
 |  PASS  Order fills from the holder's wallet, keeper holds nothing      |
-|  PASS  Fill below the holder's minimum rejected                        |
-|  PASS  Fill above the approved size rejected                           |
-|  PASS  Signer without approval rejected                                |
+|  PASS  Issuer pause blocks the fill                                    |
 |  PASS  Fill after revoke rejected                                      |
+|  PASS  Fill below the holder's minimum rejected                        |
+|  PASS  Issuer fee change blocks the fill                               |
 |  Run it yourself: npm run proof:fork                                   |
 |------------------------------------------------------------------------|
 | On devnet   Program [id]   Upgrade authority: [status]                 |
@@ -266,7 +266,7 @@ Partial: label PARTIAL, "Filled 2.0000 / 5.0000 shares. Waiting for liquidity at
 | Holdfill does not set prices or guarantee conversion value.            |
 +------------------------------------------------------------------------+
 ```
-- Program id and signatures come from `config/devnet.json` and `data/proof.json`, written by the deploy and proof scripts. No hand-typed signatures.
+- Program id and signatures come from `config/devnet.json`, `data/proof-devnet.json`, and `data/proof-fork.json`, written by the deploy and proof scripts. No hand-typed signatures.
 
 ## 8. Microcopy
 

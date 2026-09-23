@@ -1,0 +1,111 @@
+{
+  "command": "npm run proof:fork",
+  "ranAt": "2026-09-23T06:46:48.909Z",
+  "network": "local validator cloned from mainnet",
+  "mainnet": {
+    "slot": 449625895,
+    "epoch": 1040,
+    "rpc": "Helius mainnet"
+  },
+  "localChainTime": "2026-09-23T06:46:21.000Z",
+  "validator": "solana-test-validator",
+  "program": {
+    "id": "A6UhawZdBQiMwpDYzFXKzTJD5voF29rLmrViUT6WaSGV",
+    "binarySha256": "2dfaaac2fb34f4c2f1b3e6ad3a2782b619725a9c4c6db2c02d25d7edc8563b14",
+    "sameBinaryAsDevnetDeployment": true
+  },
+  "mints": {
+    "spacex": "PreANxuXjsy2pvisWWMNB6YaJNzr7681wJJr2rHsfTh",
+    "spcxx": "Xs3oZwbHvqis4NYcf4YKWmEia2eC84wSiVrcYcTqpH8"
+  },
+  "pool": "F9oJK3UC6bLVcAoYEZPHNteZACb7YzdZw7FHad4KFC6B",
+  "clonedPrograms": [
+    "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo",
+    "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+  ],
+  "clonedAccounts": [
+    "Xs3oZwbHvqis4NYcf4YKWmEia2eC84wSiVrcYcTqpH8",
+    "F9oJK3UC6bLVcAoYEZPHNteZACb7YzdZw7FHad4KFC6B",
+    "AmAm2TdvbPBjjAJU9TfU17kyGvZWik3fTXDgQfaNEPrb",
+    "68zVKnQXTGty1EMD34mNY8pNjYnANeXrFJDSmjPfQAFq",
+    "4qerHek9eE1e167w9pgZABJ7a9rrf5izjtuCFqjQfNZu",
+    "EkUVbtt7dHtNkYwET1JsXSYKAD7JRRPd8RrhbFbL5Vjo",
+    "Db44fFLprErB8DYZa616zou2yXkWiXnTXM56BQYpZ9Tx",
+    "ELc2LsAXn7jGEy9UfoWJXXBY4ZTrP3u3RwrJUC9ifPaZ",
+    "7qzt7coT4joqoMLYe8VfBL1C2Whwv6wMYMwBHJN7MxDH",
+    "GdVSSE2ZE94TUpoGUku9enEVxKP9Pgn4Zgqpisryw8fo",
+    "GwL7A77gwsgBDQwZU7oS4gp6yHkJkQqjph6X9oFNkdRk"
+  ],
+  "substitutions": [
+    "Holder SPACEX account ARAjoxijatDG4rZyG6ntHoq23KB4Ua3Ktzoyk9wgGGSu: copy of the pool's SPACEX reserve account (same extensions), owner set to a local holder, 1 raw SPACEX, withheld fee zeroed.",
+    "Lifecycle event 7kv6XJzhhLsaqoxXNx9Vcfm9zxac6s6J2dMA82MVo6zv: issuer terms (SPCXx, 5 shares per token, deadline 2027-03-12T23:59Z) written into genesis.",
+    "SPACEX mint: transfer fee and pause authorities changed from WV9PJN7XTmTLVwbutCLFxp8TyePee6Xq5mRq6Fti5Wc to a local key so the run can act as the issuer. All other mint bytes are mainnet.",
+    "Epochs are 32 slots and the ledger starts at mainnet epoch 1040, so the transfer fee in force matches mainnet."
+  ],
+  "fill": {
+    "signature": "4ZGELbX6we2pEAtALBduzVPUcG8qg1sDhpiif5Mx4J2gUe4ke2CzydXbPV8SBh7iioFHQoh6RVpr8NHwGn47Lirv",
+    "amountInRaw": "100000000",
+    "receivedSpcxxBase": "35470243",
+    "requiredSpcxxBase": "30000000",
+    "entitlementSpcxxBase": "50000000",
+    "gapPct": 29.06,
+    "transferFeeBps": 100,
+    "feeWithheldBase": "1000000",
+    "programLogs": [
+      "Program A6UhawZdBQiMwpDYzFXKzTJD5voF29rLmrViUT6WaSGV invoke [1]",
+      "Program log: Instruction: Execute",
+      "Program LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo invoke [2]",
+      "Program log: Instruction: Swap2",
+      "Program LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo invoke [3]",
+      "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb invoke [3]",
+      "Program log: Instruction: TransferChecked",
+      "Program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb invoke [3]",
+      "Program log: Instruction: TransferChecked",
+      "Program LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo invoke [3]"
+    ]
+  },
+  "checks": [
+    {
+      "name": "Fill at the holder's price on the real pool",
+      "pass": true,
+      "expected": "holder spends 0.1 raw SPACEX, receives at least 0.3 SPCXx (40% limit), the mint withholds its fee, keeper holds no tokens",
+      "result": "confirmed",
+      "detail": "order PDA signed DLMM swap2 through CPI as delegate. Holder spent 0.1 raw SPACEX, received 0.35470243 SPCXx (entitlement 0.5, 29.1% under, fees included). Transfer fee withheld 1000000 base units (100 bps). Keeper token accounts: 0.",
+      "signature": "4ZGELbX6we2pEAtALBduzVPUcG8qg1sDhpiif5Mx4J2gUe4ke2CzydXbPV8SBh7iioFHQoh6RVpr8NHwGn47Lirv"
+    },
+    {
+      "name": "Issuer pause blocks the fill",
+      "pass": true,
+      "expected": "rejected with MintPaused",
+      "result": "failed on chain: MintPaused",
+      "detail": "the issuer paused SPACEX; the program refuses before any tokens move",
+      "signature": "gPmjaH4NZPNzeWy1wNzDF7t9TUFWt4ipQPH1FTfk1Cyu5HedrRvYN6csPFLPVTej9RV4KKS23Z1yiwi6zV23bak"
+    },
+    {
+      "name": "Revoke stops fills at once",
+      "pass": true,
+      "expected": "rejected with DelegateMismatch",
+      "result": "failed on chain: DelegateMismatch",
+      "detail": "the holder revoked the token approval; the order account still exists but cannot move tokens",
+      "signature": "65h2YzVP9Jid3UicpFU2uMoosYxM9KexrX2roDe6oWK1PuVD9GSZLKRm8TSKN8EypnFXe2vPrG2yintSv84zPtc"
+    },
+    {
+      "name": "Fill below the holder's minimum is rejected",
+      "pass": true,
+      "expected": "rejected with ExceededAmountSlippageTolerance or InsufficientOutput",
+      "result": "failed on chain: ExceededAmountSlippageTolerance",
+      "detail": "10% limit needs at least 0.45 SPCXx for 0.1 raw; the pool pays about 0.35470243",
+      "signature": "ebTjrqTyzYtHu4SPXSQWSxGqQXZoywdgBnisxG9LSuXdiKBeonigAt4ryzXFAboAVa7J9fPpqvNGUQbFECPti8q"
+    },
+    {
+      "name": "Issuer fee change blocks the fill",
+      "pass": true,
+      "expected": "rejected with FeeChanged",
+      "result": "failed on chain: FeeChanged",
+      "detail": "order signed at 100 bps; the issuer raised the fee to 200 bps; the holder must re-sign with the new fee in view",
+      "signature": "53Vk7JcsE5WRN6Mvxwe1K1B8LhzsyPJW9H4gZxGrkrJSKTELbLwd7iKCU3SBSEvbnvP4iNbeZ2KVbChmKGNCzxpk"
+    }
+  ],
+  "passed": 5,
+  "total": 5
+}

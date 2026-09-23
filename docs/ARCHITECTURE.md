@@ -50,7 +50,7 @@ Two networks, one rule: mainnet is only read, devnet is where orders execute. Ev
 | `web/src/app/api/*` | Next.js route handlers (Node runtime) | Mainnet reads, history, backtest, faucet, keeper tick. Server-only keys. |
 | `keeper/` | Node 22 worker, same code as the tick route | Polls active orders, quotes the pool, calls `execute` when the order's minimum is reachable. |
 | `scripts/sync-devnet-price.ts` | Node 22 script, run on demand | Moves the devnet pool price to the live mainnet SPACEX/SPCXx price by trading issuer inventory. Run after setup, before recording, and before deploy. |
-| `scripts/proof-fork.ts` (`npm run proof:fork`) | Node 22 + local validator | Clones mainnet (DLMM program, real SPACEX and SPCXx mints, real pool), loads `holdfill_orders` into the local validator, and runs the five checks with the program as delegate. Writes `data/proof.json`. |
+| `scripts/proof-fork.ts` (`npm run proof:fork`) | Node 22 + local validator | Clones mainnet (DLMM program, real SPACEX and SPCXx mints, real pool), loads `holdfill_orders` into the local validator, and runs five checks with the order PDA as delegate: a fill at the holder's price (real 1% fee withheld), issuer pause, revoke, below-minimum fill, and issuer fee change. Writes `data/proof-fork.json`. |
 | `scripts/case-study.ts` | Node 22 script | Finds one real mainnet SPACEX sale on the pool at a deep haircut and the XAI holder count after expiry. Writes `data/case-study.json`. |
 | `scripts/` | Node 22 | One-time devnet setup: replica mints, pool, liquidity. History snapshot refresh. |
 
@@ -183,7 +183,8 @@ All return JSON with `network` and `asOf` fields.
 No database. State lives on chain (orders, fills) or in read-through caches:
 - `data/haircut-history.json`: committed snapshot of daily closes from GeckoTerminal, refreshed by `scripts/refresh-history.ts`.
 - In-memory cache per route: market 15 s, history 10 min.
-- `data/case-study.json` and `data/proof.json`: committed outputs of the case-study and fork-proof scripts, each with the command, slot, and timestamp that produced it.
+- `data/case-study.json` and `data/proof-fork.json`: committed outputs of the case-study and fork-proof scripts, each with the command, slot, and timestamp that produced it.
+- Fork proof state: everything is cloned from mainnet except three disclosed substitutions, listed in `data/proof-fork.json`. The holder's SPACEX account is a copy of the pool's real reserve account with 1 raw token. The lifecycle event is written into genesis, so no admin key is needed. The mint's pause and fee authorities point at a local key, so the run can act as the issuer through the real Token-2022 program. Epochs are 32 slots starting at mainnet's epoch, so the fee in force matches mainnet.
 - Rate limit store for the faucet: in-memory map plus a devnet memo check of recent faucet transfers so limits survive cold starts.
 
 ## 9. Environment variables
