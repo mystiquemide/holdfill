@@ -27,7 +27,7 @@ export function GapBar({ entitlement, market, limitBps, entitlementUsd, deadline
       <div className="relative mt-3 mb-7 h-3 w-full overflow-visible rounded-full bg-vellum">
         <div className="hatch absolute inset-0 rounded-full" />
         <div
-          className={`absolute inset-y-0 left-0 rounded-full transition-[width,background-color] duration-[400ms] ease-out ${meets ? "bg-fill" : "bg-slate"}`}
+          className={`grow absolute inset-y-0 left-0 rounded-full transition-[width,background-color] duration-[400ms] ease-out ${meets ? "bg-fill" : "bg-slate"}`}
           style={{ width: `${(filled ? 1 : share) * 100}%` }}
         />
         <div className="absolute -top-1.5 h-6 w-0.5 bg-hold" style={{ left: `calc(${limitAt * 100}% - 1px)` }} aria-hidden />

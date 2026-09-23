@@ -114,6 +114,67 @@ input[type="range"].limit::-moz-range-thumb {
   input[type="range"].limit { height: 6px; }
 }
 
+/* ---------- Motion ---------- */
+/* One easing for everything that enters: fast start, long soft landing. */
+:root { --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* Scroll reveal (components/reveal.tsx). A block without items moves as one; items stagger. */
+[data-reveal=""]:not(:has([data-item])),
+[data-reveal=""] [data-item] {
+  opacity: 0;
+  transform: translateY(28px);
+}
+[data-reveal="in"]:not(:has([data-item])),
+[data-reveal="in"] [data-item] {
+  opacity: 1;
+  transform: none;
+  transition: opacity 700ms var(--ease-out-expo), transform 900ms var(--ease-out-expo);
+  transition-delay: calc(var(--i, 0) * 90ms);
+}
+/* Section rules draw outward from their label. */
+[data-reveal=""] [data-rule] { transform: scaleX(0); }
+[data-reveal="in"] [data-rule] { transform: none; transition: transform 1100ms var(--ease-out-expo); }
+
+/* Hero: staggered entrance, then the photo settles and drifts as the page scrolls away. */
+.rise-1 { animation: rise 800ms var(--ease-out-expo) backwards; }
+.rise-2 { animation: rise 800ms var(--ease-out-expo) 120ms backwards; }
+.rise-3 { animation: rise 800ms var(--ease-out-expo) 220ms backwards; }
+.rise-4 { animation: rise 1000ms var(--ease-out-expo) 360ms backwards; }
+.settle { animation: settle 1800ms var(--ease-out-expo) backwards; }
+@keyframes settle {
+  from { transform: scale(1.08); }
+  to { transform: none; }
+}
+
+/* The gap bar fills from zero the first time it appears. */
+.grow { animation: grow 1100ms var(--ease-out-expo) 500ms backwards; transform-origin: left; }
+@keyframes grow {
+  from { transform: scaleX(0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .drift {
+      animation: drift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
+    }
+    @keyframes drift {
+      to { transform: translateY(14%) scale(1.06); }
+    }
+    /* The closing photo eases from a slight zoom as it scrolls into view. */
+    .zoom-in-view {
+      animation: zoom-in-view linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 50%;
+    }
+    @keyframes zoom-in-view {
+      from { transform: scale(1.15); }
+      to { transform: none; }
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after {

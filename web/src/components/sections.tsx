@@ -17,8 +17,8 @@ const STEPS = [
 export function HowItWorks() {
   return (
     <div className="grid gap-4 md:grid-cols-3">
-      {STEPS.map((s) => (
-        <div key={s.n} className="rounded-[var(--radius-card)] border border-hairline bg-paper p-6">
+      {STEPS.map((s, i) => (
+        <div key={s.n} data-item style={{ "--i": i } as React.CSSProperties} className="rounded-[var(--radius-card)] border border-hairline bg-paper p-6">
           <span className="num inline-flex size-9 items-center justify-center rounded-full bg-vellum text-sm">{s.n}</span>
           <h3 className="mt-5 text-xl">{s.title}</h3>
           <p className="mt-2 text-[15px] leading-relaxed text-slate">{s.body}</p>
@@ -95,8 +95,8 @@ export function Compared() {
   return (
     <>
       <ul className="flex flex-col gap-3 xl:hidden">
-        {ROWS.map(([k, a, b, c, d]) => (
-          <li key={k} className="rounded-[var(--radius-card)] border border-hairline p-4">
+        {ROWS.map(([k, a, b, c, d], i) => (
+          <li key={k} data-item style={{ "--i": i } as React.CSSProperties} className="rounded-[var(--radius-card)] border border-hairline p-4">
             <p className="text-base">{k}</p>
             <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
               <dt className="text-slate">Holdfill demo</dt><dd>{a}</dd>
@@ -119,8 +119,8 @@ export function Compared() {
             </tr>
           </thead>
           <tbody className="divide-y divide-hairline">
-            {ROWS.map(([k, a, b, c, d]) => (
-              <tr key={k}>
+            {ROWS.map(([k, a, b, c, d], i) => (
+              <tr key={k} data-item style={{ "--i": i } as React.CSSProperties}>
                 <th scope="row" className="p-4 font-normal">{k}</th>
                 <td className="bg-vellum p-4">{a}</td>
                 <td className="p-4 text-slate">{b}</td>
@@ -229,8 +229,8 @@ export function ProofPreview({ fork, devnetProof }: { fork: ForkProof; devnetPro
         <span className="block text-slate">Proven again on devnet.</span>
       </p>
       <dl className="mt-8 grid gap-6 sm:grid-cols-3">
-        {facts.map((f) => (
-          <div key={f.label} className="border-t border-hairline pt-4">
+        {facts.map((f, i) => (
+          <div key={f.label} data-item style={{ "--i": i } as React.CSSProperties} className="border-t border-hairline pt-4">
             <dt className="sr-only">{f.label}</dt>
             <dd className={`${f.mono ? "mono text-2xl" : "num text-3xl"} tracking-[-0.02em]`}>{f.value}</dd>
             <dd className="mt-2 text-sm text-ink">{f.label}</dd>
@@ -262,7 +262,7 @@ export function NeverDoes() {
 export function FinalCta() {
   return (
     <div className="relative overflow-hidden rounded-[var(--radius-card-lg)] bg-ink">
-      <Image src="/images/launch-stars.jpg" alt="" fill sizes="(min-width: 1200px) 1200px, 100vw" className="object-cover" />
+      <Image src="/images/launch-stars.jpg" alt="" fill sizes="(min-width: 1200px) 1200px, 100vw" className="zoom-in-view object-cover" />
       <div className="absolute inset-0 bg-ink/35" />
       <div className="relative flex min-h-[420px] flex-col items-center justify-center px-6 py-16 text-center">
         <h2 className="text-4xl leading-[1.05] tracking-[-0.02em] text-paper md:text-6xl">

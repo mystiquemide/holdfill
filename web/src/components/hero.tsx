@@ -98,8 +98,8 @@ export function EvidencePreview({ fillDays, tradingDays, firstFill }: { fillDays
         <NetBadge net="mainnet" />
       </div>
       <dl className="mt-6 grid gap-6 sm:grid-cols-3">
-        {facts.map((f) => (
-          <div key={f.label} className="border-t border-hairline pt-4">
+        {facts.map((f, i) => (
+          <div key={f.label} data-item style={{ "--i": i } as React.CSSProperties} className="border-t border-hairline pt-4">
             <dt className="sr-only">{f.label}</dt>
             <dd className="num text-3xl tracking-[-0.02em]">{f.value}</dd>
             <dd className="mt-2 text-sm text-ink">{f.label}</dd>

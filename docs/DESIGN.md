@@ -56,7 +56,7 @@ No gradients except photo scrims. No purple, no blue.
 - Container 1200px, 24px gutters, 16px side padding on mobile. Section spacing 96px.
 - Cards 20px radius, large cards and photo frames 24px, inputs 14px, buttons and chips fully rounded.
 - 1px hairline borders. One soft four-layer shadow (`--shadow-lift`) only on the live preview card, the order ticket, the order card, modals, and toasts.
-- Motion: 150ms ease-out on state changes, gap bar width 400ms, one rise-in on the hero. `prefers-reduced-motion` removes motion.
+- Motion: 150ms ease-out on state changes and gap bar width 400ms. Entrances use one curve, `cubic-bezier(0.16, 1, 0.3, 1)`. The hero text rises in a 0 to 360ms stagger, its photo settles from 1.08x and drifts with scroll, and the gap bar fills from zero on first paint. Landing sections rise 28px as they enter view (once), card rows stagger 90ms apart, and section rules draw outward from their label. The closing photo eases from 1.15x as it scrolls in. Scroll-linked effects use CSS scroll timelines only where supported, and nothing hijacks native scrolling. `prefers-reduced-motion` removes all of it, and content stays visible without JavaScript.
 
 ## 6. Imagery
 

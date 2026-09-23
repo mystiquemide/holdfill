@@ -47,9 +47,9 @@ export function SectionHead({ label, title, muted, intro, level = 2 }: { label: 
   return (
     <div className="mb-10 md:mb-14">
       <div className="flex items-center gap-4 text-sm text-slate">
-        <span className="h-px flex-1 bg-hairline" />
+        <span data-rule className="h-px flex-1 origin-right bg-hairline" />
         <span>{label}</span>
-        <span className="h-px flex-1 bg-hairline" />
+        <span data-rule className="h-px flex-1 origin-left bg-hairline" />
       </div>
       {title && (
         <Heading className="mt-10 max-w-3xl text-4xl leading-[1.1] tracking-[-0.02em] md:text-5xl">
