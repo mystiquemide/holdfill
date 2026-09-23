@@ -372,7 +372,7 @@ export function BuiltOn() {
               <img src={b.logo} alt="" width={56} height={56} className={`${b.scale} object-contain`} />
             </span>
             <span>
-              <span className="flex items-center gap-1.5 text-lg text-ink">{b.name}<span aria-hidden className="text-sm text-slate transition-transform duration-150 group-hover:translate-x-0.5">↗</span></span>
+              <span className="block text-lg text-ink">{b.name}</span>
               <span className="mt-1 block text-sm leading-relaxed text-slate">{b.use}</span>
             </span>
           </a>
