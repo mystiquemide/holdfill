@@ -4,14 +4,14 @@
 
 [![CI](https://github.com/mystiquemide/holdfill/actions/workflows/ci.yml/badge.svg)](https://github.com/mystiquemide/holdfill/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Live app](https://img.shields.io/badge/live-holdfill.vercel.app-black)](https://holdfill.vercel.app)
+[![Live app](https://img.shields.io/badge/live-holdfill.midelabs.xyz-black)](https://holdfill.midelabs.xyz)
 [![Solana devnet](https://img.shields.io/badge/Solana-devnet%20program-9945FF)](https://explorer.solana.com/address/A6UhawZdBQiMwpDYzFXKzTJD5voF29rLmrViUT6WaSGV?cluster=devnet)
 [![Stocklana](https://img.shields.io/badge/built%20for-Stocklana-14F195)](https://hackathons.solana.com/hackathons/stocklana)
 
 
 Holdfill gives PreStocks holders standing orders on Solana. A holder sets their terms once: the least they will accept, a fallback for the final weeks, and a hard stop at the issuer's deadline. Tokens stay in the holder's wallet until the market meets those terms, then an on-chain program sells through Meteora and checks that the holder received at least their minimum.
 
-[Live app](https://holdfill.vercel.app) · [Order app](https://holdfill.vercel.app/app) · [Wallet-free demo](https://holdfill.vercel.app/demo) · [Proof](https://holdfill.vercel.app/proof) · [Markets](https://holdfill.vercel.app/markets) · [Docs](https://holdfill.vercel.app/docs)
+[Live app](https://holdfill.midelabs.xyz) · [Order app](https://holdfill.midelabs.xyz/app) · [Wallet-free demo](https://holdfill.midelabs.xyz/demo) · [Proof](https://holdfill.midelabs.xyz/proof) · [Markets](https://holdfill.midelabs.xyz/markets) · [Docs](https://holdfill.midelabs.xyz/docs)
 
 Built for [Stocklana](https://hackathons.solana.com/hackathons/stocklana): main track and the PreStocks bounty. Orders execute on Solana devnet against replicas of the real tokens; market data is live mainnet.
 
@@ -55,7 +55,7 @@ Conversion happens through normal trading, so the price a holder gets depends on
 
 The gap narrows as lockups end, but unevenly. A holder who wants a fair price has to watch the pool every day for months, and a holder who forgets loses everything at the deadline.
 
-The usual answer is a limit order. None exists for these tokens: every PreStocks mint carries a 1% Token-2022 transfer fee, and Jupiter's Trigger API (V1, tested live) refuses mints with a transfer fee. Holdfill checks this live for all eight PreStocks markets on the [markets page](https://holdfill.vercel.app/markets): 8 of 8 refused, "Mint ... has transfer fee".
+The usual answer is a limit order. None exists for these tokens: every PreStocks mint carries a 1% Token-2022 transfer fee, and Jupiter's Trigger API (V1, tested live) refuses mints with a transfer fee. Holdfill checks this live for all eight PreStocks markets on the [markets page](https://holdfill.midelabs.xyz/markets): 8 of 8 refused, "Mint ... has transfer fee".
 
 Across all eight markets, about 109,000 holder accounts hold roughly $22 million at the PreStocks mark (live figures on the markets page).
 
@@ -76,17 +76,17 @@ What stays true for every order:
 - Fills are permissionless. The keeper is a convenience; anyone can call `execute`, because the program, not the caller, enforces the terms.
 - The program stops a fill if the issuer pauses the token or changes the transfer fee after the holder signed.
 
-For issuers, the [issuer view](https://holdfill.vercel.app/issuer) shows how many holders have orders, how much those orders cover with a live approval, and what already converted, next to each market's holder count and deadline.
+For issuers, the [issuer view](https://holdfill.midelabs.xyz/issuer) shows how many holders have orders, how much those orders cover with a live approval, and what already converted, next to each market's holder count and deadline.
 
 ## Try it in two minutes
 
-1. Open the [order app](https://holdfill.vercel.app/app) and connect Phantom, Solflare, or Backpack. The wallet only signs; Holdfill relays to devnet, so its network setting doesn't matter.
+1. Open the [order app](https://holdfill.midelabs.xyz/app) and connect Phantom, Solflare, or Backpack. The wallet only signs; Holdfill relays to devnet, so its network setting doesn't matter.
 2. Press "Get replica SPACEX". The faucet sends 1 replica token (5 shares) and a little devnet SOL.
 3. Set the largest gap you accept (the pool currently pays about 29% under, so a 35% limit fills), sign once, and watch the order card. The keeper checks every 10 seconds, or press Check now.
 4. Switch to Anthropic or OpenAI to place a price order into USDC, or arm an order for a future IPO.
 5. Revoke or close any order from its card.
 
-No wallet? The [demo page](https://holdfill.vercel.app/demo) walks through recorded devnet transactions for every path, each linked to Solana Explorer.
+No wallet? The [demo page](https://holdfill.midelabs.xyz/demo) walks through recorded devnet transactions for every path, each linked to Solana Explorer.
 
 ## Why Solana
 

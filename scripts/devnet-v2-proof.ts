@@ -116,11 +116,11 @@ async function main() {
   const demo = (cfg.demo ?? {}) as Demo;
   cfg.demo = demo;
   if (!demo.mint) {
-    demo.mint = (await createReplicaMint(conn, issuer, { label: "demo PreStock", decimals: 9, multiplier: 1, transferFeeBps: 100, name: "Demo PreStock (simulated, devnet)", symbol: "DEMO", uri: "https://holdfill.vercel.app/demo" })).toBase58();
+    demo.mint = (await createReplicaMint(conn, issuer, { label: "demo PreStock", decimals: 9, multiplier: 1, transferFeeBps: 100, name: "Demo PreStock (simulated, devnet)", symbol: "DEMO", uri: "https://holdfill.midelabs.xyz/demo" })).toBase58();
     writeConfig(cfg);
   }
   if (!demo.successor) {
-    demo.successor = (await createReplicaMint(conn, issuer, { label: "demo successor", decimals: 8, multiplier: 1, transferFeeBps: 0, name: "Demo successor (simulated, devnet)", symbol: "DEMOx", uri: "https://holdfill.vercel.app/demo" })).toBase58();
+    demo.successor = (await createReplicaMint(conn, issuer, { label: "demo successor", decimals: 8, multiplier: 1, transferFeeBps: 0, name: "Demo successor (simulated, devnet)", symbol: "DEMOx", uri: "https://holdfill.midelabs.xyz/demo" })).toBase58();
     writeConfig(cfg);
   }
   const DEMO = new PublicKey(demo.mint), DEMOX = new PublicKey(demo.successor);

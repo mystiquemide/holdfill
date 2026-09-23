@@ -53,7 +53,7 @@ export async function grant(owner: PublicKey, market?: UsdcMarket): Promise<Fauc
     return { ok: false, status: 429, error: `You already have ${Number(balance) / 1e9} replica ${symbol}, enough to set an order.` };
   }
   if (!process.env.ISSUER_KEYPAIR) {
-    return { ok: false, status: 503, error: "This copy of Holdfill has no faucet key. Get replica tokens from the faucet at holdfill.vercel.app, then set orders here." };
+    return { ok: false, status: 503, error: "This copy of Holdfill has no faucet key. Get replica tokens from the faucet at holdfill.midelabs.xyz, then set orders here." };
   }
   const issuer = keypairFromEnv("ISSUER_KEYPAIR");
   const issuerLamports = await conn.getBalance(issuer.publicKey, "confirmed");
