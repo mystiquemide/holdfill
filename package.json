@@ -44,5 +44,10 @@
   },
   "workspaces": [
     "web"
-  ]
+  ],
+  "overrides": {
+    "rpc-websockets": {
+      "uuid": "11.1.0"
+    }
+  }
 }
