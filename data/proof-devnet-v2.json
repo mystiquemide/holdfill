@@ -1,0 +1,66 @@
+{
+  "ranAt": "2026-09-23T13:03:11.496Z",
+  "network": "devnet",
+  "programId": "A6UhawZdBQiMwpDYzFXKzTJD5voF29rLmrViUT6WaSGV",
+  "priceMarket": {
+    "symbol": "ANTHROPIC",
+    "mint": "GNYxLkRru8ywfA13kPTf3ZSitkd5fy3QYF6mGueLoC2g",
+    "usdc": "BD2BV4vyLJNJzgkA7DPNwdCB6CLG6W231JtCPWaXc88i",
+    "pool": "BtUcU2wWJo9EXXcJcGFJ8UmcJztCdRCjUZT9CrXbqYhr"
+  },
+  "demo": {
+    "note": "Demo token and simulated issuer event, devnet only. No real issuer announced this event.",
+    "mint": "BaUMu1V6iCpckLESrsfCZeQgHYZ8CdLrC4fYm3qjXGsF",
+    "successor": "48GyJkex9uJUztM58fFrAsgspmT8s27qpTAWhhfqGPgf",
+    "pool": "5rfAHGkPwFQ4uKJgnvhURAKgVYGT2qTMWWAEDDqHSpvx",
+    "positions": [
+      "CnGpV9Ua2ULkfy6bD2R2sVQ6XCVGWyUyRmqjkmtMqW6e",
+      "9zJsp9KNHyEaUTMeX5gB8qHiHFNuf2ap2SA9Bh5vMXGY"
+    ],
+    "event": "3RpAibV4ecuHcdaeMuAGfBGdoqZqsC7dwuNmTaGYE9sR"
+  },
+  "transactions": {
+    "priceOrderCreated": {
+      "signature": "3tWUhvQLptafdohGbGmSoXXwbBZ83N8Q7bPeLP5kpaDvRGN1dsaWxMeLsWCtXgTRBSn3i3zqzrMUVGw3kJBHguak",
+      "explorer": "https://explorer.solana.com/tx/3tWUhvQLptafdohGbGmSoXXwbBZ83N8Q7bPeLP5kpaDvRGN1dsaWxMeLsWCtXgTRBSn3i3zqzrMUVGw3kJBHguak?cluster=devnet",
+      "result": "confirmed",
+      "detail": "0.3 replica ANTHROPIC, at least 800 USDC per token, expires in 180 days, approval to order PDA"
+    },
+    "priceFilled": {
+      "signature": "53GqLikCoQ26iWCAqtviuCtbxxj9WceeLFGwmFU4yenD6NuvBBfQz6H9ynZYtvQ3gBAjLxYYVRVZfuTFDJwQ6KFZ",
+      "explorer": "https://explorer.solana.com/tx/53GqLikCoQ26iWCAqtviuCtbxxj9WceeLFGwmFU4yenD6NuvBBfQz6H9ynZYtvQ3gBAjLxYYVRVZfuTFDJwQ6KFZ?cluster=devnet",
+      "result": "confirmed",
+      "detail": "keeper sold 0.3 replica ANTHROPIC for about 277.93 replica USDC (926.42 per token, minimum 800)"
+    },
+    "priceRejected": {
+      "signature": "5vmjWHk3PxRtdUeTeT1b8nMHe1F7XYMuFbw9zBfM3R7NCv7zHvifgwbBvTzmks48wnbcN7bxLDgMfAkNFUvbS6o2",
+      "explorer": "https://explorer.solana.com/tx/5vmjWHk3PxRtdUeTeT1b8nMHe1F7XYMuFbw9zBfM3R7NCv7zHvifgwbBvTzmks48wnbcN7bxLDgMfAkNFUvbS6o2?cluster=devnet",
+      "result": "failed on chain: ExceededAmountSlippageTolerance",
+      "detail": "a 2,000 USDC per token order; the pool pays about 930, so the program refuses the swap"
+    },
+    "armed": {
+      "signature": "2dxabxXe1hzPYBKQoV4T88UeNS1bqFaGsiGk1XtVrppDAARgJPZnuoR7LPaH1ftYpjBd4j5iKuaGPsxq5QwhtmkY",
+      "explorer": "https://explorer.solana.com/tx/2dxabxXe1hzPYBKQoV4T88UeNS1bqFaGsiGk1XtVrppDAARgJPZnuoR7LPaH1ftYpjBd4j5iKuaGPsxq5QwhtmkY?cluster=devnet",
+      "result": "confirmed",
+      "detail": "0.5 demo token armed before any issuer event: largest gap 30%, fallback 30 days before the deadline at 50%"
+    },
+    "simulatedEvent": {
+      "signature": "3nwF4nTLGDw55f7NEUYSsbCKRdhxHHMNipxFiDEVSoBzfCp72HNBXjfz9sdMmRESvGXix1LyeG2tS1F63nuCfRB2",
+      "explorer": "https://explorer.solana.com/tx/3nwF4nTLGDw55f7NEUYSsbCKRdhxHHMNipxFiDEVSoBzfCp72HNBXjfz9sdMmRESvGXix1LyeG2tS1F63nuCfRB2?cluster=devnet",
+      "result": "confirmed",
+      "detail": "SIMULATED issuer event for the demo token: 1 DEMOx per token, deadline 2027-03-12T23:59Z"
+    },
+    "activated": {
+      "signature": "24BtEY5JzbTyTy6UaCnsZmWizBXG6taswpt9mjTeNc72ZKyY5sRsbjhwgXXGKhUum7qQie6giJRD24LmEdSMF4EX",
+      "explorer": "https://explorer.solana.com/tx/24BtEY5JzbTyTy6UaCnsZmWizBXG6taswpt9mjTeNc72ZKyY5sRsbjhwgXXGKhUum7qQie6giJRD24LmEdSMF4EX?cluster=devnet",
+      "result": "confirmed",
+      "detail": "keeper copied the event terms into the armed order; the holder's 30% limit is unchanged"
+    },
+    "armedFilled": {
+      "signature": "5MA8hpcmLuJHcEKK1RXTDo2JLa2pcwQX66qcYUKUADdZmadZEciM2EEjqFbtC9UQpiUmKuhCk46kmcABAYPWhNqk",
+      "explorer": "https://explorer.solana.com/tx/5MA8hpcmLuJHcEKK1RXTDo2JLa2pcwQX66qcYUKUADdZmadZEciM2EEjqFbtC9UQpiUmKuhCk46kmcABAYPWhNqk?cluster=devnet",
+      "result": "confirmed",
+      "detail": "keeper sold 0.5 demo token for about 0.3780 DEMOx, 24.4% under entitlement, limit 30%"
+    }
+  }
+}

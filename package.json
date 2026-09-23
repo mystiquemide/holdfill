@@ -20,6 +20,7 @@
     "local:args": "tsx scripts/local-validator-args.ts",
     "test:local": "tsx tests/program-local.ts",
     "devnet:proof": "tsx scripts/devnet-proof.ts",
+    "devnet:proof-v2": "tsx scripts/devnet-v2-proof.ts",
     "proof:fork": "tsx scripts/proof-fork.ts",
     "keeper": "tsx keeper/worker.ts",
     "test:keeper-math": "tsx --test keeper/math.test.ts",

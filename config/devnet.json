@@ -63,7 +63,29 @@
         "UWvxP4VqEygGyN3wvodTSv59sAHgPheUjUHpybZ8Pg3",
         "2jjaaTkuNyet2ebTEHFxEhBwKiUXKjnTGqW1KxcPCGo3"
       ]
+    },
+    "OPENAI": {
+      "name": "OpenAI",
+      "mint": "D5nC7RBFxBMH8A47pr5MEMh4ASfpe3wtZM42rkLBP4tX",
+      "mainnetMint": "PreweJYECqtQwBtpxHL171nL2K6umo692gTm7Q3rpgF",
+      "mainnetPool": "4HTy7aTjPm5PTSEws2yWRDPX6gjWM6sC2dV5mv9u8JsH",
+      "pool": "Gv78piK6JkMvsktQ7yjiKiobhZYSck5nKLANPzpvgbPF",
+      "initialActiveId": 678,
+      "positions": [
+        "4ffBg9B75MwxVNeXA7edK33W89iRRboB41dHqoUbWBZJ",
+        "GZx4m3UUGNak3edxsQjNe6U7RuS2JuNGo3kbwtqwNJSQ"
+      ]
     }
   },
-  "replicaUsdc": "BD2BV4vyLJNJzgkA7DPNwdCB6CLG6W231JtCPWaXc88i"
+  "replicaUsdc": "BD2BV4vyLJNJzgkA7DPNwdCB6CLG6W231JtCPWaXc88i",
+  "demo": {
+    "mint": "BaUMu1V6iCpckLESrsfCZeQgHYZ8CdLrC4fYm3qjXGsF",
+    "successor": "48GyJkex9uJUztM58fFrAsgspmT8s27qpTAWhhfqGPgf",
+    "pool": "5rfAHGkPwFQ4uKJgnvhURAKgVYGT2qTMWWAEDDqHSpvx",
+    "positions": [
+      "CnGpV9Ua2ULkfy6bD2R2sVQ6XCVGWyUyRmqjkmtMqW6e",
+      "9zJsp9KNHyEaUTMeX5gB8qHiHFNuf2ap2SA9Bh5vMXGY"
+    ],
+    "event": "3RpAibV4ecuHcdaeMuAGfBGdoqZqsC7dwuNmTaGYE9sR"
+  }
 }
