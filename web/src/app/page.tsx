@@ -17,8 +17,8 @@ export default function Home() {
   return (
     <>
       <Header />
-      <main id="top">
-        <section className="px-3 pt-3 sm:px-4 sm:pt-4">
+      <main id="main">
+        <section id="top" className="px-3 pt-3 sm:px-4 sm:pt-4">
           <div className="relative mx-auto max-w-[1440px] overflow-hidden rounded-[var(--radius-card-lg)]">
             <Image
               src="/images/launch-dusk.jpg"
@@ -61,7 +61,7 @@ export default function Home() {
             label="Your order"
             title="Set an order on devnet."
             muted="Watch mainnet next to it."
-            intro="Orders run against replica SPACEX and SPCXx that copy the mainnet tokens' fee and decimals, on a devnet pool priced to match mainnet. Mainnet balances are read only."
+            intro="Orders run against replica SPACEX and SPCXx that copy the mainnet tokens' fee and decimals, on a devnet pool kept in line with the mainnet price. Mainnet balances are read only."
           />
           <OrderSection history={days} />
         </section>

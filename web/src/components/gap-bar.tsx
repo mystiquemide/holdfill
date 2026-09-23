@@ -31,14 +31,14 @@ export function GapBar({ entitlement, market, limitBps, entitlementUsd, deadline
           style={{ width: `${(filled ? 1 : share) * 100}%` }}
         />
         <div className="absolute -top-1.5 h-6 w-0.5 bg-hold" style={{ left: `calc(${limitAt * 100}% - 1px)` }} aria-hidden />
-        <div className="absolute top-5 -translate-x-1/2 whitespace-nowrap text-xs text-hold" style={{ left: `${limitAt * 100}%` }}>
+        <div className="absolute top-5 -translate-x-1/2 whitespace-nowrap text-xs text-hold" style={{ left: `${Math.min(Math.max(limitAt * 100, 14), 86)}%` }}>
           ▲ {limitLabel} {pct(limitBps / 100, 0)}
         </div>
       </div>
       <Row
         label={limitLabel}
         value={<><span className="num">{pct(limitBps / 100, 0)}</span> largest gap accepted</>}
-        right={<span className={meets ? "text-fill" : "text-slate"}>{filled ? "filled" : meets ? "pool meets it now" : "waiting"}</span>}
+        right={<span className={meets ? "text-fill" : "text-slate"}>{filled ? "filled" : meets ? "pool meets it now" : "not yet"}</span>}
       />
       {deadline && <Row label="Deadline" value={deadline.label} right={<span className="num">{deadline.daysLeft} days left</span>} />}
     </div>

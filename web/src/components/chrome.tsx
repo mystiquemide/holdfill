@@ -42,6 +42,7 @@ export function Header() {
 
   return (
     <>
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-paper">Skip to content</a>
       <div className="bg-cream">
         <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center text-[13px] text-ink sm:text-sm">
           <span>Orders run on devnet replicas. Market data is live mainnet.</span>
@@ -54,7 +55,7 @@ export function Header() {
             <a href="#top" aria-label="Holdfill, back to top"><Logo /></a>
             <ul className="hidden items-center gap-6 text-sm lg:flex">
               {NAV.map((n) => (
-                <li key={n.href}><a href={n.href} className="text-ink underline-offset-4 hover:underline">{n.label}</a></li>
+                <li key={n.href}><a href={n.href} className="inline-block py-3 text-ink underline-offset-4 hover:underline">{n.label}</a></li>
               ))}
             </ul>
             <div className="flex items-center gap-2">

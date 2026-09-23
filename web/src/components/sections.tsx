@@ -87,7 +87,7 @@ const ROWS: [string, string, string, string][] = [
   ["Tokens stay in your wallet", "Yes, until the fill", "No", "Not available"],
   ["Handles the 12 Mar 2027 deadline", "Fallback floor", "Yes, by selling today", "Not available"],
   ["Stop anytime", "Revoke, one transaction", "Nothing to stop", "Not available"],
-  ["Cost", "Network fees", "Network fees", "Not available"],
+  ["Cost", "Network fees and a refundable account deposit", "Network fees", "Not available"],
 ];
 
 export function Compared() {

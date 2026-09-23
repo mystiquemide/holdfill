@@ -56,7 +56,7 @@ function useSubmit() {
       const res = await build();
       const built = await res.json();
       if (!res.ok) { toasts.update(id, { tone: "error", title: built.error ?? "Couldn't prepare the transaction.", sticky: false }); return false; }
-      if (!signTransaction) throw new Error("This wallet can't sign transactions.");
+      if (!signTransaction) { toasts.update(id, { tone: "error", title: "This wallet can't sign transactions.", body: "Connect Phantom, Solflare, or Backpack instead.", sticky: false }); return false; }
       toasts.update(id, { title: "Approve it in your wallet" });
       const signed = await signTransaction(Transaction.from(b64ToBytes(built.tx)));
       toasts.update(id, { title: "Sending to devnet..." });
@@ -68,7 +68,9 @@ function useSubmit() {
     } catch (e) {
       const err = e as Error;
       const cancelled = err.name === "WalletSignTransactionError" || /reject|cancel|denied/i.test(err.message);
-      toasts.update(id, { tone: "error", title: cancelled ? "Signature cancelled. Nothing was sent." : err.message.slice(0, 140), sticky: false });
+      toasts.update(id, cancelled
+        ? { tone: "error", title: "Signature cancelled. Nothing was sent.", sticky: false }
+        : { tone: "error", title: "Your wallet couldn't sign this transaction.", body: "Nothing was sent. Try again, or disconnect and reconnect your wallet.", sticky: false });
       return false;
     }
   }, [signTransaction, toasts]);
@@ -216,7 +218,7 @@ function Faucet({ position, onDone }: { position: Position; onDone: () => void }
   return (
     <div className="flex flex-col gap-4">
       <Balances position={position} />
-      <p className="text-base">Get 1 replica SPACEX (5 shares) to try an order. If your wallet has no devnet SOL, we add 0.02 SOL for fees.</p>
+      <p className="text-base">Get 1 replica SPACEX (5 shares) to try an order. If your wallet is low on devnet SOL, we add 0.02 SOL for fees.</p>
       <div className="flex flex-wrap items-center gap-3">
         <Button onClick={request} disabled={busy || !!limited}>{busy ? "Sending..." : "Get replica SPACEX"}</Button>
         {limited && <p className="text-sm text-deadline">{limited}</p>}
@@ -262,9 +264,9 @@ function Ticket({ position, history, onDone }: { position: Position; history: Hi
 
   const reason =
     !amount || !(shares > 0) ? "Enter an amount"
-    : sizeRaw > BigInt(position.devnet.replicaSpacex.raw) ? "More than you hold"
-    : !(fallbackTs > now / 1000) || fallback > "2027-03-11" ? "Fallback date must be before 12 Mar 2027"
-    : position.devnet.sol < 0.005 ? "Not enough devnet SOL for fees"
+    : sizeRaw > BigInt(position.devnet.replicaSpacex.raw) ? `Enter ${num(holdShares)} shares or less`
+    : !(fallbackTs > now / 1000) || fallback > "2027-03-11" ? "Pick a fallback date from tomorrow to 11 Mar 2027"
+    : position.devnet.sol < 0.005 ? "Add a little devnet SOL for fees"
     : null;
 
   const minBefore = 1 - limitBps / 10_000;
@@ -314,7 +316,9 @@ function Ticket({ position, history, onDone }: { position: Position; history: Hi
           <input id="ticket-limit" type="range" min={0} max={60} step={1} value={limitBps / 100} onChange={(e) => setLimitBps(Number(e.target.value) * 100)} className="limit mt-3 w-full" aria-describedby="limit-help" />
           <p id="limit-help" className="mt-2 text-xs leading-relaxed text-slate">
             {gapToday !== undefined && <>Today the devnet pool pays {pct(gapToday)} under. </>}
-            On mainnet, this limit would have filled on <span className="num text-ink">{bt.fillDays} of {bt.tradingDays}</span> trading days since listing{bt.firstFill ? `, first on ${day(bt.firstFill.date)}` : ""}.
+            {bt.fillDays > 0
+              ? <>On mainnet, this limit would have filled on <span className="num text-ink">{bt.fillDays} of {bt.tradingDays}</span> trading days since listing, first on {day(bt.firstFill!.date)}.</>
+              : <>On mainnet, the daily close never came this close in the <span className="num">{bt.tradingDays}</span> trading days since listing. A wider limit fills sooner.</>}
           </p>
         </div>
 
@@ -340,7 +344,7 @@ function Ticket({ position, history, onDone }: { position: Position; history: Hi
         </p>
 
         <Button type="submit" disabled={!!reason || busy} className="w-full">{reason ?? (busy ? "Waiting for your wallet..." : "Sign order")}</Button>
-        {reason === "Not enough devnet SOL for fees" && (
+        {reason === "Add a little devnet SOL for fees" && (
           <p className="text-xs text-slate">Get devnet SOL at <a className="text-ink underline underline-offset-4" href="https://faucet.solana.com" target="_blank" rel="noreferrer">faucet.solana.com</a> for {shortAddr(position.owner)}.</p>
         )}
       </form>
@@ -454,8 +458,17 @@ function OrderCard({ position, order, onChange, onRevoked }: { position: Positio
       <dl className="mt-2 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
         <Stat label="Filled" value={`${num(filled)} / ${num(size)}`} unit="shares" />
         <Stat label="Received" value={num(received)} unit="SPCXx" tone={received > 0 ? "text-fill" : undefined} />
-        <Stat label="Minimum now" value={num(order.minSpcxxPerShareNow)} unit="SPCXx per share" />
-        <Stat label="Fallback in" value={String(daysUntil(order.fallbackAt, now))} unit={`days, then ${pct(order.fallbackFloorBps / 100, 0)} floor`} />
+        {isFilled ? (
+          <>
+            <Stat label="Realized gap" value={pct(realized ?? 0)} unit="fees included" />
+            <Stat label="Limit was" value={pct(order.limitBps / 100, 0)} unit="largest gap accepted" />
+          </>
+        ) : (
+          <>
+            <Stat label="Minimum now" value={num(order.minSpcxxPerShareNow)} unit="SPCXx per share" />
+            <Stat label="Fallback in" value={String(daysUntil(order.fallbackAt, now))} unit={`days, then ${pct(order.fallbackFloorBps / 100, 0)} floor`} />
+          </>
+        )}
       </dl>
 
       <div className="mt-5 min-h-6 text-sm" aria-live="polite">
@@ -480,7 +493,7 @@ function OrderCard({ position, order, onChange, onRevoked }: { position: Positio
 
       {confirm && (
         <Modal title={isFilled ? "Close this order" : "Revoke this order"} onClose={() => !busy && setConfirm(false)}>
-          <p className="text-sm text-slate">{isFilled ? "Closing returns the order account's rent to you and clears the way for a new order." : "Revoke closes the order and removes the approval in one transaction. Anything already filled stays in your wallet."}</p>
+          <p className="text-sm text-slate">{isFilled ? "Closing returns the order account's small SOL deposit to you, so you can set a new order." : "Revoke closes the order and removes the approval in one transaction. Anything already filled stays in your wallet."}</p>
           <div className="mt-5 flex gap-2">
             <Button variant={isFilled ? "primary" : "danger"} onClick={revoke} disabled={busy} className="flex-1">{busy ? "Waiting for your wallet..." : isFilled ? "Close order" : "Revoke"}</Button>
             <Button variant="secondary" onClick={() => setConfirm(false)} disabled={busy}>Keep order</Button>
@@ -526,11 +539,11 @@ function Activity({ events }: { events: OrderEvent[] }) {
   );
 }
 
-const EVENT_LABEL: Record<OrderEvent["kind"], string> = { created: "Created", filled: "Filled", cancelled: "Revoked", rejected: "Rejected" };
+const EVENT_LABEL: Record<OrderEvent["kind"], string> = { created: "Created", filled: "Filled", cancelled: "Closed", rejected: "Rejected" };
 
 function describe(e: OrderEvent): string {
   if (e.kind === "created") return `${num(sharesOf(e.sizeRaw ?? 0))} shares, limit ${pct((e.limitBps ?? 0) / 100, 0)}`;
   if (e.kind === "filled") return `${num(sharesOf(e.amountInRaw ?? 0))} shares for ${num(spcxxOf(e.amountOutRaw ?? 0))} SPCXx, ${pct(e.gapPct ?? 0)} gap`;
-  if (e.kind === "cancelled") return `closed after filling ${num(sharesOf(e.amountInRaw ?? 0))} shares`;
+  if (e.kind === "cancelled") return Number(e.amountInRaw ?? 0) > 0 ? `closed after filling ${num(sharesOf(e.amountInRaw ?? 0))} shares` : "revoked before any fill";
   return explainError(e.error);
 }

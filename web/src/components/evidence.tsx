@@ -70,20 +70,17 @@ export function GapHistory({ days, unlocks }: { days: HistoryDay[]; unlocks: Unl
             {[0, 15, 30, 45].map((g) => (
               <g key={g}>
                 <line x1={pad.l} x2={width - pad.r} y1={y(g)} y2={y(g)} stroke="#e5e7eb" />
-                <text x={pad.l - 8} y={y(g) + 4} textAnchor="end" className="fill-slate font-mono text-[11px]">{g}%</text>
+                <text x={pad.l - 8} y={y(g) + 4} textAnchor="end" className="fill-slate font-mono text-[12px]">{g}%</text>
               </g>
             ))}
             {monthTicks.map((m) => (
-              <text key={m} x={x(m)} y={h - 8} textAnchor="middle" className="fill-slate text-[11px]">{day(m).replace("1 ", "")}</text>
+              <text key={m} x={x(m)} y={h - 8} textAnchor="middle" className="fill-slate text-[12px]">{day(m).replace("1 ", "")}</text>
             ))}
             {inRange.map((u) => (
-              <g key={u.date}>
-                <line x1={x(u.date)} x2={x(u.date)} y1={pad.t} y2={h - pad.b} stroke="#6f6f6f" strokeDasharray="3 4" />
-                <text x={x(u.date) + 4} y={pad.t + 10} className="fill-slate text-[10px]">unlock</text>
-              </g>
+              <line key={u.date} x1={x(u.date)} x2={x(u.date)} y1={pad.t} y2={h - pad.b} stroke="#6f6f6f" strokeDasharray="3 4" />
             ))}
             <line x1={pad.l} x2={width - pad.r} y1={y(limitPct)} y2={y(limitPct)} stroke="#845a0c" strokeWidth={2} />
-            <text x={width - pad.r} y={y(limitPct) - 6} textAnchor="end" className="fill-hold text-[11px]">your limit {pct(limitPct, 0)}</text>
+            <text x={width - pad.r} y={y(limitPct) - 6} textAnchor="end" className="fill-hold text-[12px]">your limit {pct(limitPct, 0)}</text>
             <path d={line} fill="none" stroke="#171717" strokeWidth={1.5} strokeLinejoin="round" />
             {days.map((d) => d.gapPct <= limitPct && <circle key={d.date} cx={x(d.date)} cy={y(d.gapPct)} r={3.5} fill="#17724b" />)}
             {hd && (
@@ -107,10 +104,13 @@ export function GapHistory({ days, unlocks }: { days: HistoryDay[]; unlocks: Unl
         Your {pct(limitPct, 0)} limit would have filled on <span className="num">{bt.fillDays} of {bt.tradingDays}</span> trading days.
         {bt.firstFill ? <> First: {day(bt.firstFill.date)}.</> : <> The gap never closed that far.</>}
       </p>
-      {upcoming.length > 0 && <p className="mt-1 text-sm text-slate">Dated lockup releases still ahead: {upcoming.map((u) => day(u.date)).join(", ")}.</p>}
+      <p className="mt-1 text-sm text-slate">
+        Dashed lines mark dated lockup releases: {inRange.map((u) => day(u.date)).join(", ")}.
+        {upcoming.length > 0 && <> Still ahead: {upcoming.map((u) => day(u.date)).join(", ")}.</>}
+      </p>
 
       <details className="mt-4 text-sm">
-        <summary className="cursor-pointer text-ink underline underline-offset-4">Show every day in a table</summary>
+        <summary className="cursor-pointer py-2 text-ink underline underline-offset-4">Show every day in a table</summary>
         <div className="mt-3 max-h-80 overflow-auto rounded-[14px] border border-hairline">
           <table className="w-full text-left">
             <thead className="sticky top-0 bg-vellum text-xs uppercase tracking-[0.06em] text-slate">

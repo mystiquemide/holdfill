@@ -2,9 +2,9 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 export function NetBadge({ net }: { net: "mainnet" | "devnet" }) {
   return net === "mainnet" ? (
-    <span className="inline-flex h-6 items-center rounded-full bg-vellum px-2.5 text-xs uppercase tracking-[0.06em] text-ink">Live mainnet</span>
+    <span className="inline-flex h-6 shrink-0 items-center whitespace-nowrap rounded-full bg-vellum px-2.5 text-xs uppercase tracking-[0.06em] text-ink">Live mainnet</span>
   ) : (
-    <span className="inline-flex h-6 items-center rounded-full bg-cream px-2.5 text-xs uppercase tracking-[0.06em] text-hold">Devnet replica</span>
+    <span className="inline-flex h-6 shrink-0 items-center whitespace-nowrap rounded-full bg-cream px-2.5 text-xs uppercase tracking-[0.06em] text-hold">Devnet replica</span>
   );
 }
 
