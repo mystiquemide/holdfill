@@ -11,7 +11,6 @@ import { Button } from "./ui";
 import { Logo } from "./logo";
 
 const NAV = [
-  { href: "/order", label: "Your order" },
   { href: "/evidence", label: "Evidence" },
   { href: "/proof", label: "Proof" },
 ];
@@ -65,7 +64,7 @@ export function LandingOnly({ children }: { children: React.ReactNode }) {
   return usePathname() === "/" ? <>{children}</> : null;
 }
 
-/** Link back to the landing page, at the top of /order, /evidence, and /proof. */
+/** Link back to the landing page, at the top of /app, /evidence, and /proof. */
 export function BackHome() {
   return (
     <Link href="/" className="inline-flex h-10 items-center gap-2 rounded-full bg-vellum px-4 text-sm font-medium text-ink transition-colors duration-150 hover:bg-hairline">
@@ -74,33 +73,17 @@ export function BackHome() {
   );
 }
 
-/** "O" opens the order page (or focuses the ticket when already there), unless the viewer is typing. */
-function useOrderShortcut(pathname: string, go: (href: string) => void) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() !== "o" || e.metaKey || e.ctrlKey || e.altKey) return;
-      const t = e.target as HTMLElement | null;
-      if (t && (t.isContentEditable || ["INPUT", "SELECT", "TEXTAREA"].includes(t.tagName))) return;
-      e.preventDefault();
-      if (pathname !== "/order") { go("/order"); return; }
-      (document.getElementById("ticket-amount") ?? document.getElementById("order-connect"))?.focus();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [pathname, go]);
-}
-
 /**
- * After a connection the viewer started from the wallet picker, open the order page. After a
- * disconnect while on the order page, go home. Automatic reconnects on load never redirect.
+ * A wallet connection started from the picker opens the app. Disconnecting in the app returns
+ * home. Automatic reconnects on load never redirect.
  */
 function useWalletRedirects(pathname: string, go: (href: string) => void) {
   const { connected } = useWallet();
   const { consumeConnectIntent } = useConnectIntent();
   const was = useRef(connected);
   useEffect(() => {
-    if (connected && consumeConnectIntent() && pathname !== "/order") go("/order");
-    if (was.current && !connected && pathname === "/order") go("/");
+    if (connected && consumeConnectIntent() && pathname !== "/app") go("/app");
+    if (was.current && !connected && pathname === "/app") go("/");
     was.current = connected;
   }, [connected, consumeConnectIntent, pathname, go]);
 }
@@ -109,41 +92,41 @@ export function Header() {
   const [menu, setMenu] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const go = useCallback((href: string) => router.push(href), [router]);
-  useOrderShortcut(pathname, go);
+  const go = useCallback((href: string) => { setMenu(false); router.push(href); }, [router]);
   useWalletRedirects(pathname, go);
   const isActive = (href: string) => pathname === href;
+  const isApp = pathname === "/app";
 
   return (
     <>
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-paper">Skip to content</a>
-      <div className="bg-cream">
+      {!isApp && <div className="bg-cream">
         <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center text-[13px] text-ink sm:text-sm">
           <span>Orders run on devnet replicas. Market data is live mainnet.</span>
           <Link href="/proof" className="hit inline-flex h-7 items-center rounded-full bg-ink px-3 text-xs font-medium text-paper hover:bg-black">See the proof</Link>
         </div>
-      </div>
+      </div>}
       <header className="sticky top-0 z-40">
         <nav className="border-b border-hairline bg-paper" aria-label="Main">
           <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-4 md:px-6">
             <Link href="/" aria-label="Holdfill home"><Logo /></Link>
-            <ul className="hidden items-center gap-6 text-sm lg:flex">
+            {!isApp && <ul className="hidden items-center gap-6 text-sm lg:flex">
               <li><HowItWorksLink className="inline-block py-3 text-ink underline-offset-8 hover:underline" /></li>
               {NAV.map((n) => (
                 <li key={n.href}>
-                <Link
-                  href={n.href}
-                  aria-current={isActive(n.href) ? "page" : undefined}
-                  className={`inline-block py-3 underline-offset-8 hover:underline ${isActive(n.href) ? "text-ink underline decoration-hold decoration-2" : "text-ink"}`}
-                >
-                  {n.label}
-                </Link>
-              </li>
+                  <Link
+                    href={n.href}
+                    aria-current={isActive(n.href) ? "page" : undefined}
+                    className={`inline-block py-3 underline-offset-8 hover:underline ${isActive(n.href) ? "text-ink underline decoration-hold decoration-2" : "text-ink"}`}
+                  >
+                    {n.label}
+                  </Link>
+                </li>
               ))}
-            </ul>
+            </ul>}
             <div className="flex items-center gap-2">
               <WalletButton compact />
-              <button
+              {!isApp && <button
                 className="inline-flex size-11 items-center justify-center rounded-full bg-vellum lg:hidden"
                 aria-expanded={menu}
                 aria-controls="mobile-menu"
@@ -151,23 +134,23 @@ export function Header() {
                 onClick={() => setMenu((m) => !m)}
               >
                 <span aria-hidden className="text-lg leading-none">{menu ? "×" : "≡"}</span>
-              </button>
+              </button>}
             </div>
           </div>
-          {menu && (
+          {!isApp && menu && (
             <div id="mobile-menu" className="border-t border-hairline bg-paper px-4 py-3 lg:hidden">
               <ul className="flex flex-col">
                 <li><HowItWorksLink onNavigate={() => setMenu(false)} className="block rounded-[14px] px-3 py-3 text-base text-ink hover:bg-vellum" /></li>
                 {NAV.map((n) => (
                   <li key={n.href}>
                     <Link
-                    href={n.href}
-                    onClick={() => setMenu(false)}
-                    aria-current={isActive(n.href) ? "page" : undefined}
-                    className={`block rounded-[14px] px-3 py-3 text-base text-ink hover:bg-vellum ${isActive(n.href) ? "bg-vellum" : ""}`}
-                  >
-                    {n.label}
-                  </Link>
+                      href={n.href}
+                      onClick={() => setMenu(false)}
+                      aria-current={isActive(n.href) ? "page" : undefined}
+                      className={`block rounded-[14px] px-3 py-3 text-base text-ink hover:bg-vellum ${isActive(n.href) ? "bg-vellum" : ""}`}
+                    >
+                      {n.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -175,6 +158,21 @@ export function Header() {
           )}
         </nav>
       </header>
+    </>
+  );
+}
+
+/** Landing CTAs open the wallet picker, then the app. Connected viewers can reopen the app. */
+export function AppEntryButton({ variant = "primary", className = "" }: { variant?: "primary" | "light"; className?: string }) {
+  const { connected } = useWallet();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button variant={variant} className={className} onClick={() => connected ? router.push("/app") : setOpen(true)}>
+        {connected ? "Open app" : "Connect wallet"}
+      </Button>
+      {open && <WalletPicker onClose={() => setOpen(false)} />}
     </>
   );
 }

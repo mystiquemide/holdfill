@@ -46,7 +46,7 @@ Two networks, one rule: mainnet is only read, devnet is where orders execute. Ev
 | Component | Runtime | Responsibility |
 |---|---|---|
 | `programs/holdfill_orders` | Solana program, Anchor 1.2.0 | Stores order terms. Enforces limit, fallback, issuer deadline, size cap, fee and pause state. Executes the swap as delegate via CPI into Meteora DLMM `swap2`. |
-| `web/` | Next.js 16.3.6, React 19.2, Tailwind v4, Vercel | App Router pages: `/` (introduction), `/order` (the order app), `/evidence`, `/proof`. Wallet connect. The server builds order and revoke transactions; the wallet signs; the server relays to devnet. |
+| `web/` | Next.js 16.3.6, React 19.2, Tailwind v4, Vercel | App Router pages: `/` (introduction), `/app` (the order app), `/evidence`, `/proof`; `/order` redirects to `/app`. Wallet connect opens the app. The server builds order and revoke transactions; the wallet signs; the server relays to devnet. |
 | `web/src/app/api/*` | Next.js route handlers (Node runtime) | Mainnet reads, history, backtest, faucet, keeper tick. Server-only keys. |
 | `keeper/` | Node 22 worker, same code as the tick route | Polls active orders, quotes the pool, calls `execute` when the order's minimum is reachable. |
 | `scripts/sync-devnet-price.ts` | Node 22 script, run on demand | Moves the devnet pool price to the live mainnet SPACEX/SPCXx price by trading issuer inventory. Run after setup, before recording, and before deploy. |

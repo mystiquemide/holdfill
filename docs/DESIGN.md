@@ -85,16 +85,16 @@ Full opacity, never blurred, a white scrim behind hero text and an ink scrim beh
 
 ## 8. Page
 
-Four routes share the honesty strip (scrolls away) and the sticky nav with the wallet button. The nav marks the current route with a hold-colored underline. "How it works" scrolls to the landing section without adding a # to the URL. Only the landing page has the footer. `/order`, `/evidence`, and `/proof` are standalone product pages that open with a "Back to home" button and carry no landing CTA sections.
+The landing page, `/evidence`, and `/proof` share the honesty strip and marketing nav with the wallet button. The nav marks the current marketing route with a hold-colored underline. "How it works" scrolls to the landing section without adding a # to the URL. `/app` has its own focused header with the logo and wallet button, without the marketing strip or navigation. Only the landing page has the footer. The three standalone pages open with a "Back to home" button.
 
 | Route | Contents |
 |---|---|
-| `/` | Hero with live preview card, How it works, evidence preview (live gap, 20% backtest, Jupiter refusal, link to `/evidence`), compact comparison, proof preview (5 of 5, devnet program, transaction count, link to `/proof`), final CTA to `/order`. |
-| `/order` | The app: market card and the position panel with every order state, ticket, modals, activity. |
+| `/` | Hero with live preview card, How it works, evidence preview (live gap, 20% backtest, Jupiter refusal, link to `/evidence`), compact comparison, proof preview (5 of 5, devnet program, transaction count, link to `/proof`), wallet connection CTAs. |
+| `/app` | The app: market card and the position panel with every order state, ticket, modals, activity. |
 | `/evidence` | Stats row, gap history chart with backtest and daily table, live Jupiter check, one real sale, one real deadline. |
 | `/proof` | Cloned-mainnet run with mint and pool links, devnet program, upgrade authority, signatures, what Holdfill never does. |
 
-Connecting from the wallet picker on any page other than `/order` opens `/order`. Disconnecting while on `/order` returns to `/`. A wallet that reconnects on its own after a refresh never redirects. "Set an order" and the O key go to `/order`, which shows the connect state when no wallet is connected.
+Connecting from the wallet picker opens `/app`. Disconnecting while on `/app` returns to `/`. A wallet that reconnects on its own after a refresh never redirects. Landing CTAs open the wallet picker, or open `/app` for a wallet that is already connected. `/order` redirects to `/app` for older links. A direct visit to `/app` without a wallet shows the connect state.
 
 The order section states, in order: not connected, loading, no replica tokens (faucet), holding (ticket), armed, partial, filled, blocked (paused, fee changed, deadline passed, approval removed), revoked banner. Transactions are built by the server, signed in the wallet, and relayed by the server to devnet.
 

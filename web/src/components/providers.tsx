@@ -45,7 +45,7 @@ function MarketProvider({ children }: { children: ReactNode }) {
 
 export const useMarket = () => useContext(MarketCtx);
 
-// ---------- Connect intent: only a connection the viewer asked for sends them to /order ----------
+// ---------- Connect intent: only a connection the viewer asked for sends them to /app ----------
 
 type IntentApi = { markConnectIntent: () => void; consumeConnectIntent: () => boolean };
 const IntentCtx = createContext<IntentApi>({ markConnectIntent: () => {}, consumeConnectIntent: () => false });

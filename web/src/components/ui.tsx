@@ -37,10 +37,6 @@ export function ButtonLink({ variant = "primary", className = "", children, href
   );
 }
 
-export function Keycap({ children }: { children: ReactNode }) {
-  return <kbd className="inline-flex size-6 font-sans items-center justify-center rounded-md border border-hairline bg-paper text-xs text-ink shadow-[0_1px_0_#e5e7eb]">{children}</kbd>;
-}
-
 /** Hairline divider with a centered gray label, then an optional big heading. */
 export function SectionHead({ label, title, muted, intro, level = 2 }: { label: string; title?: string; muted?: string; intro?: ReactNode; level?: 1 | 2 }) {
   const Heading = level === 1 ? "h1" : "h2";

@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { day, explorerAddr, explorerTx, int, num, pct, shortAddr } from "@/lib/format";
 import { Logo } from "./logo";
-import { HowItWorksLink } from "./chrome";
+import { AppEntryButton, HowItWorksLink } from "./chrome";
 import { ProgramAuthority, CopyCommand } from "./proof-live";
 import { ButtonLink, NetBadge, Source } from "./ui";
 
@@ -270,7 +270,7 @@ export function FinalCta() {
           Set your price once.
           <span className="block text-paper/75">Holdfill fills it or waits.</span>
         </h2>
-        <ButtonLink href="/order" variant="light" className="mt-10">Set an order</ButtonLink>
+        <AppEntryButton variant="light" className="mt-10" />
       </div>
     </div>
   );
@@ -288,7 +288,6 @@ export function Footer() {
           <p className="text-slate">Product</p>
           <ul className="mt-1 flex flex-col">
             <li><HowItWorksLink className="inline-block py-2.5 underline-offset-4 hover:underline" /></li>
-            <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/order">Your order</Link></li>
             <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/evidence">Evidence</Link></li>
             <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/proof">Proof</Link></li>
           </ul>

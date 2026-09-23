@@ -3,13 +3,13 @@ import history from "../../../data/haircut-history.json";
 import forkProof from "../../../data/proof-fork.json";
 import devnetProof from "../../../data/proof-devnet.json";
 import { backtest, type HistoryDay } from "@/server/backtest";
-import { PendingSectionScroll } from "@/components/chrome";
+import { AppEntryButton, PendingSectionScroll } from "@/components/chrome";
 import { EvidencePreview, PreviewCard } from "@/components/hero";
 import { Compared, FinalCta, HowItWorks, ProofPreview } from "@/components/sections";
-import { ButtonLink, Keycap, SectionHead } from "@/components/ui";
+import { SectionHead } from "@/components/ui";
 
-// The landing page introduces Holdfill. The app, the full evidence, and the full proof live on
-// /order, /evidence, and /proof.
+// The landing page introduces Holdfill. The app, full evidence, and full proof live on
+// /app, /evidence, and /proof.
 const at20 = backtest(history.days as HistoryDay[], 2000);
 
 export default function Home() {
@@ -36,8 +36,7 @@ export default function Home() {
               Set your price once. Holdfill converts your SpaceX PreStocks into SPCXx when the pool pays it, never below your terms and never after 12 Mar 2027.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-              <ButtonLink href="/order">Set an order</ButtonLink>
-              <span className="hidden items-center gap-2 text-sm text-ink sm:inline-flex">Press <Keycap>O</Keycap> anytime</span>
+              <AppEntryButton />
             </div>
             <div className="mt-14 w-full max-w-3xl text-left sm:mt-20">
               <PreviewCard />
