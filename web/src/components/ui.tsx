@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 export function NetBadge({ net }: { net: "mainnet" | "devnet" }) {
@@ -26,15 +27,13 @@ export function Button({ variant = "primary", className = "", children, ...rest 
   );
 }
 
-/** Same look as Button, for anchors (in-page jumps and external links). */
-export function ButtonLink({ variant = "primary", className = "", children, ...rest }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { variant?: keyof typeof variants }) {
-  return (
-    <a
-      {...rest}
-      className={`inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-[15px] font-medium transition-colors duration-150 ease-out ${variants[variant]} ${className}`}
-    >
-      {children}
-    </a>
+/** Same look as Button, for links. Internal routes use client-side navigation. */
+export function ButtonLink({ variant = "primary", className = "", children, href = "", ...rest }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { variant?: keyof typeof variants }) {
+  const cls = `inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-[15px] font-medium transition-colors duration-150 ease-out ${variants[variant]} ${className}`;
+  return href.startsWith("/") ? (
+    <Link href={href} {...rest} className={cls}>{children}</Link>
+  ) : (
+    <a href={href} {...rest} className={cls}>{children}</a>
   );
 }
 
@@ -43,7 +42,8 @@ export function Keycap({ children }: { children: ReactNode }) {
 }
 
 /** Hairline divider with a centered gray label, then an optional big heading. */
-export function SectionHead({ label, title, muted, intro }: { label: string; title?: string; muted?: string; intro?: ReactNode }) {
+export function SectionHead({ label, title, muted, intro, level = 2 }: { label: string; title?: string; muted?: string; intro?: ReactNode; level?: 1 | 2 }) {
+  const Heading = level === 1 ? "h1" : "h2";
   return (
     <div className="mb-10 md:mb-14">
       <div className="flex items-center gap-4 text-sm text-slate">
@@ -52,10 +52,10 @@ export function SectionHead({ label, title, muted, intro }: { label: string; tit
         <span className="h-px flex-1 bg-hairline" />
       </div>
       {title && (
-        <h2 className="mt-10 max-w-3xl text-4xl leading-[1.1] tracking-[-0.02em] md:text-5xl">
+        <Heading className="mt-10 max-w-3xl text-4xl leading-[1.1] tracking-[-0.02em] md:text-5xl">
           {title}
           {muted && <span className="block text-slate">{muted}</span>}
-        </h2>
+        </Heading>
       )}
       {intro && <div className="mt-5 max-w-2xl text-base leading-relaxed text-slate">{intro}</div>}
     </div>

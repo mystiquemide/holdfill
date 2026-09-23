@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Header } from "@/components/chrome";
 import { Providers } from "@/components/providers";
+import { Footer } from "@/components/sections";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -16,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const metadata: Metadata = {
-  title: "Holdfill: hold through the lockup, fill before the deadline",
+  title: { default: "Holdfill: hold through the lockup, fill before the deadline", template: "%s | Holdfill" },
   description:
     "Standing exit orders for SpaceX PreStocks. Set your price once. Holdfill converts into SPCXx when the pool pays it, never below your terms and never after the issuer deadline.",
   openGraph: {
@@ -32,7 +34,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <body className="min-h-dvh">
-        <Providers>{children}</Providers>
+        <Providers>
+          <Header />
+          <main id="main">{children}</main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

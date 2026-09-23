@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { day, explorerAddr, explorerTx, int, num, pct, shortAddr } from "@/lib/format";
 import { Logo } from "./logo";
 import { ProgramAuthority, CopyCommand } from "./proof-live";
@@ -90,13 +91,17 @@ const ROWS: [string, string, string, string][] = [
   ["Cost", "Network fees and a refundable account deposit", "Network fees", "Not available"],
 ];
 
-export function Compared() {
-  const refused = (c: string) => (c === "Refused for PreStocks" ? <a className="text-deadline underline underline-offset-4" href="#jupiter">{c}</a> : c);
+// The landing page shows these four; no other page repeats the comparison.
+const COMPACT = new Set(["Waits for your price", "Minimum checked on chain", "Tokens stay in your wallet", "Cost"]);
+
+export function Compared({ compact = false }: { compact?: boolean }) {
+  const refused = (c: string) => (c === "Refused for PreStocks" ? <Link className="text-deadline underline underline-offset-4" href="/evidence#jupiter">{c}</Link> : c);
+  const rows = compact ? ROWS.filter(([k]) => COMPACT.has(k)) : ROWS;
   return (
     <>
       {/* Phones: one block per question, Holdfill first. */}
       <ul className="flex flex-col gap-3 md:hidden">
-        {ROWS.map(([k, a, b, c]) => (
+        {rows.map(([k, a, b, c]) => (
           <li key={k} className="rounded-[var(--radius-card)] border border-hairline p-4">
             <p className="text-base">{k}</p>
             <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
@@ -118,7 +123,7 @@ export function Compared() {
             </tr>
           </thead>
           <tbody className="divide-y divide-hairline">
-            {ROWS.map(([k, a, b, c]) => (
+            {rows.map(([k, a, b, c]) => (
               <tr key={k}>
                 <th scope="row" className="p-4 font-normal sm:p-5">{k}</th>
                 <td className="bg-vellum p-4 sm:p-5">{a}</td>
@@ -135,7 +140,11 @@ export function Compared() {
 
 // ---------- Proof ----------
 
-type ForkProof = { ranAt: string; mainnet: { slot: number }; program: { id: string; sameBinaryAsDevnetDeployment: boolean }; checks: { name: string; pass: boolean; result: string }[]; passed: number; total: number };
+type ForkProof = {
+  ranAt: string; mainnet: { slot: number }; program: { id: string; sameBinaryAsDevnetDeployment: boolean };
+  mints: { spacex: string; spcxx: string }; pool: string;
+  checks: { name: string; pass: boolean; result: string }[]; passed: number; total: number;
+};
 type DevnetProof = { programId: string; transactions: Record<string, { signature: string; result: string }> };
 
 const DEVNET_ROWS: [string, string][] = [
@@ -152,6 +161,14 @@ export function Proof({ fork, devnetProof }: { fork: ForkProof; devnetProof: Dev
       <div className="rounded-[var(--radius-card)] border border-hairline bg-paper p-5 sm:p-6">
         <h3 className="text-lg">On cloned mainnet state</h3>
         <p className="mt-1 text-sm text-slate">Real SPACEX mint, real Meteora pool, real 1% transfer fee. Mainnet slot <span className="num">{int(fork.mainnet.slot)}</span>, run {day(fork.ranAt)}.</p>
+        <dl className="mt-3 flex flex-col gap-1 text-xs text-slate">
+          {([["SPACEX mint", fork.mints.spacex], ["SPCXx mint", fork.mints.spcxx], ["Meteora pool", fork.pool]] as const).map(([k, a]) => (
+            <div key={k} className="flex justify-between gap-3">
+              <dt>{k}</dt>
+              <dd><a className="mono text-ink underline underline-offset-4" href={explorerAddr(a, "mainnet")} target="_blank" rel="noreferrer">{shortAddr(a)}</a></dd>
+            </div>
+          ))}
+        </dl>
         <ul className="mt-5 divide-y divide-hairline">
           {fork.checks.map((c) => (
             <li key={c.name} className="flex items-baseline gap-3 py-3">
@@ -189,8 +206,39 @@ export function Proof({ fork, devnetProof }: { fork: ForkProof; devnetProof: Dev
             );
           })}
         </ul>
-        <Source>Every signature opens on Solana Explorer. Rejections are real failed transactions, sent without a simulation shortcut.</Source>
+        <Source>The two red rows failed on purpose: they prove the program refuses a fill below the holder&apos;s minimum and any fill after a revoke. They are real transactions on chain, sent without a simulation shortcut. Every signature opens on Solana Explorer.</Source>
       </div>
+    </div>
+  );
+}
+
+export function ProofPreview({ fork, devnetProof }: { fork: ForkProof; devnetProof: DevnetProof }) {
+  // Count the same rows the proof page lists, so both pages agree.
+  const shown = DEVNET_ROWS.map(([key]) => devnetProof.transactions[key]).filter(Boolean);
+  const rejected = shown.filter((t) => t.result.startsWith("failed")).length;
+  const signed = shown.length;
+  const facts = [
+    { value: `${fork.passed} of ${fork.total}`, label: "checks passed on cloned mainnet state", source: "real SPACEX mint, real Meteora pool, real 1% fee" },
+    { value: shortAddr(devnetProof.programId), label: "order program deployed on devnet", source: fork.program.sameBinaryAsDevnetDeployment ? "same binary as the fork run" : "devnet deployment", mono: true },
+    { value: String(signed), label: "devnet transactions on Explorer", source: `${rejected} of them rejected on purpose, to prove the limits hold` },
+  ];
+  return (
+    <div className="rounded-[var(--radius-card-lg)] border border-hairline bg-paper p-6 sm:p-8">
+      <p className="max-w-2xl text-2xl leading-snug tracking-[-0.01em]">
+        Tested against cloned mainnet state.
+        <span className="block text-slate">Proven again on devnet.</span>
+      </p>
+      <dl className="mt-8 grid gap-6 sm:grid-cols-3">
+        {facts.map((f) => (
+          <div key={f.label} className="border-t border-hairline pt-4">
+            <dt className="sr-only">{f.label}</dt>
+            <dd className={`${f.mono ? "mono text-2xl" : "num text-3xl"} tracking-[-0.02em]`}>{f.value}</dd>
+            <dd className="mt-2 text-sm text-ink">{f.label}</dd>
+            <dd className="mt-1 text-xs text-slate">{f.source}</dd>
+          </div>
+        ))}
+      </dl>
+      <ButtonLink href="/proof" variant="secondary" className="mt-8">Verify the proof →</ButtonLink>
     </div>
   );
 }
@@ -221,7 +269,7 @@ export function FinalCta() {
           Set your price once.
           <span className="block text-paper/75">Holdfill fills it or waits.</span>
         </h2>
-        <ButtonLink href="#order" variant="light" className="mt-10">Set an order</ButtonLink>
+        <ButtonLink href="/order" variant="light" className="mt-10">Set an order</ButtonLink>
       </div>
       <p className="absolute bottom-3 left-4 text-xs text-paper/80">Photo: SpaceX on Unsplash</p>
     </div>
@@ -239,10 +287,10 @@ export function Footer() {
         <nav aria-label="Product" className="text-sm">
           <p className="text-slate">Product</p>
           <ul className="mt-3 flex flex-col gap-2">
-            <li><a className="underline-offset-4 hover:underline" href="#how">How it works</a></li>
-            <li><a className="underline-offset-4 hover:underline" href="#order">Your order</a></li>
-            <li><a className="underline-offset-4 hover:underline" href="#evidence">Evidence</a></li>
-            <li><a className="underline-offset-4 hover:underline" href="#proof">Proof</a></li>
+            <li><Link className="underline-offset-4 hover:underline" href="/#how">How it works</Link></li>
+            <li><Link className="underline-offset-4 hover:underline" href="/order">Your order</Link></li>
+            <li><Link className="underline-offset-4 hover:underline" href="/evidence">Evidence</Link></li>
+            <li><Link className="underline-offset-4 hover:underline" href="/proof">Proof</Link></li>
           </ul>
         </nav>
         <nav aria-label="Build" className="text-sm">
@@ -250,7 +298,7 @@ export function Footer() {
           <ul className="mt-3 flex flex-col gap-2">
             <li><a className="underline-offset-4 hover:underline" href="https://github.com/mystiquemide/holdfill" target="_blank" rel="noreferrer">GitHub</a></li>
             <li><a className="underline-offset-4 hover:underline" href="https://github.com/mystiquemide/holdfill/blob/main/docs/ARCHITECTURE.md" target="_blank" rel="noreferrer">Architecture</a></li>
-            <li><a className="underline-offset-4 hover:underline" href="#proof">Run the proof</a></li>
+            <li><Link className="underline-offset-4 hover:underline" href="/proof">Run the proof</Link></li>
           </ul>
         </nav>
       </div>

@@ -3,7 +3,7 @@
 import { day, int, pct, usd, utcTime } from "@/lib/format";
 import { GapBar } from "./gap-bar";
 import { useLimit, useMarket } from "./providers";
-import { NetBadge } from "./ui";
+import { ButtonLink, NetBadge } from "./ui";
 
 /** Live mainnet preview: the real quote for one raw token against a 20% limit (or the viewer's own limit). */
 export function PreviewCard() {
@@ -67,5 +67,46 @@ export function StatsRow() {
         ))}
       </div>
     </section>
+  );
+}
+
+/** Landing-page summary of the evidence: live gap, historical fill rate, and the Jupiter refusal. */
+export function EvidencePreview({ fillDays, tradingDays, firstFill }: { fillDays: number; tradingDays: number; firstFill: string | null }) {
+  const { data } = useMarket();
+  const facts = [
+    {
+      value: data ? pct(data.quote.value.executableGapPct) : "...",
+      label: "under the SPCXx entitlement, pool quote right now",
+      source: data ? `Meteora quote for 1 raw token, ${utcTime(data.quote.asOf)}` : "Reading the live pool...",
+    },
+    {
+      value: `${fillDays} of ${tradingDays}`,
+      label: "trading days a 20% limit would have filled",
+      source: firstFill ? `Daily closes since listing, first on ${day(firstFill)}` : "Daily closes since listing",
+    },
+    {
+      value: "Refused",
+      label: "Jupiter limit orders for PreStocks",
+      source: "The API rejects the token's transfer fee. Checked live on the evidence page.",
+    },
+  ];
+  return (
+    <div className="rounded-[var(--radius-card-lg)] border border-hairline bg-paper p-6 sm:p-8">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-sm text-slate">From the live SPACEX market</p>
+        <NetBadge net="mainnet" />
+      </div>
+      <dl className="mt-6 grid gap-6 sm:grid-cols-3">
+        {facts.map((f) => (
+          <div key={f.label} className="border-t border-hairline pt-4">
+            <dt className="sr-only">{f.label}</dt>
+            <dd className="num text-3xl tracking-[-0.02em]">{f.value}</dd>
+            <dd className="mt-2 text-sm text-ink">{f.label}</dd>
+            <dd className="mt-1 text-xs text-slate">{f.source}</dd>
+          </div>
+        ))}
+      </dl>
+      <ButtonLink href="/evidence" variant="secondary" className="mt-8">Explore the evidence →</ButtonLink>
+    </div>
   );
 }

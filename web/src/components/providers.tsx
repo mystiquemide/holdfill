@@ -45,6 +45,24 @@ function MarketProvider({ children }: { children: ReactNode }) {
 
 export const useMarket = () => useContext(MarketCtx);
 
+// ---------- Connect intent: only a connection the viewer asked for sends them to /order ----------
+
+type IntentApi = { markConnectIntent: () => void; consumeConnectIntent: () => boolean };
+const IntentCtx = createContext<IntentApi>({ markConnectIntent: () => {}, consumeConnectIntent: () => false });
+const INTENT_WINDOW_MS = 120_000;
+
+function IntentProvider({ children }: { children: ReactNode }) {
+  // A wallet that reconnects on its own after a refresh leaves this empty, so it never redirects.
+  const at = useRef(0);
+  const api = useMemo(() => ({
+    markConnectIntent: () => { at.current = Date.now(); },
+    consumeConnectIntent: () => { const fresh = Date.now() - at.current < INTENT_WINDOW_MS; at.current = 0; return fresh; },
+  }), []);
+  return <IntentCtx.Provider value={api}>{children}</IntentCtx.Provider>;
+}
+
+export const useConnectIntent = () => useContext(IntentCtx);
+
 // ---------- The viewer's limit, shared by hero, ticket, and chart ----------
 
 type LimitState = { limitBps: number; setLimitBps: (bps: number) => void };
@@ -122,7 +140,9 @@ export function Providers({ children }: { children: ReactNode }) {
       <WalletProvider wallets={[]} autoConnect>
         <MarketProvider>
           <LimitProvider>
-            <ToastProvider>{children}</ToastProvider>
+            <IntentProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </IntentProvider>
           </LimitProvider>
         </MarketProvider>
       </WalletProvider>

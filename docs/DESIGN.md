@@ -1,6 +1,6 @@
 # Holdfill design system
 
-Version 2.0, 23 September 2026. This is the spec the page at `/` is built from.
+Version 2.0, 23 September 2026. This is the spec the Holdfill pages are built from.
 
 ## 1. Brand
 
@@ -85,7 +85,16 @@ Full opacity, never blurred, a white scrim behind hero text and an ink scrim beh
 
 ## 8. Page
 
-One route `/` plus the 404 and error pages. Order: honesty strip (scrolls away), sticky nav, hero with live preview card, stats row, How it works, Your order, Evidence, Compared, Proof, What Holdfill never does, final CTA card, footer.
+Four routes share the honesty strip (scrolls away), the sticky nav with the wallet button, and the footer. The nav marks the current route with a hold-colored underline.
+
+| Route | Contents |
+|---|---|
+| `/` | Hero with live preview card, How it works, evidence preview (live gap, 20% backtest, Jupiter refusal, link to `/evidence`), compact comparison, proof preview (5 of 5, devnet program, transaction count, link to `/proof`), final CTA to `/order`. |
+| `/order` | The app: market card and the position panel with every order state, ticket, modals, activity. |
+| `/evidence` | Stats row, gap history chart with backtest and daily table, live Jupiter check, one real sale, one real deadline. |
+| `/proof` | Cloned-mainnet run with mint and pool links, devnet program, upgrade authority, signatures, what Holdfill never does. |
+
+Connecting from the wallet picker on any page other than `/order` opens `/order`. A wallet that reconnects on its own after a refresh never redirects. "Set an order" and the O key go to `/order`, which shows the connect state when no wallet is connected.
 
 The order section states, in order: not connected, loading, no replica tokens (faucet), holding (ticket), armed, partial, filled, blocked (paused, fee changed, deadline passed, approval removed), revoked banner. Transactions are built by the server, signed in the wallet, and relayed by the server to devnet.
 

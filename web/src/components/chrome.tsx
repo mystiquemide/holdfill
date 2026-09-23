@@ -1,17 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletReadyState, type WalletName } from "@solana/wallet-adapter-base";
 import { shortAddr } from "@/lib/format";
+import { useConnectIntent } from "./providers";
 import { Button } from "./ui";
 import { Logo } from "./logo";
 
 const NAV = [
-  { href: "#how", label: "How it works" },
-  { href: "#order", label: "Your order" },
-  { href: "#evidence", label: "Evidence" },
-  { href: "#proof", label: "Proof" },
+  { href: "/#how", label: "How it works" },
+  { href: "/order", label: "Your order" },
+  { href: "/evidence", label: "Evidence" },
+  { href: "/proof", label: "Proof" },
 ];
 
 const KNOWN_WALLETS = [
@@ -20,25 +23,39 @@ const KNOWN_WALLETS = [
   { name: "Backpack", url: "https://backpack.app/downloads" },
 ];
 
-/** "O" jumps to the order ticket, unless the viewer is typing somewhere. */
-function useOrderShortcut() {
+/** "O" opens the order page (or focuses the ticket when already there), unless the viewer is typing. */
+function useOrderShortcut(pathname: string, go: (href: string) => void) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() !== "o" || e.metaKey || e.ctrlKey || e.altKey) return;
       const t = e.target as HTMLElement | null;
       if (t && (t.isContentEditable || ["INPUT", "SELECT", "TEXTAREA"].includes(t.tagName))) return;
       e.preventDefault();
-      document.getElementById("order")?.scrollIntoView({ behavior: "smooth" });
-      setTimeout(() => (document.getElementById("ticket-amount") ?? document.getElementById("order-connect"))?.focus({ preventScroll: true }), 450);
+      if (pathname !== "/order") { go("/order"); return; }
+      (document.getElementById("ticket-amount") ?? document.getElementById("order-connect"))?.focus();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [pathname, go]);
+}
+
+/** After a connection the viewer started from the wallet picker, open the order page. */
+function useRedirectOnConnect(pathname: string, go: (href: string) => void) {
+  const { connected } = useWallet();
+  const { consumeConnectIntent } = useConnectIntent();
+  useEffect(() => {
+    if (connected && consumeConnectIntent() && pathname !== "/order") go("/order");
+  }, [connected, consumeConnectIntent, pathname, go]);
 }
 
 export function Header() {
   const [menu, setMenu] = useState(false);
-  useOrderShortcut();
+  const pathname = usePathname();
+  const router = useRouter();
+  const go = useCallback((href: string) => router.push(href), [router]);
+  useOrderShortcut(pathname, go);
+  useRedirectOnConnect(pathname, go);
+  const isActive = (href: string) => !href.includes("#") && pathname === href;
 
   return (
     <>
@@ -46,16 +63,24 @@ export function Header() {
       <div className="bg-cream">
         <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center text-[13px] text-ink sm:text-sm">
           <span>Orders run on devnet replicas. Market data is live mainnet.</span>
-          <a href="#proof" className="inline-flex h-7 items-center rounded-full bg-ink px-3 text-xs font-medium text-paper hover:bg-black">See the proof</a>
+          <Link href="/proof" className="inline-flex h-7 items-center rounded-full bg-ink px-3 text-xs font-medium text-paper hover:bg-black">See the proof</Link>
         </div>
       </div>
       <header className="sticky top-0 z-40">
         <nav className="border-b border-hairline bg-paper" aria-label="Main">
           <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-4 md:px-6">
-            <a href="#top" aria-label="Holdfill, back to top"><Logo /></a>
+            <Link href="/" aria-label="Holdfill home"><Logo /></Link>
             <ul className="hidden items-center gap-6 text-sm lg:flex">
               {NAV.map((n) => (
-                <li key={n.href}><a href={n.href} className="inline-block py-3 text-ink underline-offset-4 hover:underline">{n.label}</a></li>
+                <li key={n.href}>
+                <Link
+                  href={n.href}
+                  aria-current={isActive(n.href) ? "page" : undefined}
+                  className={`inline-block py-3 underline-offset-8 hover:underline ${isActive(n.href) ? "text-ink underline decoration-hold decoration-2" : "text-ink"}`}
+                >
+                  {n.label}
+                </Link>
+              </li>
               ))}
             </ul>
             <div className="flex items-center gap-2">
@@ -76,7 +101,14 @@ export function Header() {
               <ul className="flex flex-col">
                 {NAV.map((n) => (
                   <li key={n.href}>
-                    <a href={n.href} onClick={() => setMenu(false)} className="block rounded-[14px] px-3 py-3 text-base text-ink hover:bg-vellum">{n.label}</a>
+                    <Link
+                    href={n.href}
+                    onClick={() => setMenu(false)}
+                    aria-current={isActive(n.href) ? "page" : undefined}
+                    className={`block rounded-[14px] px-3 py-3 text-base text-ink hover:bg-vellum ${isActive(n.href) ? "bg-vellum" : ""}`}
+                  >
+                    {n.label}
+                  </Link>
                   </li>
                 ))}
               </ul>
@@ -140,6 +172,7 @@ export function WalletButton({ id, block }: { id?: string; block?: boolean }) {
 
 function WalletPicker({ onClose }: { onClose: () => void }) {
   const { wallets, select } = useWallet();
+  const { markConnectIntent } = useConnectIntent();
   const detected = wallets.filter((w) => w.readyState === WalletReadyState.Installed || w.readyState === WalletReadyState.Loadable);
   const missing = KNOWN_WALLETS.filter((k) => !detected.some((w) => w.adapter.name === k.name));
 
@@ -150,7 +183,7 @@ function WalletPicker({ onClose }: { onClose: () => void }) {
         {detected.map((w) => (
           <li key={w.adapter.name}>
             <button
-              onClick={() => { select(w.adapter.name as WalletName); onClose(); }}
+              onClick={() => { markConnectIntent(); select(w.adapter.name as WalletName); onClose(); }}
               className="flex w-full items-center gap-3 rounded-[14px] bg-vellum px-4 py-3 text-left hover:bg-hairline"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
