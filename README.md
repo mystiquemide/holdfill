@@ -2,6 +2,13 @@
 
 **Hold through the lockup. Fill before the deadline.**
 
+[![CI](https://github.com/mystiquemide/holdfill/actions/workflows/ci.yml/badge.svg)](https://github.com/mystiquemide/holdfill/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Live app](https://img.shields.io/badge/live-holdfill.vercel.app-black)](https://holdfill.vercel.app)
+[![Solana devnet](https://img.shields.io/badge/Solana-devnet%20program-9945FF)](https://explorer.solana.com/address/A6UhawZdBQiMwpDYzFXKzTJD5voF29rLmrViUT6WaSGV?cluster=devnet)
+[![Stocklana](https://img.shields.io/badge/built%20for-Stocklana-14F195)](https://hackathons.solana.com/hackathons/stocklana)
+
+
 Holdfill gives PreStocks holders standing orders on Solana. A holder sets their terms once: the least they will accept, a fallback for the final weeks, and a hard stop at the issuer's deadline. Tokens stay in the holder's wallet until the market meets those terms, then an on-chain program sells through Meteora and checks that the holder received at least their minimum.
 
 [Live app](https://holdfill.vercel.app) · [Order app](https://holdfill.vercel.app/app) · [Wallet-free demo](https://holdfill.vercel.app/demo) · [Proof](https://holdfill.vercel.app/proof) · [Markets](https://holdfill.vercel.app/markets) · [Docs](https://holdfill.vercel.app/docs)
