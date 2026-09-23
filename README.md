@@ -15,6 +15,10 @@ Holdfill gives PreStocks holders standing orders on Solana. A holder sets their 
 
 Built for [Stocklana](https://hackathons.solana.com/hackathons/stocklana): main track and the PreStocks bounty. Orders execute on Solana devnet against replicas of the real tokens; market data is live mainnet.
 
+[![Watch the Holdfill demo (2:26)](docs/media/demo-thumbnail.jpg)](https://youtu.be/D0putYI1KXs)
+
+[Watch the 2:26 demo on YouTube](https://youtu.be/D0putYI1KXs)
+
 ---
 
 ## Contents
