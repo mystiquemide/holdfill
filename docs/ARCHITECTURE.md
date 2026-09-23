@@ -78,13 +78,21 @@ PDA seeds: `["event", input_mint]`. Written once per issuer event by the event a
 
 ### 4.1 Order account
 
-PDA seeds: `["order", owner, input_mint]`. One active order per holder per token.
+PDA seeds: `["order", owner, input_mint]`. One order per holder per token: a token account approves one delegate for one amount, so a second order would replace the first one's approval.
+
+The same account holds three kinds of order. The layout never changed, so orders created before price and armed orders existed still load.
+
+| Kind | Created by | How the fields are used |
+|---|---|---|
+| Conversion | `create_order` | Ratio, pool, output, and deadline copied from the lifecycle event. |
+| Price | `create_price_order` | `ratio_num` = least output per whole input token, `ratio_den` = 10^input decimals, `limit_bps` 0, `fallback_floor_bps` 10000, `fallback_ts` = `expiry_ts` = the holder's expiry. The minimum is the holder's price for the whole life of the order. |
+| Armed | `arm_order` | Status Armed. Output, pool, ratio, and expiry empty; `fallback_ts` holds the offset before the future deadline, in seconds. `activate` fills them in. |
 
 | Field | Type | Meaning |
 |---|---|---|
 | owner | Pubkey | Holder. Only signer allowed to create or cancel. |
-| input_mint | Pubkey | Replica SPACEX (mainnet SPACEX in X1). |
-| output_mint | Pubkey | Replica SPCXx. |
+| input_mint | Pubkey | A PreStocks mint (Token-2022). Replica on devnet. |
+| output_mint | Pubkey | Successor token (conversion), quote token such as USDC (price), or empty (armed). |
 | pool | Pubkey | The only DLMM pair this order may trade on. |
 | ratio_num, ratio_den | u64, u64 | Entitlement in base units: output_base = input_base x num / den. SPACEX (9 dp) to SPCXx (8 dp) at 5 shares per raw token: num 1, den 2. |
 | limit_bps | u16 | Maximum haircut accepted before the fallback date. Default 2000. Range 0 to 6000. |
@@ -95,7 +103,7 @@ PDA seeds: `["order", owner, input_mint]`. One active order per holder per token
 | size | u64 | Maximum input to convert. Equals the delegate approval. |
 | filled | u64 | Input converted so far. |
 | received | u64 | Output received so far. |
-| status | u8 | 0 Active, 1 Filled. Cancelled orders are closed. |
+| status | u8 | 0 Active, 1 Filled, 2 Armed. Cancelled orders are closed. |
 | created_at | i64 | Timestamp. |
 | bump | u8 | PDA bump. |
 
@@ -108,12 +116,21 @@ PDA seeds: `["order", owner, input_mint]`. One active order per holder per token
 - Reads the input mint: rejects if paused. Stores current epoch transfer fee as `fee_bps`.
 - The same transaction, built by the app, carries `ApproveChecked(owner input ATA, delegate = order PDA, amount = size)` after this instruction.
 
+**create_price_order(params)**, signer: owner. Params: `size`, `min_out_per_token`, `expiry_ts`. Accounts add `output_mint` (SPL Token or Token-2022), `pool`, and the input's event PDA.
+- The pool must be owned by DLMM, carry the `LbPair` discriminator, and hold the input as token X and the output as token Y (read at byte offsets 88 and 120). Otherwise `WrongPoolMints`. Every PreStocks USDC and SOL pair checked on mainnet has the PreStocks token as X.
+- `expiry_ts` must be in the future and within 400 days. If the input has a lifecycle event, the expiry must not pass the issuer deadline (`InvalidExpiry`).
+- Same size, balance, pause, and fee snapshot rules as `create_order`.
+
+**arm_order(params)**, signer: owner. Params: `size`, `limit_bps`, `fallback_days_before` (1 to 365), `fallback_floor_bps`. Only for a token with no event yet: an existing event PDA returns `EventAlreadyRegistered`. Stores status Armed. `execute` cannot run on it, because its pool is empty and its status is not Active.
+
+**activate()**, no signer beyond the fee payer (permissionless). Requires status Armed (`NotArmed`) and the input's lifecycle event before its deadline. Copies output mint, pool, ratio, and deadline from the event; sets `fallback_ts = expiry_ts - offset`. The holder's limit, floor, size, and fee snapshot stay as armed, so an issuer fee change after arming still blocks fills (`FeeChanged`). The keeper sends `activate` on its first tick after the event appears.
+
 **execute(amount_in, keeper_min_out, remaining_accounts_info)**, signer: any keeper (permissionless).
 1. Order is Active. `now < expiry_ts`. `amount_in <= size - filled`.
 2. Input mint not paused. Current epoch transfer fee equals `fee_bps`, otherwise `FeeChanged`. Both are read from the raw mint account with `anchor_spl::token_interface::get_mint_extension_data::<PausableConfig>` and `::<TransferFeeConfig>` (`get_epoch_fee`). Mints are passed as unchecked accounts owned by Token-2022, because Anchor's `InterfaceAccount<Mint>` drops extension data.
-3. `lb_pair == order.pool`. Pool token mints equal order mints. `reserve_x`, `reserve_y`, and `oracle` must equal the DLMM PDAs the program derives itself (`[lb_pair, mint]` and `["oracle", lb_pair]` under the DLMM program id). `token_x_program` and `token_y_program` must equal the Token-2022 program id. `host_fee_in` must be the DLMM program id (the "none" placeholder); any other account is rejected with `HostFeeNotAllowed`.
+3. `lb_pair == order.pool`. Pool token mints equal order mints. `reserve_x`, `reserve_y`, and `oracle` must equal the DLMM PDAs the program derives itself (`[lb_pair, mint]` and `["oracle", lb_pair]` under the DLMM program id). `token_x_program` must be Token-2022 (every PreStocks mint). `token_y_program` must be SPL Token or Token-2022 and must own the output mint, so USDC and wrapped SOL outputs work and a substituted program is rejected (`WrongTokenProgram`). `host_fee_in` must be the DLMM program id (the "none" placeholder); any other account is rejected with `HostFeeNotAllowed`.
 4. `user_token_in` is the owner's ATA for input_mint, its delegate is the order PDA, and delegated amount >= amount_in.
-5. `user_token_out` is the owner's ATA for output_mint.
+5. `user_token_out` is the owner's ATA for output_mint, derived with the output mint's token program.
 6. `haircut = now < fallback_ts ? limit_bps : 10000 - fallback_floor_bps`.
    `required = ceil(amount_in x num x (10000 - haircut) / (den x 10000))`, one multiplication chain and one division in u128, checked arithmetic.
 7. `min_out = max(required, keeper_min_out)`.
@@ -125,15 +142,17 @@ PDA seeds: `["order", owner, input_mint]`. One active order per holder per token
 
 ### 4.3 Errors
 
-`OrderNotActive, IssuerDeadlinePassed, AmountExceedsRemaining, InvalidSize, InvalidLimit, InvalidFallback, WrongPool, WrongMint, WrongPoolAccount, WrongTokenProgram, HostFeeNotAllowed, WrongOwnerAccount, DelegateMismatch, InsufficientAllowance, MintPaused, FeeChanged, InsufficientOutput, MathOverflow`.
+`Unauthorized, InvalidEvent, OrderNotActive, IssuerDeadlinePassed, AmountExceedsRemaining, InvalidSize, InvalidLimit, InvalidFallback, WrongPool, WrongMint, WrongPoolAccount, WrongTokenProgram, HostFeeNotAllowed, WrongOwnerAccount, DelegateMismatch, InsufficientAllowance, MintPaused, FeeChanged, InsufficientOutput, MathOverflow, EventAlreadyRegistered, NotArmed, InvalidPrice, InvalidExpiry, WrongPoolMints`. New codes are appended, so earlier codes keep their numbers.
 
 ### 4.4 Events
 
-`OrderCreated {order, owner, size, limit_bps, fallback_ts, fallback_floor_bps}`, `OrderFilled {order, amount_in, amount_out, required, haircut_bps, filled, status}`, `OrderCancelled {order, filled, received}`.
+`OrderCreated {order, owner, size, limit_bps, fallback_ts, fallback_floor_bps}`, `OrderFilled {order, amount_in, amount_out, required, haircut_bps, filled, status}`, `OrderCancelled {order, filled, received}`, `PriceOrderCreated {order, owner, output_mint, size, min_out_per_token, expiry_ts}`, `OrderArmed {order, owner, size, limit_bps, fallback_days_before, fallback_floor_bps}`, `OrderActivated {order, output_mint, expiry_ts, fallback_ts}`.
 
 ### 4.5 Gate G2 (first program task): passed 23 Sep 2026
 
 `npm run test:local` (tests/program-local.ts) against a local validator that clones the devnet market: 20 of 20 checks pass. The order PDA signs DLMM `swap2` through CPI as the holder's delegate; substituted token program, host fee account, wrong reserve, overfill, below-minimum fill, and fill after revoke are all rejected. Results are in `data/program-local.json`.
+
+The v2 upgrade (price and armed orders) extends the suite to 39 checks, all passing: price order fills into classic-token USDC above the holder's price, a price the pool cannot pay, a pool trading another pair, an expiry past the issuer deadline, a substituted output token program, a fill after expiry; arm, revoke while armed, no fill while armed, no activation before the event, no arming when an event exists, activation by a non-admin, a fill at the armed limit, a second activation; and the keeper filling a price order and activating then filling an armed one. Replica Anthropic and replica USDC (classic SPL Token) back these cases on devnet.
 
 ## 5. Keeper
 

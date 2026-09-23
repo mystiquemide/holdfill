@@ -13,6 +13,7 @@ import {
 } from "@solana/spl-token";
 import { AnchorProvider, BN, Program, Wallet } from "@anchor-lang/core";
 import { buildExecuteIx, OrderAccount } from "../keeper/execute-ix";
+import { tick } from "../keeper/tick";
 import { ROOT, issuerKeypair, readConfig } from "../scripts/lib/env";
 
 const conn = new Connection("http://127.0.0.1:8899", "confirmed");
@@ -311,6 +312,12 @@ async function main() {
 
   const p2 = await marketHolder(1_000_000_000n);
   const pdaP2 = await createPriceOrder(p2, { size: 200_000_000n, usdPerToken: 2000, expiry: inAYear });
+  await expectPass("keeper fills the rest of the price order into USDC", async () => {
+    const [a1] = await tick({ connection: conn, program, keeper, cluster: "devnet", onlyOrder: pdaP1 });
+    if (a1?.action !== "filled") throw new Error(`${a1?.action}: ${a1?.reason}`);
+    const o = await (program.account as any).order.fetch(pdaP1);
+    return `${a1.reason}, ${Number(a1.amountIn) / 1e9} token, order ${o.filled}/${o.size}`;
+  });
   await expectReject("price order above what the pool pays ($2,000) does not fill", ["ExceededAmountSlippageTolerance", "InsufficientOutput"], () =>
     execute(pdaP2, new BN(100_000_000)));
 
@@ -363,6 +370,13 @@ async function main() {
     if (await conn.getAccountInfo(pda)) throw new Error("order still exists");
     return "armed order closed, approval removed";
   });
+  const r2 = await marketHolder(1_000_000_000n);
+  const pdaR2 = await armOrder(r2, { size: 200_000_000n, limitBps: 2000, days: 30 });
+  await expectPass("keeper leaves an armed order alone while no event exists", async () => {
+    const out = await tick({ connection: conn, program, keeper, cluster: "devnet", onlyOrder: pdaR2 });
+    if (out.length) throw new Error(`${out[0].action}: ${out[0].reason}`);
+    return "no attempt";
+  });
   await expectReject("an armed order cannot fill", ["WrongPool", "OrderNotActive"], async () => {
     const o = (await (program.account as any).order.fetch(pdaR1)) as OrderAccount;
     const { ix } = await buildExecuteIx({ program, connection: conn, orderPda: pdaR1, order: { ...o, pool: APOOL, outputMint: USDC }, amountIn: new BN(100_000_000), keeper: keeper.publicKey, cluster: "devnet" });
@@ -395,6 +409,13 @@ async function main() {
     return `0.1 token -> ${Number(got) / 1e6} USDC (min 88 = 1,100 x 0.1 x 80%)`;
   });
   await expectReject("activate an order that is already active", ["NotArmed"], () => activate(pdaR1));
+  await expectPass("keeper activates an armed order once the event exists, then fills it", async () => {
+    const [first] = await tick({ connection: conn, program, keeper, cluster: "devnet", onlyOrder: pdaR2 });
+    if (first?.action !== "activated") throw new Error(`${first?.action}: ${first?.reason}`);
+    const [second] = await tick({ connection: conn, program, keeper, cluster: "devnet", onlyOrder: pdaR2 });
+    if (second?.action !== "filled") throw new Error(`${second?.action}: ${second?.reason}`);
+    return `activated, then ${second.reason} (${Number(second.amountIn) / 1e9} token)`;
+  });
 
   // Issuer raises the transfer fee; it takes effect two epochs later.
   const g = await newHolder(1_000_000_000n);

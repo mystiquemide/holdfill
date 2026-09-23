@@ -8,13 +8,13 @@ import {
 import { BN, Program } from "@anchor-lang/core";
 import DLMM from "@meteora-ag/dlmm";
 import { buildExecuteIx } from "./execute-ix";
-import { orders, type OrderData } from "./program";
+import { orderKind, orders, type OrderData } from "./program";
 import { haircutBps, requiredOutput } from "./math";
 
 export type Attempt = {
   order: string;
   owner: string;
-  action: "filled" | "waiting" | "skipped" | "failed";
+  action: "filled" | "waiting" | "skipped" | "failed" | "activated";
   reason: string;
   remaining: string;
   haircutBps: number;
@@ -74,6 +74,15 @@ export async function tick(params: {
   const now = BigInt(Math.floor(Date.now() / 1000));
   const { epoch } = await connection.getEpochInfo("confirmed");
   const pools = new Map<string, DLMM>();
+  const tokenPrograms = new Map<string, PublicKey>();
+  const tokenProgramOf = async (mint: PublicKey) => {
+    const hit = tokenPrograms.get(mint.toBase58());
+    if (hit) return hit;
+    const info = await connection.getAccountInfo(mint, "confirmed");
+    if (!info) throw new Error(`mint ${mint.toBase58()} not found`);
+    tokenPrograms.set(mint.toBase58(), info.owner);
+    return info.owner;
+  };
 
   for (const { publicKey, account: o } of all) {
     const remaining = BigInt(o.size.toString()) - BigInt(o.filled.toString());
@@ -81,8 +90,24 @@ export async function tick(params: {
     const haircut = haircutBps(now, BigInt(o.fallbackTs.toString()), BigInt(o.limitBps), BigInt(o.fallbackFloorBps));
     const skip = (reason: string) => push({ ...base, action: "skipped", reason, haircutBps: Number(haircut) });
 
+    const kind = orderKind(o);
+
+    // Armed: copy the issuer's terms in once the event exists. Anyone may send this.
+    if (kind === "armed") {
+      const event = PublicKey.findProgramAddressSync([Buffer.from("event"), o.inputMint.toBuffer()], program.programId)[0];
+      if (!(await connection.getAccountInfo(event, "confirmed"))) continue;
+      try {
+        const ix = await program.methods.activate().accountsStrict({ order: publicKey, event }).instruction();
+        const signature = await sendAndConfirmTransaction(connection, new Transaction().add(ix), [keeper], { commitment: "confirmed" });
+        push({ ...base, action: "activated", haircutBps: o.limitBps, signature, reason: "issuer named a successor; terms copied in" });
+      } catch (e: any) {
+        push({ ...base, action: "failed", haircutBps: o.limitBps, reason: `activate: ${String(e?.message ?? e).split("\n")[0].slice(0, 120)}` });
+      }
+      continue;
+    }
+
     if (!("active" in o.status) || remaining <= 0n) continue;
-    if (now >= BigInt(o.expiryTs.toString())) { skip("issuer deadline passed"); continue; }
+    if (now >= BigInt(o.expiryTs.toString())) { skip(kind === "price" ? "order expired" : "issuer deadline passed"); continue; }
 
     // Issuer state must match what the holder signed.
     const mint = await getMint(connection, o.inputMint, "confirmed", TOKEN_2022_PROGRAM_ID);
@@ -93,7 +118,7 @@ export async function tick(params: {
 
     // Holder accounts: approval still in place and an SPCXx account to receive into.
     const inAta = getAssociatedTokenAddressSync(o.inputMint, o.owner, false, TOKEN_2022_PROGRAM_ID);
-    const outAta = getAssociatedTokenAddressSync(o.outputMint, o.owner, false, TOKEN_2022_PROGRAM_ID);
+    const outAta = getAssociatedTokenAddressSync(o.outputMint, o.owner, false, await tokenProgramOf(o.outputMint));
     const inAcct = await getAccount(connection, inAta, "confirmed", TOKEN_2022_PROGRAM_ID).catch(() => null);
     if (!inAcct?.delegate?.equals(publicKey)) { skip("holder removed the approval"); continue; }
     if (!(await connection.getAccountInfo(outAta, "confirmed"))) { skip("holder has no output token account"); continue; }
@@ -114,7 +139,9 @@ export async function tick(params: {
       const entitlement = requiredOutput(probe, BigInt(o.ratioNum.toString()), BigInt(o.ratioDen.toString()), 0n);
       const gap = entitlement > 0n ? 1 - Number(q) / Number(entitlement) : 0;
       push({ ...base, action: "waiting", haircutBps: Number(haircut), amountIn: probe.toString(), quotedOut: q.toString(), required: req.toString(),
-        reason: `pool pays ${(gap * 100).toFixed(1)}% under entitlement, limit is ${(Number(haircut) / 100).toFixed(1)}%` });
+        reason: kind === "price"
+          ? `pool pays ${Math.abs(gap * 100).toFixed(1)}% ${gap > 0 ? "below" : "above"} the holder's price`
+          : `pool pays ${(gap * 100).toFixed(1)}% under entitlement, limit is ${(Number(haircut) / 100).toFixed(1)}%` });
       continue;
     }
 
