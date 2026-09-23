@@ -48,14 +48,15 @@ export default function DocsPage() {
 
       <DocSection title="Set an order">
         <ul>
-          <li>Connect your wallet and open the app.</li>
-          <li>If you hold no replica SPACEX, use the faucet. It sends 1 replica SPACEX (5 shares) and a little devnet SOL for fees if your wallet is low.</li>
-          <li>Pick the amount, the largest gap you accept, a fallback date, and a fallback floor.</li>
+          <li>Connect your wallet, open the app, and pick a market: SpaceX, Anthropic, or OpenAI.</li>
+          <li>If you hold none of that token, use the faucet. It sends 1 replica token (for SpaceX, 5 shares) and a little devnet SOL for fees if your wallet is low.</li>
+          <li>Set your terms. For SpaceX: the largest gap you accept, a fallback date, and a fallback floor. For Anthropic and OpenAI: either the least USDC per token and an expiry, or terms armed for a future IPO.</li>
           <li>Sign once. That transaction creates the order and approves the order program for that amount only.</li>
         </ul>
       </DocSection>
 
-      <DocSection title="Order terms">
+      <DocSection title="SpaceX: convert before the deadline">
+        <p>SpaceX is the only PreStocks market with an issuer conversion event today, so its orders convert into SPCXx, the listed SpaceX token.</p>
         <Terms
           items={[
             ["Entitlement", "What the issuer says one raw SPACEX converts into: 5 SPCXx, one per share after the 5x split."],
@@ -68,8 +69,8 @@ export default function DocsPage() {
         />
       </DocSection>
 
-      <DocSection title="Other PreStocks: price orders and arming">
-        <p>Only SpaceX has an issuer conversion event today. For Anthropic and OpenAI, the app offers two order types on devnet replicas, against replica USDC.</p>
+      <DocSection title="Anthropic and OpenAI: sell at a price, or arm for the IPO">
+        <p>These tokens have no issuer event yet, so the app offers two order types on devnet replicas, against replica USDC.</p>
         <Terms
           items={[
             ["Sell at your price", "Set the least USDC per token and an expiry of 30 to 365 days. The program checks that the pool trades exactly this token against USDC, and never lets the order outlive an issuer deadline."],
@@ -81,7 +82,7 @@ export default function DocsPage() {
 
       <DocSection title="How a fill works">
         <p>A keeper checks open orders every 10 seconds. When the pool quote meets your minimum, it calls the program&apos;s execute instruction. Anyone can call execute, and you can press Check now to run one pass yourself.</p>
-        <p>The program swaps through the Meteora DLMM pool as your approved delegate, measures what reached your SPCXx account, and reverts the whole transaction if it&apos;s below your minimum. Orders can fill in parts. The keeper sells the largest amount that still meets your terms.</p>
+        <p>The program swaps through the Meteora DLMM pool as your approved delegate, measures what reached your SPCXx or USDC account, and reverts the whole transaction if it&apos;s below your minimum. Orders can fill in parts. The keeper sells the largest amount that still meets your terms.</p>
         <p>Every fill also checks that the pool, mints, and token accounts match the order, the issuer hasn&apos;t paused the token or changed its transfer fee since you signed, your approval covers the amount, and the deadline hasn&apos;t passed.</p>
       </DocSection>
 
@@ -96,7 +97,7 @@ export default function DocsPage() {
 
       <DocSection title="Faucet limits">
         <ul>
-          <li>The faucet only tops up wallets holding less than 0.5 raw replica SPACEX (2.5 shares).</li>
+          <li>The faucet only tops up wallets holding less than half a replica token (2.5 shares for SpaceX).</li>
           <li>Each token has its own faucet limit. A wallet with an open order or remaining tokens can request once per hour. A wallet that sold everything and closed its order can refill right away.</li>
           <li>The faucet sends at most 20 grants per hour across all wallets.</li>
         </ul>
