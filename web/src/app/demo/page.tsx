@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import proof from "../../../../data/proof-devnet.json";
+import v2Proof from "../../../../data/proof-devnet-v2.json";
 import { BackHome } from "@/components/chrome";
+import { V2ProofList } from "@/components/sections";
 import { ButtonLink, DemoBadge, SectionHead } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Wallet-free demo" };
@@ -41,6 +43,9 @@ export default function DemoPage() {
       <p className="mt-6 text-sm text-slate">
         A later fill attempt after revocation was also <a href={proof.transactions.refusedAfterRevoke.explorer} target="_blank" rel="noreferrer" className="text-ink underline underline-offset-4">refused on chain</a>. These are historical proof transactions; the live app uses devnet replicas, while market prices shown elsewhere come from mainnet.
       </p>
+      <h2 className="mt-16 mb-2 text-2xl tracking-[-0.01em]">Other PreStocks: sell at a price, or arm for the IPO</h2>
+      <p className="mb-6 max-w-2xl text-sm leading-relaxed text-slate">Tokens without an issuer event can sell into USDC at a price the holder sets, or wait armed until the issuer names a successor. Both paths are recorded below.</p>
+      <V2ProofList data={v2Proof} />
       <div className="mt-8"><ButtonLink href="/proof" variant="secondary">See all proof →</ButtonLink></div>
     </section>
   );

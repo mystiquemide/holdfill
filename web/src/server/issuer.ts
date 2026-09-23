@@ -1,19 +1,21 @@
 import "server-only";
 import { Keypair } from "@solana/web3.js";
 import { TOKEN_2022_PROGRAM_ID, getAssociatedTokenAddressSync, unpackAccount } from "@solana/spl-token";
-import { loadProgram, orders } from "../../../keeper/program";
+import { loadProgram, orderKind, orders } from "../../../keeper/program";
 import { cached } from "./cache";
-import { DEVNET, SPACEX_TERMS, devnet } from "./env";
+import { DEVNET, SPACEX_TERMS, USDC_MARKETS, devnet } from "./env";
 import { getMarkets } from "./markets";
 
-/** Devnet replica mints that orders can use, by PreStocks symbol. Base units per share differ by split. */
-const DEVNET_MARKETS: Record<string, { symbol: string; sharesPerRaw: number }> = {
-  [DEVNET.spacex.toBase58()]: { symbol: "SPACEX", sharesPerRaw: SPACEX_TERMS.sharesPerToken },
+/** Devnet replica mints that orders can use, by PreStocks symbol. Shares per raw token and output decimals differ. */
+const DEVNET_MARKETS: Record<string, { symbol: string; sharesPerRaw: number; outDecimals: number; outSymbol: string }> = {
+  [DEVNET.spacex.toBase58()]: { symbol: "SPACEX", sharesPerRaw: SPACEX_TERMS.sharesPerToken, outDecimals: 8, outSymbol: "SPCXx" },
+  ...Object.fromEntries(Object.values(USDC_MARKETS).map((m) => [m.mint.toBase58(), { symbol: m.symbol, sharesPerRaw: 1, outDecimals: 6, outSymbol: "USDC" }])),
 };
 const BASE = 1e9;
 
 export type IssuerOrder = {
-  address: string; owner: string; symbol: string; status: "armed" | "partial" | "filled" | "blocked";
+  address: string; owner: string; symbol: string; kind: "convert" | "price" | "armed";
+  status: "armed" | "partial" | "filled" | "blocked";
   limitBps: number; sizeShares: number; filledShares: number; received: number; createdAt: string;
 };
 
@@ -21,7 +23,8 @@ export type IssuerMarket = {
   symbol: string; name: string; ordersOpen: boolean;
   holders: number | null; markValueUsd: number; markUsd: number; deadline: string | null; daysLeft: number | null;
   orders: number; live: number; filled: number; blocked: number;
-  coveredShares: number; coveredUsd: number; filledShares: number; received: number;
+  coveredShares: number; coveredUsd: number; filledShares: number; received: number; receivedSymbol: string;
+  price: number; armed: number;
 };
 
 export type IssuerView = { network: { orders: "devnet"; holders: "mainnet" }; asOf: string; markets: IssuerMarket[]; orders: IssuerOrder[] };
@@ -49,9 +52,9 @@ async function load(): Promise<IssuerView> {
     const status = isFilled ? "filled" : !approved ? "blocked" : filled > 0n ? "partial" : "armed";
     const shares = (v: bigint) => (Number(v) / BASE) * market.sharesPerRaw;
     rows.push({
-      address: publicKey.toBase58(), owner: account.owner.toBase58(), symbol: market.symbol, status,
+      address: publicKey.toBase58(), owner: account.owner.toBase58(), symbol: market.symbol, kind: orderKind(account), status,
       limitBps: account.limitBps, sizeShares: shares(size), filledShares: shares(filled),
-      received: Number(account.received.toString()) / 1e8,
+      received: Number(account.received.toString()) / 10 ** market.outDecimals,
       createdAt: new Date(Number(account.createdAt.toString()) * 1000).toISOString(),
     });
     if (status === "armed" || status === "partial") remaining.set(publicKey.toBase58(), shares(size - filled));
@@ -77,6 +80,9 @@ async function load(): Promise<IssuerView> {
         coveredShares, coveredUsd: coveredShares * m.markUsd,
         filledShares: mine.reduce((s, r) => s + r.filledShares, 0),
         received: mine.reduce((s, r) => s + r.received, 0),
+        receivedSymbol: m.symbol === "SPACEX" ? "SPCXx" : "USDC",
+        price: mine.filter((r) => r.kind === "price").length,
+        armed: mine.filter((r) => r.kind === "armed").length,
       };
     }),
   };

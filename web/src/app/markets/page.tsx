@@ -40,7 +40,7 @@ function Table({ data }: { data: Markets }) {
             <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
               <dt className="text-slate">Holders</dt><dd className="num">{orNa(m.holders, int)}</dd>
               <dt className="text-slate">Value at mark</dt><dd className="num">{usdCompact(m.markValueUsd)}</dd>
-              <dt className="text-slate">Pool vs mark</dt><dd className="num">{orNa(m.vsMarkPct, (v) => signedPct(v))}</dd>
+              <dt className="text-slate">Jupiter price vs mark</dt><dd className="num">{orNa(m.vsMarkPct, (v) => signedPct(v))}</dd>
               <dt className="text-slate">24h volume</dt><dd className="num">{orNa(m.volume24hUsd, usdCompact)}</dd>
               <dt className="text-slate">Issuer fee</dt><dd className="num">{orNa(m.transferFeeBps, (v) => `${v / 100}%`)}</dd>
               <dt className="text-slate">Jupiter Trigger</dt><dd><Trigger m={m} /></dd>
@@ -56,7 +56,7 @@ function Table({ data }: { data: Markets }) {
               <th className="p-4 font-normal">Market</th>
               <th className="p-4 text-right font-normal">Holders</th>
               <th className="p-4 text-right font-normal">Value at mark</th>
-              <th className="p-4 text-right font-normal">Pool vs mark</th>
+              <th className="p-4 text-right font-normal">Jupiter price vs mark</th>
               <th className="p-4 text-right font-normal">24h volume</th>
               <th className="p-4 text-right font-normal">Issuer fee</th>
               <th className="p-4 font-normal">Jupiter Trigger</th>
@@ -125,7 +125,7 @@ export default async function MarketsPage() {
           </div>
           <Table data={data} />
           <Source>
-            Holders, pool price, and volume: {data.sources.holders.replace(" holderCount", "")}. Value: {data.sources.mark}. Pool vs mark compares the pool price per share with the PreStocks mark. Fee: {data.sources.mint}. Jupiter: {data.sources.trigger}.
+            Holders, pool price, and volume: {data.sources.holders.replace(" holderCount", "")}. Value: {data.sources.mark}. Jupiter price vs mark compares Jupiter&apos;s blended price per share with the PreStocks mark; a sell quote on one pool can differ. Fee: {data.sources.mint}. Jupiter: {data.sources.trigger}.
           </Source>
 
           {xai && (

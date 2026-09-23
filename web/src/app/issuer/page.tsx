@@ -11,7 +11,11 @@ function Coverage({ m }: { m: IssuerMarket }) {
   return <span className="num">{num(m.coveredShares, 2)} shares <span className="text-slate">({usdCompact(m.coveredUsd)})</span></span>;
 }
 
-const counts = (m: IssuerMarket) => (m.ordersOpen ? `${m.live} live, ${m.filled} filled${m.blocked ? `, ${m.blocked} blocked` : ""}` : "none");
+const counts = (m: IssuerMarket) => {
+  if (!m.ordersOpen) return "none";
+  const kinds = [m.price ? `${m.price} at a price` : "", m.armed ? `${m.armed} armed for the IPO` : ""].filter(Boolean).join(", ");
+  return `${m.live} live, ${m.filled} filled${m.blocked ? `, ${m.blocked} blocked` : ""}${kinds ? ` (${kinds})` : ""}`;
+};
 
 function MarketTable({ data }: { data: IssuerView }) {
   return (
@@ -25,7 +29,7 @@ function MarketTable({ data }: { data: IssuerView }) {
               <dt className="text-slate">Deadline</dt><dd>{m.deadline ? `${day(m.deadline, true)}, ${m.daysLeft} days` : <span className="text-slate">None announced</span>}</dd>
               <dt className="text-slate">Devnet orders</dt><dd>{counts(m)}</dd>
               <dt className="text-slate">Covered</dt><dd><Coverage m={m} /></dd>
-              <dt className="text-slate">Converted</dt><dd className="num">{m.ordersOpen ? `${num(m.filledShares, 2)} shares` : "none"}</dd>
+              <dt className="text-slate">Converted</dt><dd className="num">{m.ordersOpen ? `${num(m.filledShares, 2)} shares, ${num(m.received, 2)} ${m.receivedSymbol}` : "none"}</dd>
             </dl>
           </li>
         ))}
@@ -50,7 +54,7 @@ function MarketTable({ data }: { data: IssuerView }) {
                 <td className="p-4">{m.deadline ? `${day(m.deadline, true)}, ${m.daysLeft} days` : <span className="text-slate">None announced</span>}</td>
                 <td className={`p-4 ${m.ordersOpen ? "" : "text-slate"}`}>{counts(m)}</td>
                 <td className="p-4"><Coverage m={m} /></td>
-                <td className="num p-4 text-right">{m.ordersOpen ? `${num(m.filledShares, 2)} shares` : <span className="text-slate">none</span>}</td>
+                <td className="num p-4 text-right">{m.ordersOpen ? `${num(m.filledShares, 2)} shares, ${num(m.received, 2)} ${m.receivedSymbol}` : <span className="text-slate">none</span>}</td>
               </tr>
             ))}
           </tbody>
@@ -69,6 +73,7 @@ function OrderList({ data }: { data: IssuerView }) {
           <tr className="border-b border-hairline text-slate">
             <th className="p-4 font-normal">Order</th>
             <th className="p-4 font-normal">Market</th>
+            <th className="p-4 font-normal">Kind</th>
             <th className="p-4 text-right font-normal">Limit</th>
             <th className="p-4 text-right font-normal">Filled</th>
             <th className="p-4 font-normal">Status</th>
@@ -80,9 +85,10 @@ function OrderList({ data }: { data: IssuerView }) {
             <tr key={o.address}>
               <td className="p-4"><a href={explorerAddr(o.address, "devnet")} target="_blank" rel="noreferrer" className="mono underline underline-offset-4">{shortAddr(o.address)}</a></td>
               <td className="p-4">{o.symbol}</td>
-              <td className="num p-4 text-right">{pct(o.limitBps / 100, 0)}</td>
+              <td className="p-4 text-slate">{o.kind === "price" ? "At a price" : o.kind === "armed" ? "Armed for IPO" : "Conversion"}</td>
+              <td className="num p-4 text-right">{o.kind === "price" ? "n/a" : pct(o.limitBps / 100, 0)}</td>
               <td className="num p-4 text-right">{num(o.filledShares, 2)} / {num(o.sizeShares, 2)}</td>
-              <td className="p-4"><Chip tone={o.status}>{o.status}</Chip></td>
+              <td className="p-4"><Chip tone={o.status}>{o.kind === "armed" && o.status === "armed" ? "waiting for issuer" : o.status}</Chip></td>
               <td className="p-4 text-slate">{day(o.createdAt)} {utcTime(o.createdAt)}</td>
             </tr>
           ))}
@@ -95,8 +101,8 @@ function OrderList({ data }: { data: IssuerView }) {
 export default async function IssuerPage() {
   const data = await getIssuerView().catch(() => null);
   const totals = data?.markets.reduce(
-    (t, m) => ({ live: t.live + m.live, shares: t.shares + m.coveredShares, usd: t.usd + m.coveredUsd, filled: t.filled + m.filledShares, received: t.received + m.received }),
-    { live: 0, shares: 0, usd: 0, filled: 0, received: 0 },
+    (t, m) => ({ live: t.live + m.live, shares: t.shares + m.coveredShares, usd: t.usd + m.coveredUsd, filled: t.filled + m.filledShares, markets: t.markets + (m.orders > 0 ? 1 : 0) }),
+    { live: 0, shares: 0, usd: 0, filled: 0, markets: 0 },
   );
 
   return (
@@ -121,7 +127,7 @@ export default async function IssuerPage() {
             {[
               [String(totals.live), "live orders with the approval in place"],
               [`${num(totals.shares, 2)} shares`, `covered, ${usdCompact(totals.usd)} at the PreStocks mark`],
-              [`${num(totals.filled, 2)} shares`, `converted into ${num(totals.received, 4)} SPCXx`],
+              [`${num(totals.filled, 2)} shares`, `sold or converted, across ${totals.markets} ${totals.markets === 1 ? "market" : "markets"}`],
             ].map(([v, label]) => (
               <div key={label}>
                 <p className="num text-3xl tracking-[-0.02em]">{v}</p>

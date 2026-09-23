@@ -212,6 +212,51 @@ export function Proof({ fork, devnetProof }: { fork: ForkProof; devnetProof: Dev
   );
 }
 
+type V2Proof = { transactions: Record<string, { signature: string; result: string; detail?: string }>; demo: { note: string } };
+
+const V2_GROUPS: { title: string; note: string; rows: [string, string][] }[] = [
+  {
+    title: "Price orders into USDC",
+    note: "Replica Anthropic sold into replica USDC on a devnet pool priced like the mainnet Meteora pool.",
+    rows: [["priceOrderCreated", "Order at 800 USDC per token"], ["priceFilled", "Filled above the holder's price"], ["priceRejected", "Order at 2,000 USDC, refused on chain"]],
+  },
+  {
+    title: "Arm for the IPO",
+    note: "A demo token armed before any issuer event, then a simulated event. No real issuer announced it.",
+    rows: [["armed", "Armed with no event yet"], ["simulatedEvent", "Simulated issuer event"], ["activated", "Keeper activates the order"], ["armedFilled", "Filled at the armed limit"]],
+  },
+];
+
+/** Recorded devnet transactions for price orders and arm-for-IPO (scripts/devnet-v2-proof.ts). */
+export function V2ProofList({ data }: { data: V2Proof }) {
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      {V2_GROUPS.map((g) => (
+        <div key={g.title} className="rounded-[var(--radius-card)] border border-hairline bg-paper p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-2"><h3 className="text-lg">{g.title}</h3><NetBadge net="devnet" /></div>
+          <p className="mt-2 text-sm leading-relaxed text-slate">{g.note}</p>
+          <ul className="mt-4 divide-y divide-hairline border-t border-hairline text-sm">
+            {g.rows.map(([key, label]) => {
+              const t = data.transactions[key];
+              if (!t) return null;
+              const failed = t.result.startsWith("failed");
+              return (
+                <li key={key} className="py-3">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <span className={failed ? "text-deadline" : "text-ink"}>{label}</span>
+                    <a className="tap mono underline underline-offset-4" href={explorerTx(t.signature, "devnet")} target="_blank" rel="noreferrer">{shortAddr(t.signature)}</a>
+                  </div>
+                  {t.detail && <p className="mt-1 text-xs leading-relaxed text-slate">{t.detail}</p>}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ProofPreview({ fork, devnetProof }: { fork: ForkProof; devnetProof: DevnetProof }) {
   // Count the same rows the proof page lists, so both pages agree.
   const shown = DEVNET_ROWS.map(([key]) => devnetProof.transactions[key]).filter(Boolean);

@@ -18,7 +18,7 @@ export class TxInputError extends Error {}
 
 const ata = (owner: PublicKey, mint: PublicKey) => getAssociatedTokenAddressSync(mint, owner, false, TOKEN_2022_PROGRAM_ID);
 
-async function unsigned(owner: PublicKey, ixs: TransactionInstruction[]) {
+export async function unsigned(owner: PublicKey, ixs: TransactionInstruction[]) {
   const { blockhash, lastValidBlockHeight } = await devnet().getLatestBlockhash("confirmed");
   const tx = new Transaction({ feePayer: owner, blockhash, lastValidBlockHeight }).add(...ixs);
   return tx.serialize({ requireAllSignatures: false, verifySignatures: false }).toString("base64");
@@ -59,16 +59,16 @@ export async function buildCreateOrder(p: { owner: PublicKey; sizeRaw: bigint; l
   return { tx, order: order.toBase58() };
 }
 
-/** Close the order (if any) and remove the approval, in one transaction. */
-export async function buildRevoke(owner: PublicKey) {
+/** Close the order (if any) and remove the approval, in one transaction. `mint` defaults to replica SPACEX. */
+export async function buildRevoke(owner: PublicKey, mint: PublicKey = DEVNET.spacex) {
   const conn = devnet();
   const program = loadProgram(conn, Keypair.generate());
-  const order = orderAddress(owner);
+  const order = orderAddress(owner, mint);
   const ixs: TransactionInstruction[] = [];
   if (await orders(program).fetchNullable(order)) {
     ixs.push(await program.methods.cancelOrder().accountsStrict({ owner, order }).instruction());
   }
-  ixs.push(createRevokeInstruction(ata(owner, DEVNET.spacex), owner, [], TOKEN_2022_PROGRAM_ID));
+  ixs.push(createRevokeInstruction(ata(owner, mint), owner, [], TOKEN_2022_PROGRAM_ID));
   return { tx: await unsigned(owner, ixs), order: order.toBase58() };
 }
 

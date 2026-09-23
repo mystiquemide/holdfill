@@ -20,7 +20,7 @@ const FLOORS = [4000, 5000, 6000, 7000];
 
 // ---------- data hooks ----------
 
-function usePolling<T>(url: string | null, everyMs: number) {
+export function usePolling<T>(url: string | null, everyMs: number) {
   // Results are keyed by URL, so switching wallets never shows the previous wallet's data.
   const [state, setState] = useState<{ url: string; data: T | null; error: boolean } | null>(null);
   const refresh = useCallback(async () => {
@@ -47,7 +47,7 @@ function usePolling<T>(url: string | null, everyMs: number) {
 const b64ToBytes = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 
 /** Build on the server, sign in the wallet, relay through the server, report each step in a toast. */
-function useSubmit() {
+export function useSubmit() {
   const { signTransaction } = useWallet();
   const toasts = useToasts();
   return useCallback(async (build: () => Promise<Response>, done: string): Promise<boolean> => {
@@ -373,7 +373,7 @@ function Ticket({ position, history, onDone }: { position: Position; history: Hi
   );
 }
 
-function Line({ k, v }: { k: string; v: string }) {
+export function Line({ k, v }: { k: string; v: string }) {
   return <div className="flex justify-between gap-4 border-b border-hairline pb-2"><dt className="text-slate">{k}</dt><dd className="num text-right">{v}</dd></div>;
 }
 
@@ -509,7 +509,7 @@ function OrderCard({ position, order, onChange, onEnded }: { position: Position;
   );
 }
 
-function Stat({ label, value, unit, tone }: { label: string; value: string; unit: string; tone?: string }) {
+export function Stat({ label, value, unit, tone }: { label: string; value: string; unit: string; tone?: string }) {
   return (
     <div>
       <dt className="text-xs uppercase tracking-[0.06em] text-slate">{label}</dt>
@@ -521,7 +521,7 @@ function Stat({ label, value, unit, tone }: { label: string; value: string; unit
 
 // ---------- activity ----------
 
-function Activity({ events }: { events: OrderEvent[] }) {
+export function Activity({ events, describe = describeSpacex }: { events: OrderEvent[]; describe?: (e: OrderEvent) => string }) {
   return (
     <div className="rounded-[var(--radius-card)] border border-hairline bg-paper p-5 sm:p-6">
       <div className="mb-3 flex items-center justify-between gap-2"><h2 className="text-lg">Activity</h2><NetBadge net="devnet" /></div>
@@ -544,9 +544,9 @@ function Activity({ events }: { events: OrderEvent[] }) {
   );
 }
 
-const EVENT_LABEL: Record<OrderEvent["kind"], string> = { created: "Created", filled: "Filled", cancelled: "Closed", rejected: "Rejected" };
+const EVENT_LABEL: Record<OrderEvent["kind"], string> = { created: "Created", filled: "Filled", cancelled: "Closed", rejected: "Rejected", armed: "Armed", activated: "Activated" };
 
-function describe(e: OrderEvent): string {
+function describeSpacex(e: OrderEvent): string {
   if (e.kind === "created") return `${num(sharesOf(e.sizeRaw ?? 0))} shares, limit ${pct((e.limitBps ?? 0) / 100, 0)}`;
   if (e.kind === "filled") return `${num(sharesOf(e.amountInRaw ?? 0))} shares for ${num(spcxxOf(e.amountOutRaw ?? 0))} SPCXx, ${pct(e.gapPct ?? 0)} gap`;
   if (e.kind === "cancelled") return Number(e.amountInRaw ?? 0) > 0 ? `closed after filling ${num(sharesOf(e.amountInRaw ?? 0))} shares` : "revoked before any fill";

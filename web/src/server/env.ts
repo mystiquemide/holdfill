@@ -17,6 +17,13 @@ export const DEVNET = {
   lifecycleEvent: new PublicKey(devnetConfig.lifecycleEvent),
 };
 
+/** Devnet markets for PreStocks with no issuer event: replica token against replica USDC (classic SPL Token). */
+export const USDC_MARKETS: Record<string, { symbol: string; name: string; mint: PublicKey; pool: PublicKey; mainnetMint: PublicKey }> =
+  Object.fromEntries(Object.entries(devnetConfig.markets).map(([symbol, m]) => [symbol, {
+    symbol, name: m.name, mint: new PublicKey(m.mint), pool: new PublicKey(m.pool), mainnetMint: new PublicKey(m.mainnetMint),
+  }]));
+export const DEVNET_USDC = new PublicKey(devnetConfig.replicaUsdc);
+
 /** Issuer-stated terms for SpaceX PreStocks (prestocks.com/spacex). */
 export const SPACEX_TERMS = {
   sharesPerToken: 5,

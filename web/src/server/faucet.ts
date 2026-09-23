@@ -1,13 +1,14 @@
 import "server-only";
 import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
 import {
-  TOKEN_2022_PROGRAM_ID, createAssociatedTokenAccountIdempotentInstruction, createMintToCheckedInstruction,
+  TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, createAssociatedTokenAccountIdempotentInstruction, createMintToCheckedInstruction,
   getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
-import { DEVNET, devnet, keypairFromEnv } from "./env";
+import { DEVNET, DEVNET_USDC, devnet, keypairFromEnv } from "./env";
 import { orderAddress } from "./orders";
+import type { UsdcMarket } from "./usdc-markets";
 
-const GRANT_RAW = 1_000_000_000n;            // 1 replica SPACEX = 5 shares
+const GRANT_RAW = 1_000_000_000n;            // 1 raw replica token (1 SPACEX = 5 shares)
 const HOLDING_CAP_RAW = 500_000_000n;        // refuse wallets already holding 0.5 raw or more
 const SOL_TOPUP = 0.02 * LAMPORTS_PER_SOL;   // covers order rent and fees
 const SOL_TOPUP_BELOW = 0.005 * LAMPORTS_PER_SOL;
@@ -18,28 +19,30 @@ const lastGrant = new Map<string, number>();
 const recentGrants: number[] = [];
 
 export type FaucetResult =
-  | { ok: true; network: "devnet"; signature: string; sentSpacexRaw: string; sentShares: number; sentSol: number; explorer: string }
+  | { ok: true; network: "devnet"; symbol: string; signature: string; sentRaw: string; sentShares: number; sentSol: number; explorer: string }
   | { ok: false; status: 429 | 503; error: string; retryAt?: string };
 
-export async function grant(owner: PublicKey): Promise<FaucetResult> {
+/** Sends 1 raw replica token: SPACEX by default, or a USDC market's token with a USDC account to sell into. */
+export async function grant(owner: PublicKey, market?: UsdcMarket): Promise<FaucetResult> {
   const now = Date.now();
-  const key = owner.toBase58();
+  const symbol = market?.symbol ?? "SPACEX";
+  const mint = market?.mint ?? DEVNET.spacex;
+  const key = `${symbol}:${owner.toBase58()}`;
   while (recentGrants.length && now - recentGrants[0] > 60 * 60 * 1000) recentGrants.shift();
   if (recentGrants.length >= GLOBAL_LIMIT_PER_HOUR) {
     return { ok: false, status: 429, error: "The faucet is busy. Try again later.", retryAt: new Date(recentGrants[0] + 60 * 60 * 1000).toISOString() };
   }
 
   const conn = devnet();
-  const spacexAta = getAssociatedTokenAddressSync(DEVNET.spacex, owner, false, TOKEN_2022_PROGRAM_ID);
-  const spcxxAta = getAssociatedTokenAddressSync(DEVNET.spcxx, owner, false, TOKEN_2022_PROGRAM_ID);
+  const tokenAta = getAssociatedTokenAddressSync(mint, owner, false, TOKEN_2022_PROGRAM_ID);
   const [balance, lamports, order] = await Promise.all([
-    conn.getTokenAccountBalance(spacexAta, "confirmed").then((b) => BigInt(b.value.amount)).catch(() => 0n),
+    conn.getTokenAccountBalance(tokenAta, "confirmed").then((b) => BigInt(b.value.amount)).catch(() => 0n),
     conn.getBalance(owner, "confirmed"),
-    conn.getAccountInfo(orderAddress(owner), "confirmed"),
+    conn.getAccountInfo(orderAddress(owner, mint), "confirmed"),
   ]);
   // Survives restarts: the chain itself says whether this wallet already has enough.
   if (balance >= HOLDING_CAP_RAW) {
-    return { ok: false, status: 429, error: `This wallet already holds ${Number(balance) / 1e9} replica SPACEX. The faucet only tops up empty wallets.` };
+    return { ok: false, status: 429, error: `This wallet already holds ${Number(balance) / 1e9} replica ${symbol}. The faucet only tops up empty wallets.` };
   }
   // A wallet whose last order sold everything can refill right away; the hourly limit covers the rest.
   const last = lastGrant.get(key);
@@ -50,10 +53,14 @@ export async function grant(owner: PublicKey): Promise<FaucetResult> {
 
   const issuer = keypairFromEnv("ISSUER_KEYPAIR");
   const sol = lamports < SOL_TOPUP_BELOW ? SOL_TOPUP : 0;
+  // The account the order sells into: SPCXx for SPACEX, replica USDC (classic SPL Token) otherwise.
+  const out = market
+    ? createAssociatedTokenAccountIdempotentInstruction(issuer.publicKey, getAssociatedTokenAddressSync(DEVNET_USDC, owner, false, TOKEN_PROGRAM_ID), owner, DEVNET_USDC, TOKEN_PROGRAM_ID)
+    : createAssociatedTokenAccountIdempotentInstruction(issuer.publicKey, getAssociatedTokenAddressSync(DEVNET.spcxx, owner, false, TOKEN_2022_PROGRAM_ID), owner, DEVNET.spcxx, TOKEN_2022_PROGRAM_ID);
   const tx = new Transaction().add(
-    createAssociatedTokenAccountIdempotentInstruction(issuer.publicKey, spacexAta, owner, DEVNET.spacex, TOKEN_2022_PROGRAM_ID),
-    createAssociatedTokenAccountIdempotentInstruction(issuer.publicKey, spcxxAta, owner, DEVNET.spcxx, TOKEN_2022_PROGRAM_ID),
-    createMintToCheckedInstruction(DEVNET.spacex, spacexAta, issuer.publicKey, GRANT_RAW, 9, [], TOKEN_2022_PROGRAM_ID),
+    createAssociatedTokenAccountIdempotentInstruction(issuer.publicKey, tokenAta, owner, mint, TOKEN_2022_PROGRAM_ID),
+    out,
+    createMintToCheckedInstruction(mint, tokenAta, issuer.publicKey, GRANT_RAW, 9, [], TOKEN_2022_PROGRAM_ID),
   );
   if (sol > 0) tx.add(SystemProgram.transfer({ fromPubkey: issuer.publicKey, toPubkey: owner, lamports: sol }));
 
@@ -62,7 +69,7 @@ export async function grant(owner: PublicKey): Promise<FaucetResult> {
     lastGrant.set(key, now);
     recentGrants.push(now);
     return {
-      ok: true, network: "devnet", signature, sentSpacexRaw: GRANT_RAW.toString(), sentShares: 5,
+      ok: true, network: "devnet", symbol, signature, sentRaw: GRANT_RAW.toString(), sentShares: market ? 1 : 5,
       sentSol: sol / LAMPORTS_PER_SOL, explorer: `https://explorer.solana.com/tx/${signature}?cluster=devnet`,
     };
   } catch (e) {
