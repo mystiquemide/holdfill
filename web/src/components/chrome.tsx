@@ -14,6 +14,7 @@ const NAV = [
   { href: "/how", label: "How it works" },
   { href: "/evidence", label: "Evidence" },
   { href: "/proof", label: "Proof" },
+  { href: "/docs", label: "Docs" },
 ];
 
 const KNOWN_WALLETS = [
@@ -228,6 +229,7 @@ function WalletPicker({ onClose }: { onClose: () => void }) {
         ))}
       </ul>
       {detected.length === 0 && <p className="mt-4 text-sm text-slate">No Solana wallet found in this browser. Install one above, then reload this page.</p>}
+      <p className="mt-4 text-xs text-slate">By connecting, you accept the <Link href="/terms" onClick={onClose} className="underline underline-offset-4">terms</Link> and <Link href="/privacy" onClick={onClose} className="underline underline-offset-4">privacy notice</Link>.</p>
     </Modal>
   );
 }

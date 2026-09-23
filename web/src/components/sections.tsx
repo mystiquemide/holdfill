@@ -279,8 +279,8 @@ export function FinalCta() {
 export function Footer() {
   return (
     <footer className="mt-24 border-t border-hairline">
-      <div className="mx-auto grid max-w-[1200px] gap-10 px-4 py-12 md:grid-cols-[2fr_1fr_1fr] md:px-6">
-        <div>
+      <div className="mx-auto grid max-w-[1200px] grid-cols-2 gap-10 px-4 py-12 md:grid-cols-[2fr_1fr_1fr_1fr] md:px-6">
+        <div className="col-span-2 md:col-span-1">
           <Logo />
           <p className="mt-3 max-w-sm text-sm text-slate">Hold through the lockup. Fill before the deadline.</p>
         </div>
@@ -290,6 +290,7 @@ export function Footer() {
             <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/how">How it works</Link></li>
             <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/evidence">Evidence</Link></li>
             <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/proof">Proof</Link></li>
+            <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/docs">Docs</Link></li>
           </ul>
         </nav>
         <nav aria-label="Build" className="text-sm">
@@ -300,10 +301,20 @@ export function Footer() {
             <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/proof">Run the proof</Link></li>
           </ul>
         </nav>
+        <nav aria-label="Legal" className="text-sm">
+          <p className="text-slate">Legal</p>
+          <ul className="mt-1 flex flex-col">
+            <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/terms">Terms</Link></li>
+            <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/privacy">Privacy</Link></li>
+          </ul>
+        </nav>
       </div>
-      <div className="mx-auto max-w-[1200px] border-t border-hairline px-4 py-6 text-xs leading-relaxed text-slate md:px-6">
-        <p>Built for Stocklana. Holdfill does not set prices or guarantee conversion value. Orders run on devnet replica tokens; market data is live mainnet.</p>
-        <p className="mt-1">Holdfill is not affiliated with SpaceX or PreStocks.</p>
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-4 border-t border-hairline px-4 py-6 text-xs leading-relaxed text-slate md:flex-row md:items-end md:justify-between md:gap-10 md:px-6">
+        <div className="max-w-2xl">
+          <p>Holdfill does not set prices or guarantee conversion value. Orders run on devnet replica tokens; market data is live mainnet.</p>
+          <p className="mt-1">Holdfill is not affiliated with SpaceX or PreStocks.</p>
+        </div>
+        <p className="shrink-0 text-ink">© 2026 Holdfill.</p>
       </div>
     </footer>
   );

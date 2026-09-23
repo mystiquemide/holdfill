@@ -132,7 +132,7 @@ function PositionPanel({ history }: { history: HistoryDay[] }) {
   const owner = publicKey?.toBase58() ?? null;
   const pos = usePolling<Position>(owner ? `/api/position?owner=${owner}` : null, 10_000);
   const orders = usePolling<OrderHistory>(owner ? `/api/orders?owner=${owner}` : null, 15_000);
-  const [revoked, setRevoked] = useState(false);
+  const [ended, setEnded] = useState<"revoked" | "closed" | null>(null);
   const refreshAll = useCallback(() => { pos.refresh(); orders.refresh(); }, [pos, orders]);
 
   const shell = (children: React.ReactNode, badge = true) => (
@@ -158,14 +158,14 @@ function PositionPanel({ history }: { history: HistoryDay[] }) {
 
   const order = p.devnet.order;
   const events = orders.data?.events ?? [];
-  const banner = revoked && !order ? (
-    <div className="mb-5 rounded-[14px] bg-vellum p-4 text-sm">Order revoked. The approval is removed and nothing else can fill.</div>
+  const banner = ended && !order ? (
+    <div className="mb-5 rounded-[14px] bg-vellum p-4 text-sm">{ended === "closed" ? "Order closed. Its SOL deposit is back in your wallet." : "Order revoked. The approval is removed and nothing else can fill."}</div>
   ) : null;
 
   if (order) {
     return (
       <div className="flex flex-col gap-6">
-        <OrderCard position={p} order={order} onChange={refreshAll} onRevoked={() => setRevoked(true)} />
+        <OrderCard position={p} order={order} onChange={refreshAll} onEnded={setEnded} />
         <Activity events={events} />
       </div>
     );
@@ -174,7 +174,7 @@ function PositionPanel({ history }: { history: HistoryDay[] }) {
   if (BigInt(p.devnet.replicaSpacex.raw) === 0n) {
     return (
       <div className="flex flex-col gap-6">
-        {shell(<>{banner}<Faucet position={p} onDone={refreshAll} /></>)}
+        {shell(<>{banner}<Faucet position={p} soldOut={events.some((e) => e.kind === "filled")} onDone={refreshAll} /></>)}
         {events.length > 0 && <Activity events={events} />}
       </div>
     );
@@ -183,7 +183,7 @@ function PositionPanel({ history }: { history: HistoryDay[] }) {
   return (
     <div className="flex flex-col gap-6">
       {banner}
-      <Ticket position={p} history={history} onDone={() => { setRevoked(false); refreshAll(); }} />
+      <Ticket position={p} history={history} onDone={() => { setEnded(null); refreshAll(); }} />
       {events.length > 0 && <Activity events={events} />}
     </div>
   );
@@ -191,7 +191,7 @@ function PositionPanel({ history }: { history: HistoryDay[] }) {
 
 // ---------- states C and D ----------
 
-function Faucet({ position, onDone }: { position: Position; onDone: () => void }) {
+function Faucet({ position, soldOut, onDone }: { position: Position; soldOut: boolean; onDone: () => void }) {
   const toasts = useToasts();
   const [busy, setBusy] = useState(false);
   const [limited, setLimited] = useState<string | null>(null);
@@ -219,7 +219,9 @@ function Faucet({ position, onDone }: { position: Position; onDone: () => void }
   return (
     <div className="flex flex-col gap-4">
       <Balances position={position} />
-      <p className="text-base">Get 1 replica SPACEX (5 shares) to try an order. If your wallet is low on devnet SOL, we add 0.02 SOL for fees.</p>
+      <p className="text-base">
+        {soldOut ? "Your last order sold all your replica SPACEX. Get 1 more (5 shares) to set another order." : "Get 1 replica SPACEX (5 shares) to try an order."} If your wallet is low on devnet SOL, we add 0.02 SOL for fees.
+      </p>
       <div className="flex flex-wrap items-center gap-3">
         <Button onClick={request} disabled={busy || !!limited}>{busy ? "Sending..." : "Get replica SPACEX"}</Button>
         {limited && <p className="text-sm text-deadline">{limited}</p>}
@@ -379,7 +381,7 @@ function Line({ k, v }: { k: string; v: string }) {
 
 type Check = { tone: "wait" | "ok" | "blocked" | "error"; text: string };
 
-function OrderCard({ position, order, onChange, onRevoked }: { position: Position; order: NonNullable<Position["devnet"]["order"]>; onChange: () => void; onRevoked: () => void }) {
+function OrderCard({ position, order, onChange, onEnded }: { position: Position; order: NonNullable<Position["devnet"]["order"]>; onChange: () => void; onEnded: (how: "revoked" | "closed") => void }) {
   const submit = useSubmit();
   const toasts = useToasts();
   const [check, setCheck] = useState<Check | null>(null);
@@ -445,7 +447,7 @@ function OrderCard({ position, order, onChange, onRevoked }: { position: Positio
     );
     setBusy(false);
     setConfirm(false);
-    if (ok) { onRevoked(); onChange(); }
+    if (ok) { onEnded(isFilled ? "closed" : "revoked"); onChange(); }
   };
 
   return (
@@ -491,6 +493,7 @@ function OrderCard({ position, order, onChange, onRevoked }: { position: Positio
         {!isFilled && <Button variant="secondary" onClick={runCheck} disabled={checking || deadlinePassed}>{checking ? "Checking the pool..." : "Check now"}</Button>}
         <Button variant={isFilled ? "secondary" : "danger"} onClick={() => setConfirm(true)} disabled={busy}>{isFilled ? "Close and set a new order" : "Revoke"}</Button>
       </div>
+      <p className="mt-4 text-sm text-slate">One order per wallet. {isFilled ? "Close this one" : "Revoke this one"} to set a new order.</p>
       <Source>Order <a className="tap underline underline-offset-4" href={`https://explorer.solana.com/address/${order.address}?cluster=devnet`} target="_blank" rel="noreferrer">{shortAddr(order.address)}</a>, deadline {day(DEADLINE, true)} 23:59 UTC.</Source>
 
       {confirm && (

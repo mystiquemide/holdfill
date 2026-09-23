@@ -5,6 +5,7 @@ import {
   getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
 import { DEVNET, devnet, keypairFromEnv } from "./env";
+import { orderAddress } from "./orders";
 
 const GRANT_RAW = 1_000_000_000n;            // 1 replica SPACEX = 5 shares
 const HOLDING_CAP_RAW = 500_000_000n;        // refuse wallets already holding 0.5 raw or more
@@ -23,10 +24,6 @@ export type FaucetResult =
 export async function grant(owner: PublicKey): Promise<FaucetResult> {
   const now = Date.now();
   const key = owner.toBase58();
-  const last = lastGrant.get(key);
-  if (last && now - last < WALLET_COOLDOWN_MS) {
-    return { ok: false, status: 429, error: "One faucet request per wallet per hour.", retryAt: new Date(last + WALLET_COOLDOWN_MS).toISOString() };
-  }
   while (recentGrants.length && now - recentGrants[0] > 60 * 60 * 1000) recentGrants.shift();
   if (recentGrants.length >= GLOBAL_LIMIT_PER_HOUR) {
     return { ok: false, status: 429, error: "The faucet is busy. Try again later.", retryAt: new Date(recentGrants[0] + 60 * 60 * 1000).toISOString() };
@@ -35,13 +32,20 @@ export async function grant(owner: PublicKey): Promise<FaucetResult> {
   const conn = devnet();
   const spacexAta = getAssociatedTokenAddressSync(DEVNET.spacex, owner, false, TOKEN_2022_PROGRAM_ID);
   const spcxxAta = getAssociatedTokenAddressSync(DEVNET.spcxx, owner, false, TOKEN_2022_PROGRAM_ID);
-  const [balance, lamports] = await Promise.all([
+  const [balance, lamports, order] = await Promise.all([
     conn.getTokenAccountBalance(spacexAta, "confirmed").then((b) => BigInt(b.value.amount)).catch(() => 0n),
     conn.getBalance(owner, "confirmed"),
+    conn.getAccountInfo(orderAddress(owner), "confirmed"),
   ]);
   // Survives restarts: the chain itself says whether this wallet already has enough.
   if (balance >= HOLDING_CAP_RAW) {
     return { ok: false, status: 429, error: `This wallet already holds ${Number(balance) / 1e9} replica SPACEX. The faucet only tops up empty wallets.` };
+  }
+  // A wallet whose last order sold everything can refill right away; the hourly limit covers the rest.
+  const last = lastGrant.get(key);
+  const emptyAndIdle = balance === 0n && !order;
+  if (!emptyAndIdle && last && now - last < WALLET_COOLDOWN_MS) {
+    return { ok: false, status: 429, error: "One faucet request per wallet per hour.", retryAt: new Date(last + WALLET_COOLDOWN_MS).toISOString() };
   }
 
   const issuer = keypairFromEnv("ISSUER_KEYPAIR");
