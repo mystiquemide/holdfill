@@ -7,7 +7,8 @@ import {
 } from "@solana/spl-token";
 import { BN, Program } from "@anchor-lang/core";
 import DLMM from "@meteora-ag/dlmm";
-import { buildExecuteIx, OrderAccount } from "./execute-ix";
+import { buildExecuteIx } from "./execute-ix";
+import { orders, type OrderData } from "./program";
 import { haircutBps, requiredOutput } from "./math";
 
 export type Attempt = {
@@ -23,7 +24,7 @@ export type Attempt = {
   signature?: string;
 };
 
-type OrderRecord = { publicKey: PublicKey; account: OrderAccount & { status: Record<string, unknown> } };
+type OrderRecord = { publicKey: PublicKey; account: OrderData };
 
 const SEARCH_STEPS = 24;
 
@@ -66,8 +67,10 @@ export async function tick(params: {
   const attempts: Attempt[] = [];
   const push = (a: Attempt) => { attempts.push(a); log(a); };
 
-  const all = ((await (program.account as any).order.all()) as OrderRecord[])
-    .filter((o) => !params.onlyOrder || o.publicKey.equals(params.onlyOrder));
+  // One order: fetch it directly. All orders: one program-account scan.
+  const all: OrderRecord[] = params.onlyOrder
+    ? await orders(program).fetchNullable(params.onlyOrder).then((acc) => (acc ? [{ publicKey: params.onlyOrder!, account: acc }] : []))
+    : await orders(program).all();
   const now = BigInt(Math.floor(Date.now() / 1000));
   const { epoch } = await connection.getEpochInfo("confirmed");
   const pools = new Map<string, DLMM>();
