@@ -173,7 +173,11 @@ All return JSON with `network` and `asOf` fields.
 | `/api/history` | GET | Daily haircut series since listing plus today's live point | `data/haircut-history.json` + `/api/market` |
 | `/api/backtest?limit=2000` | GET | Days the limit would have filled, first fill date, realized haircut | history |
 | `/api/position?owner=` | GET | Mainnet SPACEX balance (read only) and devnet replica balances | Helius mainnet and devnet |
-| `/api/orders?owner=` | GET | Owner's order and fill events | devnet program accounts and logs |
+| `/api/orders?owner=` | GET | Recent events for the owner's order address: created, filled (with gap), cancelled, rejected (with error code) | devnet signatures for the order PDA, Anchor event logs |
+| `/api/tx/order` | POST `{owner, sizeRaw, limitBps, fallbackTs, floorBps}` | Unsigned devnet transaction: create the SPCXx account if missing, `create_order`, capped approval to the order PDA | builds with the IDL, validates inputs and balance first |
+| `/api/tx/revoke` | POST `{owner}` | Unsigned transaction: `cancel_order` (if an order exists) plus token revoke | IDL |
+| `/api/tx/send` | POST `{tx}` | Relays a holder-signed transaction and waits for confirmation. Rejects unsigned transactions and any instruction outside Holdfill, Token-2022, ATA, System, Compute Budget | Helius devnet |
+| `/api/program` | GET | Program id and current upgrade authority, read from the ProgramData account | Helius devnet |
 | `/api/faucet` | POST `{owner}` | Mints 1 replica SPACEX to a devnet wallet. One per wallet per hour, 20 per hour global. | issuer keypair, devnet |
 | `/api/keeper/tick` | POST | Runs one keeper pass, returns attempts | keeper lib |
 | `/api/jupiter-check` | GET | Live Jupiter Trigger response for the SPACEX mint | Jupiter Trigger API |
