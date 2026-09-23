@@ -436,7 +436,7 @@ export function Footer() {
       </div>
       <div className="mx-auto flex max-w-[1200px] flex-col gap-4 border-t border-hairline px-4 py-6 text-xs leading-relaxed text-slate md:flex-row md:items-end md:justify-between md:gap-10 md:px-6">
         <div className="max-w-2xl">
-          <p>Holdfill does not set prices or guarantee conversion value. Orders run on devnet replica tokens; market data is live mainnet.</p>
+          <p>Holdfill does not set prices or guarantee conversion value. Orders run on devnet replica tokens; market data is live mainnet. <Link href="/proof" className="text-ink underline underline-offset-4">See the proof</Link>.</p>
           <p className="mt-1">Holdfill is not affiliated with SpaceX or PreStocks.</p>
         </div>
         <p className="shrink-0 text-ink">© 2026 Holdfill.</p>

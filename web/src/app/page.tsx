@@ -7,7 +7,7 @@ import { AppEntryButton } from "@/components/chrome";
 import { EvidencePreview, PreviewCard } from "@/components/hero";
 import { BuiltOn, Compared, FinalCta, HowItWorks, OrderTypes, ProofPreview } from "@/components/sections";
 import { Reveal } from "@/components/reveal";
-import { ButtonLink, DemoBadge, EligibilityNotice, SectionHead } from "@/components/ui";
+import { ButtonLink, EligibilityNotice, SectionHead } from "@/components/ui";
 
 // The landing page introduces Holdfill. The app, full evidence, and full proof live on
 // /app, /evidence, and /proof.
@@ -38,7 +38,7 @@ export default function Home() {
               Standing orders for PreStocks. Convert before the issuer&apos;s deadline, sell into USDC at your price, or arm an order for the next IPO. Your tokens stay in your wallet until the market meets your terms.
             </p>
             <div className="rise-3 mt-8 flex flex-wrap items-center justify-center gap-4">
-              <div className="flex items-center gap-2"><AppEntryButton /><DemoBadge /></div>
+              <AppEntryButton />
               <ButtonLink href="/demo" variant="secondary">Watch demo</ButtonLink>
               <ButtonLink href="/markets" variant="secondary">See all markets</ButtonLink>
             </div>

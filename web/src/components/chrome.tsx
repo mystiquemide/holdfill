@@ -65,12 +65,6 @@ export function Header() {
   return (
     <>
       <button type="button" onClick={() => document.getElementById("main")?.focus()} className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-paper">Skip to content</button>
-      {!isApp && <div className="bg-cream">
-        <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center text-[13px] text-ink sm:text-sm">
-          <span>Orders run on devnet replicas. Market data is live mainnet.</span>
-          <Link href="/proof" className="hit inline-flex h-7 items-center rounded-full bg-ink px-3 text-xs font-medium text-paper hover:bg-black">See the proof</Link>
-        </div>
-      </div>}
       <header className="sticky top-0 z-40">
         <nav className="border-b border-hairline bg-paper" aria-label="Main">
           <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-4 md:px-6">
