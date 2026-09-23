@@ -19,7 +19,8 @@ jobs:
       - name: Typecheck (keeper, scripts, tests)
         run: npm run typecheck
       - name: Typecheck (web)
-        run: npx tsc --noEmit -p web
+        working-directory: web
+        run: npx next typegen && npx tsc --noEmit -p .
       - name: Lint
         run: npm --prefix web run lint
       - name: Keeper math matches the program
