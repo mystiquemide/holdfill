@@ -24,7 +24,8 @@
     "test:keeper-math": "tsx --test keeper/math.test.ts",
     "test:keeper-devnet": "tsx tests/keeper-devnet.ts",
     "test:backtest": "tsx --test web/src/server/backtest.test.ts",
-    "history:refresh": "tsx scripts/refresh-history.ts"
+    "history:refresh": "tsx scripts/refresh-history.ts",
+    "case-study": "tsx scripts/case-study.ts"
   },
   "dependencies": {
     "@anchor-lang/core": "1.2.0",

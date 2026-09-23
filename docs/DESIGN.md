@@ -241,7 +241,7 @@ Partial: label PARTIAL, "Filled 2.0000 / 5.0000 shares. Waiting for liquidity at
 |                   [x]% under entitlement. Next unlock [k] days later.  |
 |                   [ View on Solana Explorer ]                          |
 | One real deadline XAI conversion closed 12 Sep 2026.                   |
-|                   1,476 wallets still hold XAI.                        |
+|                   1,473 wallets still hold XAI (data/case-study.json). |
 +------------------------------------------------------------------------+
 ```
 - The "one real sale" values come from `data/case-study.json`, produced from a real mainnet transaction. Ship real values or remove the block.
