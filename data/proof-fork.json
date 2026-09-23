@@ -1,24 +1,27 @@
 {
   "command": "npm run proof:fork",
-  "ranAt": "2026-09-23T06:46:48.909Z",
+  "ranAt": "2026-09-23T13:32:10.582Z",
   "network": "local validator cloned from mainnet",
   "mainnet": {
-    "slot": 449625895,
-    "epoch": 1040,
+    "slot": 449717754,
+    "epoch": 1041,
     "rpc": "Helius mainnet"
   },
-  "localChainTime": "2026-09-23T06:46:21.000Z",
+  "localChainTime": "2026-09-23T13:31:40.000Z",
   "validator": "solana-test-validator",
   "program": {
     "id": "A6UhawZdBQiMwpDYzFXKzTJD5voF29rLmrViUT6WaSGV",
-    "binarySha256": "2dfaaac2fb34f4c2f1b3e6ad3a2782b619725a9c4c6db2c02d25d7edc8563b14",
+    "binarySha256": "ba31ef60c401ba63bcdb72b20cf04ad8fd8238ddae39563ffbc857ff85670f11",
     "sameBinaryAsDevnetDeployment": true
   },
   "mints": {
     "spacex": "PreANxuXjsy2pvisWWMNB6YaJNzr7681wJJr2rHsfTh",
-    "spcxx": "Xs3oZwbHvqis4NYcf4YKWmEia2eC84wSiVrcYcTqpH8"
+    "spcxx": "Xs3oZwbHvqis4NYcf4YKWmEia2eC84wSiVrcYcTqpH8",
+    "openai": "PreweJYECqtQwBtpxHL171nL2K6umo692gTm7Q3rpgF",
+    "usdc": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
   },
   "pool": "F9oJK3UC6bLVcAoYEZPHNteZACb7YzdZw7FHad4KFC6B",
+  "priceOrderPool": "4HTy7aTjPm5PTSEws2yWRDPX6gjWM6sC2dV5mv9u8JsH",
   "clonedPrograms": [
     "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo",
     "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
@@ -30,25 +33,38 @@
     "68zVKnQXTGty1EMD34mNY8pNjYnANeXrFJDSmjPfQAFq",
     "4qerHek9eE1e167w9pgZABJ7a9rrf5izjtuCFqjQfNZu",
     "EkUVbtt7dHtNkYwET1JsXSYKAD7JRRPd8RrhbFbL5Vjo",
+    "PreweJYECqtQwBtpxHL171nL2K6umo692gTm7Q3rpgF",
+    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "4HTy7aTjPm5PTSEws2yWRDPX6gjWM6sC2dV5mv9u8JsH",
+    "CiGhjdnp4ARJt79ZRzCW72AQuQRMteKymCR4D6wsTFdB",
+    "9d3aURGUgCkj3bRFYtnyhQ4D37VgGFWwGUoS5DziR4RF",
+    "5uEJp3mknNxN4RH1Amj7BkPc5dNbzoCPVF18oFf8HPLM",
+    "3pHLUV2oLX28HZWxzUrFio2bZckEhwEJhVLzMwMU8kUs",
     "Db44fFLprErB8DYZa616zou2yXkWiXnTXM56BQYpZ9Tx",
     "ELc2LsAXn7jGEy9UfoWJXXBY4ZTrP3u3RwrJUC9ifPaZ",
     "7qzt7coT4joqoMLYe8VfBL1C2Whwv6wMYMwBHJN7MxDH",
     "GdVSSE2ZE94TUpoGUku9enEVxKP9Pgn4Zgqpisryw8fo",
-    "GwL7A77gwsgBDQwZU7oS4gp6yHkJkQqjph6X9oFNkdRk"
+    "GwL7A77gwsgBDQwZU7oS4gp6yHkJkQqjph6X9oFNkdRk",
+    "HkBoQt3k5FC9EgK9zBxwv1yCiJbyVTsxtoGaBuXRXnPN",
+    "JEAhcNVJkQMJQ2C3Gj8qgYTJjtPfCdJkErzntj9o2mx1",
+    "aJi4VJNFXGKRVdek94dTyx6SW5gXABxH2unk3wDuRjg",
+    "4ackFDHiTR8Y5pKUz3thgsd1wJevrVGJXkx2K66Y6eR4",
+    "By1xEHvXdYq2obytSAd3HXeXyrnoopWqdijggUYHCeN5"
   ],
   "substitutions": [
-    "Holder SPACEX account ARAjoxijatDG4rZyG6ntHoq23KB4Ua3Ktzoyk9wgGGSu: copy of the pool's SPACEX reserve account (same extensions), owner set to a local holder, 1 raw SPACEX, withheld fee zeroed.",
+    "Holder SPACEX account 92GvE2jXWF83d8JscPvokU4yTXdtANDv8z4fyLQeCuAA: copy of the pool's SPACEX reserve account (same extensions), owner set to a local holder, 1 raw SPACEX, withheld fee zeroed.",
+    "Holder OPENAI account zQThYCC6cG4iR98W6MsxkgsZmedKZ7P591CoxQ2swMo: copy of the OpenAI/USDC pool's OPENAI reserve account, owner set to a local holder, 0.1 OPENAI, withheld fee zeroed. The OPENAI mint, USDC mint, and pool are unmodified mainnet state.",
     "Lifecycle event 7kv6XJzhhLsaqoxXNx9Vcfm9zxac6s6J2dMA82MVo6zv: issuer terms (SPCXx, 5 shares per token, deadline 2027-03-12T23:59Z) written into genesis.",
     "SPACEX mint: transfer fee and pause authorities changed from WV9PJN7XTmTLVwbutCLFxp8TyePee6Xq5mRq6Fti5Wc to a local key so the run can act as the issuer. All other mint bytes are mainnet.",
-    "Epochs are 32 slots and the ledger starts at mainnet epoch 1040, so the transfer fee in force matches mainnet."
+    "Epochs are 32 slots and the ledger starts at mainnet epoch 1041, so the transfer fee in force matches mainnet."
   ],
   "fill": {
-    "signature": "4ZGELbX6we2pEAtALBduzVPUcG8qg1sDhpiif5Mx4J2gUe4ke2CzydXbPV8SBh7iioFHQoh6RVpr8NHwGn47Lirv",
+    "signature": "5PtExtMDti48Vk1sNtNQL8YgyfktVmFHe1y1epFXNtuFF1qhowQgFmqhuS1nk96nssN8G1ez6RdsvXnxQUvdQBiW",
     "amountInRaw": "100000000",
-    "receivedSpcxxBase": "35470243",
+    "receivedSpcxxBase": "35119052",
     "requiredSpcxxBase": "30000000",
     "entitlementSpcxxBase": "50000000",
-    "gapPct": 29.06,
+    "gapPct": 29.76,
     "transferFeeBps": 100,
     "feeWithheldBase": "1000000",
     "programLogs": [
@@ -64,14 +80,24 @@
       "Program LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo invoke [3]"
     ]
   },
+  "priceFill": {
+    "signature": "5sKSmkZ26VeWkDHrGt7gbh7ppXZAW53VZZE8u9yb5NtL8qU36vVSpFXiqFD4toqd9GddqGN22PQh5YQ2racCUuhS",
+    "pool": "4HTy7aTjPm5PTSEws2yWRDPX6gjWM6sC2dV5mv9u8JsH",
+    "amountInRaw": "50000000",
+    "receivedUsdcBase": "96328334",
+    "requiredUsdcBase": "86650000",
+    "minUsdcPerToken": 1733,
+    "quotedUsdcPerToken": 1926.57,
+    "feeWithheldBase": "500000"
+  },
   "checks": [
     {
       "name": "Fill at the holder's price on the real pool",
       "pass": true,
       "expected": "holder spends 0.1 raw SPACEX, receives at least 0.3 SPCXx (40% limit), the mint withholds its fee, keeper holds no tokens",
       "result": "confirmed",
-      "detail": "order PDA signed DLMM swap2 through CPI as delegate. Holder spent 0.1 raw SPACEX, received 0.35470243 SPCXx (entitlement 0.5, 29.1% under, fees included). Transfer fee withheld 1000000 base units (100 bps). Keeper token accounts: 0.",
-      "signature": "4ZGELbX6we2pEAtALBduzVPUcG8qg1sDhpiif5Mx4J2gUe4ke2CzydXbPV8SBh7iioFHQoh6RVpr8NHwGn47Lirv"
+      "detail": "order PDA signed DLMM swap2 through CPI as delegate. Holder spent 0.1 raw SPACEX, received 0.35119052 SPCXx (entitlement 0.5, 29.8% under, fees included). Transfer fee withheld 1000000 base units (100 bps). Keeper token accounts: 0.",
+      "signature": "5PtExtMDti48Vk1sNtNQL8YgyfktVmFHe1y1epFXNtuFF1qhowQgFmqhuS1nk96nssN8G1ez6RdsvXnxQUvdQBiW"
     },
     {
       "name": "Issuer pause blocks the fill",
@@ -79,7 +105,7 @@
       "expected": "rejected with MintPaused",
       "result": "failed on chain: MintPaused",
       "detail": "the issuer paused SPACEX; the program refuses before any tokens move",
-      "signature": "gPmjaH4NZPNzeWy1wNzDF7t9TUFWt4ipQPH1FTfk1Cyu5HedrRvYN6csPFLPVTej9RV4KKS23Z1yiwi6zV23bak"
+      "signature": "5fxFk3US2yZJ632c4iwHNrbbALhvn3bf4tr5RWN41w8UKUg5KjAajELQvw6rzyHp91fyi3p1iGkLpCR3xX542o8d"
     },
     {
       "name": "Revoke stops fills at once",
@@ -87,15 +113,15 @@
       "expected": "rejected with DelegateMismatch",
       "result": "failed on chain: DelegateMismatch",
       "detail": "the holder revoked the token approval; the order account still exists but cannot move tokens",
-      "signature": "65h2YzVP9Jid3UicpFU2uMoosYxM9KexrX2roDe6oWK1PuVD9GSZLKRm8TSKN8EypnFXe2vPrG2yintSv84zPtc"
+      "signature": "rDZZXTzTfeGA5R3PmUsrMZdbVJX7TxCjWx2nCA25ahfnAUfpKmf9ETVQWeaGcoYE19dkWueHtcMF81FUnZybPQf"
     },
     {
       "name": "Fill below the holder's minimum is rejected",
       "pass": true,
       "expected": "rejected with ExceededAmountSlippageTolerance or InsufficientOutput",
       "result": "failed on chain: ExceededAmountSlippageTolerance",
-      "detail": "10% limit needs at least 0.45 SPCXx for 0.1 raw; the pool pays about 0.35470243",
-      "signature": "ebTjrqTyzYtHu4SPXSQWSxGqQXZoywdgBnisxG9LSuXdiKBeonigAt4ryzXFAboAVa7J9fPpqvNGUQbFECPti8q"
+      "detail": "10% limit needs at least 0.45 SPCXx for 0.1 raw; the pool pays about 0.35119052",
+      "signature": "66wZzzoN1FB9asMjPcMyKzan2gQ5L8DG2uDoaqSXiYbk9zn9L2ch8qSPNzuSjy3VNezXehxszwdKxwj7YFpuP7Ei"
     },
     {
       "name": "Issuer fee change blocks the fill",
@@ -103,9 +129,25 @@
       "expected": "rejected with FeeChanged",
       "result": "failed on chain: FeeChanged",
       "detail": "order signed at 100 bps; the issuer raised the fee to 200 bps; the holder must re-sign with the new fee in view",
-      "signature": "53Vk7JcsE5WRN6Mvxwe1K1B8LhzsyPJW9H4gZxGrkrJSKTELbLwd7iKCU3SBSEvbnvP4iNbeZ2KVbChmKGNCzxpk"
+      "signature": "3ff15WXPQjhk8xUhXnt1JVio25MUGJebRjaV6RJX5WrMf3upgnUpekfBMrpSoTaZ7rztzD4adEtuMx42hMraisSy"
+    },
+    {
+      "name": "Price order fills into USDC on the real OpenAI/USDC pool",
+      "pass": true,
+      "expected": "holder spends 0.05 OPENAI, receives at least 86.65 USDC (1733 per token, 90% of the live quote), the mint withholds its fee, keeper holds no tokens",
+      "result": "confirmed",
+      "detail": "order PDA signed DLMM swap2 as delegate; output is classic SPL Token USDC. Holder spent 0.05 OPENAI, received 96.328334 USDC (1926.57 per token). OPENAI transfer fee withheld 500000 base units. Keeper token accounts: 0.",
+      "signature": "5sKSmkZ26VeWkDHrGt7gbh7ppXZAW53VZZE8u9yb5NtL8qU36vVSpFXiqFD4toqd9GddqGN22PQh5YQ2racCUuhS"
+    },
+    {
+      "name": "Price above what the pool pays is refused",
+      "pass": true,
+      "expected": "rejected with ExceededAmountSlippageTolerance or InsufficientOutput",
+      "result": "failed on chain: ExceededAmountSlippageTolerance",
+      "detail": "price order at 2890 USDC per token; the pool pays about 1926.57",
+      "signature": "4ccHi3hKqcu1Zj52qfxxmuMw1Q3am4NijoGBuHG12khmiqNdR3ZVhPVqKBfqhS2bhbAV9WpUXchC2WSMyZEpYPA4"
     }
   ],
-  "passed": 5,
-  "total": 5
+  "passed": 7,
+  "total": 7
 }

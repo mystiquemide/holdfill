@@ -10,6 +10,7 @@ export const MAINNET = {
   spacex: new PublicKey("PreANxuXjsy2pvisWWMNB6YaJNzr7681wJJr2rHsfTh"),
   spcxx: new PublicKey("Xs3oZwbHvqis4NYcf4YKWmEia2eC84wSiVrcYcTqpH8"),
   pool: new PublicKey("F9oJK3UC6bLVcAoYEZPHNteZACb7YzdZw7FHad4KFC6B"),
+  usdc: new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"),
 };
 export const DLMM_PROGRAM_ID = new PublicKey("LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo");
 

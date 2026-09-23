@@ -2,17 +2,22 @@
 
 Hold through the lockup. Fill before the deadline.
 
-Holdfill is a standing order demo for converting SpaceX PreStocks (SPACEX) into SpaceX xStock (SPCXx). The holder keeps tokens in their wallet until a fill meets their minimum. The order program enforces the approved amount, minimum output, fallback terms, and issuer deadline.
+Holdfill is a standing order demo for PreStocks holders. The holder keeps tokens in their wallet until a fill meets their minimum, and the order program enforces the approved amount, minimum output, fallback terms, and issuer deadline. Three order types share one program:
+
+- **Conversion:** SpaceX PreStocks (SPACEX) into SpaceX xStock (SPCXx) before the issuer deadline, at no worse than the holder's limit.
+- **Price order:** any PreStocks token into USDC at a price the holder sets. Jupiter's trigger API refuses every PreStocks mint because of its transfer fee.
+- **Arm for the IPO:** terms set now for a token whose issuer has not named a successor; the keeper activates the order when the issuer registers the event.
 
 **Execution is on Solana devnet replicas.** Market data is read from mainnet. The replica pool carries the 1% SPACEX transfer fee, but some mainnet mint extensions cannot be reproduced in the permissionless devnet pool. A separate local-validator proof runs the same program against cloned mainnet mint and pool state.
 
 ## See it
 
-- [Product preview](https://holdfill-preview.midelabs.xyz/)
+- [Product preview](https://holdfill-preview.midelabs.xyz/), with SpaceX, Anthropic, and OpenAI markets in the [app](https://holdfill-preview.midelabs.xyz/app)
+- [Every PreStocks market, live](https://holdfill-preview.midelabs.xyz/markets) and the [issuer view](https://holdfill-preview.midelabs.xyz/issuer)
 - [Wallet-free walkthrough](https://holdfill-preview.midelabs.xyz/demo)
 - [Evidence](https://holdfill-preview.midelabs.xyz/evidence) and [proof](https://holdfill-preview.midelabs.xyz/proof)
 
-The walkthrough links recorded devnet transactions for order creation, a successful fill, a below-minimum rejection, and revocation. It does not require a wallet.
+The walkthrough links recorded devnet transactions for order creation, a successful fill, a below-minimum rejection, revocation, a price order into USDC, and an armed order activated by a simulated issuer event on a separate demo token. It does not require a wallet.
 
 ## Verify the proof
 
@@ -22,7 +27,9 @@ The committed [devnet proof record](data/proof-devnet.json) links every transact
 - [Below-minimum rejection](https://explorer.solana.com/tx/hyxFFgMh2sTddEKJkth8gfaCrBCvaFrczxC9XPtmW75dFMjyEzXNFuBHCethxXcMhyUtpL5EHpygfLRBu41aefm?cluster=devnet): a 10% limit required at least 0.45 SPCXx and the transaction failed on chain.
 - [Revocation](https://explorer.solana.com/tx/36XnRwGqZpFubBmU5u8NdV8ghJwft7JqwdGy5uVi2sz2CYXydMK9R6Aor7z28RHUpLmKyyfvxKtTVm3p1r9xbKeU?cluster=devnet): closes the order and removes approval.
 
-The [fork proof record](data/proof-fork.json) reports five checks against cloned mainnet state, including the real 1% transfer fee, an issuer pause, a fee change, a below-minimum rejection, and revocation. To reproduce it, install Node 22, Rust, Anchor 1.2, and the Solana CLI with `solana-test-validator` on your PATH. Then run:
+The [v2 devnet record](data/proof-devnet-v2.json) covers price orders and arming.
+
+The [fork proof record](data/proof-fork.json) reports seven checks against cloned mainnet state: on the real SpaceX pool, a fill with the real 1% transfer fee, an issuer pause, a fee change, a below-minimum rejection, and revocation; on the real OpenAI/USDC pool, a price order filled into USDC and a price the pool cannot pay, refused. To reproduce it, install Node 22, Rust, Anchor 1.2, and the Solana CLI with `solana-test-validator` on your PATH. Then run:
 
 ```bash
 npm ci
@@ -30,7 +37,7 @@ npm run build:program
 HELIUS_API_KEY=your_key npm run proof:fork
 ```
 
-The script starts and stops a local validator and writes `data/proof-fork.json`. It does not submit mainnet transactions. You can also run `npm run test:program`, `npm run test:keeper-math`, and `npm run test:backtest`.
+The script starts and stops a local validator and writes `data/proof-fork.json`. It does not submit mainnet transactions. You can also run `npm run test:program`, `npm run test:keeper-math`, and `npm run test:backtest`. The full program suite (`npm run test:local`, 39 checks) runs against a local validator cloned from the devnet markets; see ARCHITECTURE.md.
 
 ## Architecture
 

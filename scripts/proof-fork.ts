@@ -1,13 +1,15 @@
 // npm run proof:fork
 // Runs holdfill_orders against cloned mainnet state: the real SpaceX PreStocks mint (every
 // Token-2022 extension, the live 1% transfer fee), the real SPCXx mint, and the real Meteora DLMM
-// pool. Starts a local validator, runs five checks with the order PDA as the holder's delegate,
+// pool; plus the real OpenAI PreStocks mint, USDC mint, and OpenAI/USDC DLMM pool for price orders.
+// Starts a local validator, runs seven checks with the order PDA as the holder's delegate,
 // stops the validator, and writes data/proof-fork.json. Needs HELIUS_API_KEY and
 // solana-test-validator on PATH, plus a built program (npm run build:program).
 //
 // What is not cloned as-is, and why:
 // - The holder's SPACEX account is injected with 1 raw token (5 shares). It copies the pool's real
 //   SPACEX reserve account, so it carries the same account extensions, re-owned to a local holder.
+//   The holder's OPENAI account is made the same way from the OpenAI/USDC pool's reserve.
 // - The lifecycle event (issuer terms: SPCXx, 5 shares per token, 12 Mar 2027) is written into
 //   genesis, so the run needs no admin key.
 // - The mint's pause and fee authorities point at a local key, so the run can act as the issuer
@@ -23,7 +25,7 @@ import {
   Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction, TransactionInstruction,
 } from "@solana/web3.js";
 import {
-  TOKEN_2022_PROGRAM_ID, calculateEpochFee, createApproveCheckedInstruction,
+  TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, calculateEpochFee, createApproveCheckedInstruction,
   createAssociatedTokenAccountIdempotentInstruction, createPauseInstruction, createResumeInstruction,
   createRevokeInstruction, createSetTransferFeeInstruction, getAccount, getAssociatedTokenAddressSync,
   getMint, getTransferFeeAmount, getTransferFeeConfig,
@@ -40,6 +42,10 @@ const SLOTS_PER_EPOCH = 32;
 const EXPIRY = Math.floor(Date.parse("2027-03-12T23:59:00Z") / 1000);
 const FALLBACK = Math.floor(Date.parse("2027-03-01T00:00:00Z") / 1000);
 const HOLDER_RAW = 1_000_000_000n; // 1 raw SPACEX = 5 shares
+const OPENAI = new PublicKey("PreweJYECqtQwBtpxHL171nL2K6umo692gTm7Q3rpgF");
+const OPENAI_USDC_POOL = new PublicKey("4HTy7aTjPm5PTSEws2yWRDPX6gjWM6sC2dV5mv9u8JsH");
+const OPENAI_HOLDER_RAW = 100_000_000n; // 0.1 OPENAI
+const OPENAI_FILL = new BN(50_000_000); // 0.05 OPENAI per fill
 const FILL = new BN(100_000_000); // 0.1 raw per fill
 const SO = path.join(ROOT, "target/deploy/holdfill_orders.so");
 const OUT = path.join(ROOT, "data/proof-fork.json");
@@ -108,10 +114,12 @@ async function main() {
   // 1. Read mainnet: pool, mints, reserves, bin arrays, epoch.
   const pool = await DLMM.create(mn, MAINNET.pool, { cluster: "mainnet-beta" as never });
   if (!pool.lbPair.tokenXMint.equals(MAINNET.spacex) || !pool.lbPair.tokenYMint.equals(MAINNET.spcxx)) throw new Error("pool mints changed");
-  const [epochInfo, mintInfo, reserveInfo] = await Promise.all([
-    mn.getEpochInfo(), mn.getAccountInfo(MAINNET.spacex), mn.getAccountInfo(pool.lbPair.reserveX),
+  const oPool = await DLMM.create(mn, OPENAI_USDC_POOL, { cluster: "mainnet-beta" as never });
+  if (!oPool.lbPair.tokenXMint.equals(OPENAI) || !oPool.lbPair.tokenYMint.equals(MAINNET.usdc)) throw new Error("OpenAI pool mints changed");
+  const [epochInfo, mintInfo, reserveInfo, oReserveInfo] = await Promise.all([
+    mn.getEpochInfo(), mn.getAccountInfo(MAINNET.spacex), mn.getAccountInfo(pool.lbPair.reserveX), mn.getAccountInfo(oPool.lbPair.reserveX),
   ]);
-  if (!mintInfo || !reserveInfo) throw new Error("mainnet accounts not found");
+  if (!mintInfo || !reserveInfo || !oReserveInfo) throw new Error("mainnet accounts not found");
   const mainnetSlot = epochInfo.absoluteSlot;
 
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "holdfill-fork-"));
@@ -136,6 +144,14 @@ async function main() {
   holderData.writeBigUInt64LE(HOLDER_RAW, 64);
   holderData.writeBigUInt64LE(0n, extension(holderData, EXT_TRANSFER_FEE_AMOUNT));
 
+  // Holder's OPENAI account: the OpenAI/USDC pool's real OPENAI reserve account, re-owned, 0.1 OPENAI.
+  const holderOpenai = ata(holder.publicKey, OPENAI);
+  const holderUsdc = getAssociatedTokenAddressSync(MAINNET.usdc, holder.publicKey, false, TOKEN_PROGRAM_ID);
+  const oHolderData = Buffer.from(oReserveInfo.data);
+  holder.publicKey.toBuffer().copy(oHolderData, 32);
+  oHolderData.writeBigUInt64LE(OPENAI_HOLDER_RAW, 64);
+  oHolderData.writeBigUInt64LE(0n, extension(oHolderData, EXT_TRANSFER_FEE_AMOUNT));
+
   // Lifecycle event: the issuer's published terms.
   const coderProgram = new Program(idl, new AnchorProvider(local, new Wallet(keeper), { commitment: "confirmed" }));
   const [eventPda, eventBump] = PublicKey.findProgramAddressSync([Buffer.from("event"), MAINNET.spacex.toBuffer()], PROGRAM_ID);
@@ -147,9 +163,13 @@ async function main() {
   const activeIndex = binIdToBinArrayIndex(new BN(pool.lbPair.activeId)).toNumber();
   const binArrays = [];
   for (let i = activeIndex - 3; i <= activeIndex + 1; i++) binArrays.push(deriveBinArray(MAINNET.pool, new BN(i), DLMM_PROGRAM_ID)[0]);
+  const oActive = binIdToBinArrayIndex(new BN(oPool.lbPair.activeId)).toNumber();
+  for (let i = oActive - 3; i <= oActive + 1; i++) binArrays.push(deriveBinArray(OPENAI_USDC_POOL, new BN(i), DLMM_PROGRAM_ID)[0]);
   const cloned = [
     MAINNET.spcxx, MAINNET.pool, pool.lbPair.reserveX, pool.lbPair.reserveY, pool.lbPair.oracle,
-    deriveBinArrayBitmapExtension(MAINNET.pool, DLMM_PROGRAM_ID)[0], ...binArrays,
+    deriveBinArrayBitmapExtension(MAINNET.pool, DLMM_PROGRAM_ID)[0],
+    OPENAI, MAINNET.usdc, OPENAI_USDC_POOL, oPool.lbPair.reserveX, oPool.lbPair.reserveY, oPool.lbPair.oracle,
+    deriveBinArrayBitmapExtension(OPENAI_USDC_POOL, DLMM_PROGRAM_ID)[0], ...binArrays,
   ];
   const programs = [DLMM_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, ...(hookProgram.equals(PublicKey.default) ? [] : [hookProgram])];
 
@@ -162,6 +182,7 @@ async function main() {
     "--bpf-program", PROGRAM_ID.toBase58(), SO,
     "--account", MAINNET.spacex.toBase58(), accountFile(dir, MAINNET.spacex, mintInfo.lamports, TOKEN_2022_PROGRAM_ID, mintData),
     "--account", holderIn.toBase58(), accountFile(dir, holderIn, reserveInfo.lamports, TOKEN_2022_PROGRAM_ID, holderData),
+    "--account", holderOpenai.toBase58(), accountFile(dir, holderOpenai, oReserveInfo.lamports, TOKEN_2022_PROGRAM_ID, oHolderData),
     "--account", eventPda.toBase58(), accountFile(dir, eventPda, await mn.getMinimumBalanceForRentExemption(eventData.length), PROGRAM_ID, eventData),
     ...cloned.flatMap((a) => ["--maybe-clone", a.toBase58()]),
   ];
@@ -171,6 +192,7 @@ async function main() {
   console.log(`  SPACEX mint ${MAINNET.spacex.toBase58()}`);
   console.log(`  SPCXx mint  ${MAINNET.spcxx.toBase58()}`);
   console.log(`  DLMM pool   ${MAINNET.pool.toBase58()}`);
+  console.log(`  OPENAI/USDC ${OPENAI_USDC_POOL.toBase58()}`);
   console.log(`  program     ${PROGRAM_ID.toBase58()}`);
   console.log("  starting local validator with cloned mainnet state...");
 
@@ -191,7 +213,7 @@ async function main() {
       if (Date.now() > deadline) throw new Error("validator did not start within 180 s");
       await sleep(1000);
     }
-    const results = await runChecks({ local, holder, keeper, issuerStandIn, holderIn, holderOut, eventPda, reserveX: pool.lbPair.reserveX });
+    const results = await runChecks({ local, holder, keeper, issuerStandIn, holderIn, holderOut, eventPda, reserveX: pool.lbPair.reserveX, holderOpenai, holderUsdc, oReserveX: oPool.lbPair.reserveX });
 
     const passed = results.checks.filter((c) => c.pass).length;
     console.log(`\n${passed} of ${results.checks.length} PASS`);
@@ -207,17 +229,20 @@ async function main() {
         binarySha256: crypto.createHash("sha256").update(fs.readFileSync(SO)).digest("hex"),
         sameBinaryAsDevnetDeployment: await matchesDevnet(fs.readFileSync(SO)),
       },
-      mints: { spacex: MAINNET.spacex.toBase58(), spcxx: MAINNET.spcxx.toBase58() },
+      mints: { spacex: MAINNET.spacex.toBase58(), spcxx: MAINNET.spcxx.toBase58(), openai: OPENAI.toBase58(), usdc: MAINNET.usdc.toBase58() },
       pool: MAINNET.pool.toBase58(),
+      priceOrderPool: OPENAI_USDC_POOL.toBase58(),
       clonedPrograms: programs.map((p) => p.toBase58()),
       clonedAccounts: cloned.map((a) => a.toBase58()),
       substitutions: [
         `Holder SPACEX account ${holderIn.toBase58()}: copy of the pool's SPACEX reserve account (same extensions), owner set to a local holder, 1 raw SPACEX, withheld fee zeroed.`,
+        `Holder OPENAI account ${holderOpenai.toBase58()}: copy of the OpenAI/USDC pool's OPENAI reserve account, owner set to a local holder, 0.1 OPENAI, withheld fee zeroed. The OPENAI mint, USDC mint, and pool are unmodified mainnet state.`,
         `Lifecycle event ${eventPda.toBase58()}: issuer terms (SPCXx, 5 shares per token, deadline 2027-03-12T23:59Z) written into genesis.`,
         `SPACEX mint: transfer fee and pause authorities changed from ${realFeeAuthority.toBase58()} to a local key so the run can act as the issuer. All other mint bytes are mainnet.`,
         `Epochs are ${SLOTS_PER_EPOCH} slots and the ledger starts at mainnet epoch ${epochInfo.epoch}, so the transfer fee in force matches mainnet.`,
       ],
       fill: results.fill,
+      priceFill: results.priceFill,
       checks: results.checks,
       passed,
       total: results.checks.length,
@@ -238,6 +263,7 @@ async function main() {
 async function runChecks(p: {
   local: Connection; holder: Keypair; keeper: Keypair; issuerStandIn: Keypair;
   holderIn: PublicKey; holderOut: PublicKey; eventPda: PublicKey; reserveX: PublicKey;
+  holderOpenai: PublicKey; holderUsdc: PublicKey; oReserveX: PublicKey;
 }) {
   const { local, holder, keeper, issuerStandIn, holderIn, holderOut, eventPda } = p;
   const program = new Program(idl, new AnchorProvider(local, new Wallet(keeper), { commitment: "confirmed" }));
@@ -255,7 +281,12 @@ async function runChecks(p: {
     // web3.js rejects with the raw transaction error when the failed status is already visible,
     // and resolves otherwise. Either way the transaction landed; the ledger has the result.
     const confirmError = await local.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, "confirmed").then(() => null, (e) => e);
-    const t = await local.getTransaction(sig, { commitment: "confirmed", maxSupportedTransactionVersion: 0 });
+    // The ledger can lag the status by a moment, so read it a few times before giving up.
+    let t = null;
+    for (let i = 0; i < 10 && !t; i++) {
+      if (i) await sleep(500);
+      t = await local.getTransaction(sig, { commitment: "confirmed", maxSupportedTransactionVersion: 0 });
+    }
     if (!t && confirmError) throw confirmError;
     const logs = t?.meta?.logMessages ?? [];
     return { sig, err: t?.meta?.err ?? null, logs };
@@ -355,9 +386,74 @@ async function runChecks(p: {
   while ((await epoch()) < effective) await sleep(1000);
   await expectRejected("Issuer fee change blocks the fill", ["FeeChanged"], `order signed at ${feeBps} bps; the issuer raised the fee to ${newFee} bps; the holder must re-sign with the new fee in view`);
 
+  // Checks 6 and 7: a price order into USDC on the real OpenAI/USDC pool (classic SPL Token output).
+  const oOrder = PublicKey.findProgramAddressSync([Buffer.from("order"), holder.publicKey.toBuffer(), OPENAI.toBuffer()], PROGRAM_ID)[0];
+  const oEvent = PublicKey.findProgramAddressSync([Buffer.from("event"), OPENAI.toBuffer()], PROGRAM_ID)[0];
+  await mustSend([createAssociatedTokenAccountIdempotentInstruction(holder.publicKey, p.holderUsdc, holder.publicKey, MAINNET.usdc, TOKEN_PROGRAM_ID)], [holder], "create USDC account");
+  const oPool = await DLMM.create(local, OPENAI_USDC_POOL, { cluster: "mainnet-beta" as never });
+  const oQuote = BigInt(oPool.swapQuote(OPENAI_FILL, true, new BN(0), await oPool.getBinArrayForSwap(true, 8)).outAmount.toString());
+  const quotePerToken = Number(oQuote) / 1e6 / (Number(OPENAI_FILL.toString()) / 1e9);
+  const oFeeConfig = getTransferFeeConfig(await getMint(local, OPENAI, "confirmed", TOKEN_2022_PROGRAM_ID))!;
+  async function priceOrder(usdPerToken: number, size: bigint) {
+    const ix = await program.methods
+      .createPriceOrder({ size: new BN(size.toString()), minOutPerToken: new BN(Math.round(usdPerToken * 1e6)), expiryTs: new BN(Math.floor(Date.now() / 1000) + 90 * 86_400) })
+      .accountsStrict({ owner: holder.publicKey, inputMint: OPENAI, outputMint: MAINNET.usdc, pool: OPENAI_USDC_POOL, event: oEvent, ownerTokenIn: p.holderOpenai, order: oOrder, systemProgram: SystemProgram.programId })
+      .instruction();
+    await mustSend([ix, createApproveCheckedInstruction(p.holderOpenai, OPENAI, oOrder, holder.publicKey, size, 9, [], TOKEN_2022_PROGRAM_ID)], [holder], "create price order");
+  }
+  const oExecute = async () => {
+    const order = (await (program.account as any).order.fetch(oOrder)) as OrderAccount;
+    return (await buildExecuteIx({ program, connection: local, orderPda: oOrder, order, amountIn: OPENAI_FILL, keeper: keeper.publicKey, cluster: "mainnet-beta" })).ix;
+  };
+  const usdcBalance = async () => (await getAccount(local, p.holderUsdc, "confirmed", TOKEN_PROGRAM_ID)).amount;
+
+  const floorPrice = Math.floor(quotePerToken * 0.9);
+  await priceOrder(floorPrice, OPENAI_HOLDER_RAW);
+  const oInBefore = await balance(p.holderOpenai), usdcBefore = await usdcBalance();
+  const oWithheldBefore = getTransferFeeAmount(await getAccount(local, p.oReserveX, "confirmed", TOKEN_2022_PROGRAM_ID))?.withheldAmount ?? 0n;
+  const priceFill = await send([await oExecute()], [keeper]);
+  const oSpent = oInBefore - (await balance(p.holderOpenai));
+  const usdcGot = (await usdcBalance()) - usdcBefore;
+  const oWithheld = (getTransferFeeAmount(await getAccount(local, p.oReserveX, "confirmed", TOKEN_2022_PROGRAM_ID))?.withheldAmount ?? 0n) - oWithheldBefore;
+  const oExpectedFee = calculateEpochFee(oFeeConfig, await epoch(), BigInt(OPENAI_FILL.toString()));
+  const oRequired = requiredOutput(BigInt(OPENAI_FILL.toString()), BigInt(Math.round(floorPrice * 1e6)), 1_000_000_000n, 0n);
+  const keeperAll = (await local.getTokenAccountsByOwner(keeper.publicKey, { programId: TOKEN_2022_PROGRAM_ID })).value.length
+    + (await local.getTokenAccountsByOwner(keeper.publicKey, { programId: TOKEN_PROGRAM_ID })).value.length;
+  const pricePass = !priceFill.err && oSpent === BigInt(OPENAI_FILL.toString()) && usdcGot >= oRequired && oWithheld === oExpectedFee && keeperAll === 0;
+  checks.push({
+    name: "Price order fills into USDC on the real OpenAI/USDC pool",
+    pass: pricePass,
+    expected: `holder spends 0.05 OPENAI, receives at least ${Number(oRequired) / 1e6} USDC (${floorPrice} per token, 90% of the live quote), the mint withholds its fee, keeper holds no tokens`,
+    result: priceFill.err ? `failed: ${errorName(priceFill.logs, priceFill.err)}` : "confirmed",
+    detail: `order PDA signed DLMM swap2 as delegate; output is classic SPL Token USDC. Holder spent ${Number(oSpent) / 1e9} OPENAI, received ${Number(usdcGot) / 1e6} USDC (${(Number(usdcGot) / 1e6 / 0.05).toFixed(2)} per token). OPENAI transfer fee withheld ${oWithheld} base units. Keeper token accounts: ${keeperAll}.`,
+    signature: priceFill.sig,
+  });
+  console.log(`${pricePass ? "PASS" : "FAIL"}  ${checks[checks.length - 1].name}: ${checks[checks.length - 1].detail}`);
+  await mustSend([await program.methods.cancelOrder().accountsStrict({ owner: holder.publicKey, order: oOrder }).instruction(), createRevokeInstruction(p.holderOpenai, holder.publicKey, [], TOKEN_2022_PROGRAM_ID)], [holder], "cancel price order");
+
+  const highPrice = Math.ceil(quotePerToken * 1.5);
+  await priceOrder(highPrice, await balance(p.holderOpenai));
+  const oHigh = await send([await oExecute()], [keeper]);
+  const highCode = oHigh.err ? errorName(oHigh.logs, oHigh.err) : "confirmed";
+  const highPass = oHigh.err !== null && ["ExceededAmountSlippageTolerance", "InsufficientOutput"].some((x) => highCode.includes(x));
+  checks.push({
+    name: "Price above what the pool pays is refused",
+    pass: highPass,
+    expected: "rejected with ExceededAmountSlippageTolerance or InsufficientOutput",
+    result: oHigh.err ? `failed on chain: ${highCode}` : "confirmed",
+    detail: `price order at ${highPrice} USDC per token; the pool pays about ${quotePerToken.toFixed(2)}`,
+    signature: oHigh.sig,
+  });
+  console.log(`${highPass ? "PASS" : "FAIL"}  ${checks[checks.length - 1].name}: ${oHigh.err ? `rejected with ${highCode}` : "transaction succeeded"}`);
+
   return {
     chainTime,
     checks,
+    priceFill: {
+      signature: priceFill.sig, pool: OPENAI_USDC_POOL.toBase58(), amountInRaw: OPENAI_FILL.toString(),
+      receivedUsdcBase: usdcGot.toString(), requiredUsdcBase: oRequired.toString(), minUsdcPerToken: floorPrice,
+      quotedUsdcPerToken: Number(quotePerToken.toFixed(2)), feeWithheldBase: oWithheld.toString(),
+    },
     fill: {
       signature: fill.sig,
       amountInRaw: FILL.toString(),
