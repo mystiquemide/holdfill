@@ -39,7 +39,7 @@ export function ButtonLink({ variant = "primary", className = "", children, ...r
 }
 
 export function Keycap({ children }: { children: ReactNode }) {
-  return <kbd className="inline-flex size-6 items-center justify-center rounded-md border border-hairline bg-paper text-xs text-ink shadow-[0_1px_0_#e5e7eb]">{children}</kbd>;
+  return <kbd className="inline-flex size-6 font-sans items-center justify-center rounded-md border border-hairline bg-paper text-xs text-ink shadow-[0_1px_0_#e5e7eb]">{children}</kbd>;
 }
 
 /** Hairline divider with a centered gray label, then an optional big heading. */
