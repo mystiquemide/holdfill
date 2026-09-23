@@ -39,7 +39,7 @@ async function main() {
   const holder2 = keypairFile("holder2");
   const keeper = keypairFile("keeper");
   const SPACEX = new PublicKey(cfg.replicaSpacex!), SPCXX = new PublicKey(cfg.replicaSpcxx!), POOL = new PublicKey(cfg.pool!);
-  const idl = JSON.parse(fs.readFileSync(path.join(ROOT, "target/idl/holdfill_orders.json"), "utf8"));
+  const idl = JSON.parse(fs.readFileSync(path.join(ROOT, "idl/holdfill_orders.json"), "utf8"));
   const program = new Program(idl, new AnchorProvider(conn, new Wallet(issuer), { commitment: "confirmed" }));
   const ata = (o: PublicKey, m: PublicKey) => getAssociatedTokenAddressSync(m, o, false, TOKEN_2022_PROGRAM_ID);
   const orderPda = (o: PublicKey) => PublicKey.findProgramAddressSync([Buffer.from("order"), o.toBuffer(), SPACEX.toBuffer()], program.programId)[0];

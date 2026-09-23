@@ -1,0 +1,30 @@
+{
+  "ranAt": "2026-09-23T00:43:13.438Z",
+  "network": "devnet",
+  "attempts": [
+    {
+      "order": "9Pwa5csheKkiW6oPNjEpXTZ2Rjv6LPU6ghTjBbrDDUR7",
+      "owner": "CtD5KuKRswMC3CttZTkPr6i48hY7mGqSXnCNe7bojzGA",
+      "remaining": "400000000",
+      "action": "filled",
+      "haircutBps": 3500,
+      "amountIn": "400000000",
+      "quotedOut": "141530520",
+      "required": "130000000",
+      "signature": "53Nv1hh5ugjxzeWyAPwJE5mvxuWvLCorrytGmaagFYPWgkVuk262pJo9whSNGnnH2xXWuC7UMnU12GDE5aBoehnN",
+      "reason": "filled the remaining size"
+    },
+    {
+      "order": "3zTFvJcmFamzRrcqHao8CexWZEdmuiLdR2qpQUMz2CdK",
+      "owner": "E5mfGfsZKtPuMV9AcT88pPZRgUpBTjhBockv5CRBEcur",
+      "remaining": "500000000",
+      "action": "waiting",
+      "haircutBps": 1000,
+      "amountIn": "5000000",
+      "quotedOut": "1769131",
+      "required": "2250000",
+      "reason": "pool pays 29.2% under entitlement, limit is 10.0%"
+    }
+  ],
+  "keeperTokenAccounts": 0
+}

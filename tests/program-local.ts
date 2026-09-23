@@ -22,7 +22,7 @@ const SPCXX = new PublicKey(cfg.replicaSpcxx!);
 const POOL = new PublicKey(cfg.pool!);
 const EXPIRY = Math.floor(Date.parse("2027-03-12T23:59:00Z") / 1000);
 const FALLBACK = Math.floor(Date.parse("2027-03-01T00:00:00Z") / 1000);
-const idl = JSON.parse(fs.readFileSync(path.join(ROOT, "target/idl/holdfill_orders.json"), "utf8"));
+const idl = JSON.parse(fs.readFileSync(path.join(ROOT, "idl/holdfill_orders.json"), "utf8"));
 
 const issuer = issuerKeypair();
 const keeper = Keypair.generate();

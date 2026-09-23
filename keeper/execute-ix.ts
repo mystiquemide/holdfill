@@ -60,9 +60,11 @@ export async function buildExecuteIx(params: {
    *  that clones those programs: the SDK maps "localhost" to a different program id. */
   cluster?: "devnet" | "mainnet-beta";
   overrides?: Partial<Record<(typeof SWAP2_FIXED)[number], PublicKey>>;
+  /** Reuse a loaded pool instead of fetching it again. */
+  dlmm?: DLMM;
 }): Promise<ExecuteBuild> {
   const { program, connection, order, amountIn } = params;
-  const dlmm = await DLMM.create(connection, order.pool, params.cluster ? { cluster: params.cluster as never } : undefined);
+  const dlmm = params.dlmm ?? (await DLMM.create(connection, order.pool, params.cluster ? { cluster: params.cluster as never } : undefined));
   const swapForY = dlmm.lbPair.tokenXMint.equals(order.inputMint);
   if (!swapForY) throw new Error("order input must be the pool's token X");
   const bins = await dlmm.getBinArrayForSwap(true, 8);

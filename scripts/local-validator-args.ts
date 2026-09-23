@@ -23,7 +23,7 @@ async function main() {
     pool.lbPair.reserveX.toBase58(), pool.lbPair.reserveY.toBase58(), pool.lbPair.oracle.toBase58(),
     bitmap.toBase58(), ...bins.map((b) => b.publicKey.toBase58()),
   ]);
-  const programId = JSON.parse(fs.readFileSync(path.join(ROOT, "target/idl/holdfill_orders.json"), "utf8")).address;
+  const programId = JSON.parse(fs.readFileSync(path.join(ROOT, "idl/holdfill_orders.json"), "utf8")).address;
   const args = [
     "--reset", "--quiet", "--ledger", path.join(ROOT, "test-ledger"),
     // Short epochs so a transfer-fee change (effective two epochs later) can be tested in seconds.

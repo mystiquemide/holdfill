@@ -1,0 +1,896 @@
+{
+  "address": "A6UhawZdBQiMwpDYzFXKzTJD5voF29rLmrViUT6WaSGV",
+  "metadata": {
+    "name": "holdfill_orders",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Holdfill: standing hold-then-convert orders for pre-IPO tokens"
+  },
+  "docs": [
+    "Holdfill: standing hold-then-convert orders for pre-IPO tokens.",
+    "The holder approves an order PDA as delegate for a capped amount; anyone can crank a fill,",
+    "and the program only lets the swap through at or above the holder's minimum."
+  ],
+  "instructions": [
+    {
+      "name": "cancel_order",
+      "discriminator": [
+        95,
+        129,
+        237,
+        240,
+        8,
+        49,
+        223,
+        132
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "order"
+          ]
+        },
+        {
+          "name": "order",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  100,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "order.input_mint",
+                "account": "Order"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_order",
+      "discriminator": [
+        141,
+        54,
+        37,
+        207,
+        237,
+        210,
+        250,
+        215
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "event",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  118,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "input_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "input_mint",
+          "relations": [
+            "event"
+          ]
+        },
+        {
+          "name": "owner_token_in"
+        },
+        {
+          "name": "order",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  100,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "input_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "CreateOrderParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "execute",
+      "discriminator": [
+        130,
+        221,
+        242,
+        154,
+        13,
+        193,
+        189,
+        29
+      ],
+      "accounts": [
+        {
+          "name": "keeper",
+          "signer": true
+        },
+        {
+          "name": "order",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  100,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "order.owner",
+                "account": "Order"
+              },
+              {
+                "kind": "account",
+                "path": "order.input_mint",
+                "account": "Order"
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_token_in",
+          "writable": true
+        },
+        {
+          "name": "user_token_out",
+          "writable": true
+        },
+        {
+          "name": "lb_pair",
+          "writable": true
+        },
+        {
+          "name": "bin_array_bitmap_extension"
+        },
+        {
+          "name": "reserve_x",
+          "writable": true
+        },
+        {
+          "name": "reserve_y",
+          "writable": true
+        },
+        {
+          "name": "token_x_mint"
+        },
+        {
+          "name": "token_y_mint"
+        },
+        {
+          "name": "oracle",
+          "writable": true
+        },
+        {
+          "name": "host_fee_in",
+          "address": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+        },
+        {
+          "name": "token_x_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "token_y_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "memo_program",
+          "address": "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+        },
+        {
+          "name": "event_authority"
+        },
+        {
+          "name": "dlmm_program",
+          "address": "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount_in",
+          "type": "u64"
+        },
+        {
+          "name": "keeper_min_out",
+          "type": "u64"
+        },
+        {
+          "name": "remaining_accounts_info",
+          "type": {
+            "defined": {
+              "name": "DlmmRemainingAccountsInfo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "register_event",
+      "discriminator": [
+        206,
+        4,
+        37,
+        59,
+        79,
+        120,
+        169,
+        181
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true,
+          "address": "12fN9mtc7x93AyTCpwzLUDPdu2k5h5YswfNigayAYzDg"
+        },
+        {
+          "name": "input_mint"
+        },
+        {
+          "name": "event",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  118,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "input_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "RegisterEventParams"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "LifecycleEvent",
+      "discriminator": [
+        18,
+        38,
+        246,
+        255,
+        211,
+        29,
+        154,
+        221
+      ]
+    },
+    {
+      "name": "Order",
+      "discriminator": [
+        134,
+        173,
+        223,
+        185,
+        77,
+        86,
+        28,
+        51
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "OrderCancelled",
+      "discriminator": [
+        108,
+        56,
+        128,
+        68,
+        168,
+        113,
+        168,
+        239
+      ]
+    },
+    {
+      "name": "OrderCreated",
+      "discriminator": [
+        224,
+        1,
+        229,
+        63,
+        254,
+        60,
+        190,
+        159
+      ]
+    },
+    {
+      "name": "OrderFilled",
+      "discriminator": [
+        120,
+        124,
+        109,
+        66,
+        249,
+        116,
+        174,
+        30
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "Only the event admin can register lifecycle events"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidEvent",
+      "msg": "Lifecycle event terms are invalid"
+    },
+    {
+      "code": 6002,
+      "name": "OrderNotActive",
+      "msg": "Order is not active"
+    },
+    {
+      "code": 6003,
+      "name": "IssuerDeadlinePassed",
+      "msg": "The issuer deadline has passed"
+    },
+    {
+      "code": 6004,
+      "name": "AmountExceedsRemaining",
+      "msg": "Amount exceeds the order's remaining size"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidSize",
+      "msg": "Order size must be positive and within the holder's balance"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidLimit",
+      "msg": "Limit must be between 0% and 60%"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidFallback",
+      "msg": "Fallback date and floor are invalid"
+    },
+    {
+      "code": 6008,
+      "name": "WrongPool",
+      "msg": "Pool does not match the order"
+    },
+    {
+      "code": 6009,
+      "name": "WrongMint",
+      "msg": "Mint does not match the order"
+    },
+    {
+      "code": 6010,
+      "name": "WrongPoolAccount",
+      "msg": "Pool account does not match the derived DLMM address"
+    },
+    {
+      "code": 6011,
+      "name": "WrongTokenProgram",
+      "msg": "Token program must be Token-2022"
+    },
+    {
+      "code": 6012,
+      "name": "HostFeeNotAllowed",
+      "msg": "A host fee account is not allowed"
+    },
+    {
+      "code": 6013,
+      "name": "WrongOwnerAccount",
+      "msg": "Token account is not the owner's associated account"
+    },
+    {
+      "code": 6014,
+      "name": "DelegateMismatch",
+      "msg": "Order program is not the approved delegate"
+    },
+    {
+      "code": 6015,
+      "name": "InsufficientAllowance",
+      "msg": "Approved amount is lower than the fill"
+    },
+    {
+      "code": 6016,
+      "name": "MintPaused",
+      "msg": "The issuer paused this token"
+    },
+    {
+      "code": 6017,
+      "name": "FeeChanged",
+      "msg": "The issuer changed the transfer fee since the order was created"
+    },
+    {
+      "code": 6018,
+      "name": "InsufficientOutput",
+      "msg": "Swap output is below the holder's minimum"
+    },
+    {
+      "code": 6019,
+      "name": "MathOverflow",
+      "msg": "Arithmetic overflow"
+    }
+  ],
+  "types": [
+    {
+      "name": "CreateOrderParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "size",
+            "type": "u64"
+          },
+          {
+            "name": "limit_bps",
+            "type": "u16"
+          },
+          {
+            "name": "fallback_ts",
+            "type": "i64"
+          },
+          {
+            "name": "fallback_floor_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DlmmAccountsType",
+      "docs": [
+        "Mirrors DLMM's `RemainingAccountsInfo` so transfer-hook slices can be forwarded unchanged."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "TransferHookX"
+          },
+          {
+            "name": "TransferHookY"
+          },
+          {
+            "name": "TransferHookReward"
+          },
+          {
+            "name": "TransferHookMultiReward",
+            "fields": [
+              "u8"
+            ]
+          },
+          {
+            "name": "TransferHookReferral"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DlmmRemainingAccountsInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "slices",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "DlmmRemainingAccountsSlice"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "DlmmRemainingAccountsSlice",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "accounts_type",
+            "type": {
+              "defined": {
+                "name": "DlmmAccountsType"
+              }
+            }
+          },
+          {
+            "name": "length",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LifecycleEvent",
+      "docs": [
+        "Issuer-stated conversion terms for one pre-IPO token, e.g. SPACEX into SPCXx at 5 shares per",
+        "token before 12 March 2027. Orders copy these terms at creation so the holder never types them."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "input_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "output_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "pool",
+            "docs": [
+              "The only DLMM pair orders for this event may trade on."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "ratio_num",
+            "docs": [
+              "Entitlement in base units: output = input * ratio_num / ratio_den."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "ratio_den",
+            "type": "u64"
+          },
+          {
+            "name": "expiry_ts",
+            "docs": [
+              "Issuer deadline. No fills at or after this time."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Order",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "input_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "output_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "ratio_num",
+            "type": "u64"
+          },
+          {
+            "name": "ratio_den",
+            "type": "u64"
+          },
+          {
+            "name": "limit_bps",
+            "docs": [
+              "Maximum haircut accepted before the fallback date."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "fallback_ts",
+            "docs": [
+              "From this time the fallback floor applies."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "fallback_floor_bps",
+            "docs": [
+              "Minimum output as a share of entitlement after `fallback_ts`."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "expiry_ts",
+            "type": "i64"
+          },
+          {
+            "name": "fee_bps",
+            "docs": [
+              "Input mint transfer fee in force at creation."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "size",
+            "docs": [
+              "Maximum input to convert. Equals the delegate approval."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "filled",
+            "type": "u64"
+          },
+          {
+            "name": "received",
+            "type": "u64"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "OrderStatus"
+              }
+            }
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OrderCancelled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "order",
+            "type": "pubkey"
+          },
+          {
+            "name": "filled",
+            "type": "u64"
+          },
+          {
+            "name": "received",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OrderCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "order",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "size",
+            "type": "u64"
+          },
+          {
+            "name": "limit_bps",
+            "type": "u16"
+          },
+          {
+            "name": "fallback_ts",
+            "type": "i64"
+          },
+          {
+            "name": "fallback_floor_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OrderFilled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "order",
+            "type": "pubkey"
+          },
+          {
+            "name": "keeper",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount_in",
+            "type": "u64"
+          },
+          {
+            "name": "amount_out",
+            "type": "u64"
+          },
+          {
+            "name": "required",
+            "type": "u64"
+          },
+          {
+            "name": "haircut_bps",
+            "type": "u64"
+          },
+          {
+            "name": "filled",
+            "type": "u64"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "OrderStatus"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "OrderStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Filled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RegisterEventParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "output_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "pool",
+            "type": "pubkey"
+          },
+          {
+            "name": "ratio_num",
+            "type": "u64"
+          },
+          {
+            "name": "ratio_den",
+            "type": "u64"
+          },
+          {
+            "name": "expiry_ts",
+            "type": "i64"
+          }
+        ]
+      }
+    }
+  ],
+  "constants": [
+    {
+      "name": "EVENT_SEED",
+      "type": "bytes",
+      "value": "[101, 118, 101, 110, 116]"
+    },
+    {
+      "name": "ORDER_SEED",
+      "type": "bytes",
+      "value": "[111, 114, 100, 101, 114]"
+    }
+  ]
+}
