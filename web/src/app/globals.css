@@ -65,6 +65,22 @@ body {
   background-image: repeating-linear-gradient(45deg, var(--color-hairline) 0 1px, transparent 1px 6px);
 }
 
+/* Touch targets. .tap grows an inline link's hit box without moving surrounding text; .hit adds an
+   invisible margin of tappable area around a small pill or link. */
+.tap {
+  display: inline-block;
+  padding-block: 10px;
+  margin-block: -10px;
+}
+.hit {
+  position: relative;
+}
+.hit::after {
+  content: "";
+  position: absolute;
+  inset: -8px -4px;
+}
+
 input[type="range"].limit {
   appearance: none;
   height: 4px;
@@ -89,6 +105,13 @@ input[type="range"].limit::-moz-range-thumb {
   border: 3px solid var(--color-paper);
   box-shadow: 0 0 0 1px var(--color-ink);
   cursor: grab;
+}
+
+/* Bigger slider thumb on touch screens. */
+@media (pointer: coarse) {
+  input[type="range"].limit::-webkit-slider-thumb { width: 30px; height: 30px; }
+  input[type="range"].limit::-moz-range-thumb { width: 30px; height: 30px; }
+  input[type="range"].limit { height: 6px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

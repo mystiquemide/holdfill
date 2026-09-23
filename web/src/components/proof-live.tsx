@@ -19,7 +19,7 @@ export function ProgramAuthority() {
       <dd className="text-right">
         {data ? (
           data.upgradeAuthority ? (
-            <><a className="mono underline underline-offset-4" href={explorerAddr(data.upgradeAuthority, "devnet")} target="_blank" rel="noreferrer">{shortAddr(data.upgradeAuthority)}</a><span className="block text-xs text-slate">can upgrade the program, read {utcTime(data.asOf)}</span></>
+            <><a className="tap mono underline underline-offset-4" href={explorerAddr(data.upgradeAuthority, "devnet")} target="_blank" rel="noreferrer">{shortAddr(data.upgradeAuthority)}</a><span className="block text-xs text-slate">can upgrade the program, read {utcTime(data.asOf)}</span></>
           ) : (
             <>None, the program can no longer change<span className="block text-xs text-slate">read {utcTime(data.asOf)}</span></>
           )
@@ -40,7 +40,7 @@ export function CopyCommand({ command }: { command: string }) {
       <code className="mono flex-1 text-sm">{command}</code>
       <button
         onClick={async () => { try { await navigator.clipboard.writeText(command); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch {} }}
-        className="h-9 rounded-full bg-paper px-4 text-sm font-medium hover:bg-hairline"
+        className="h-11 rounded-full bg-paper px-4 text-sm font-medium hover:bg-hairline lg:pointer-fine:h-9"
       >
         {copied ? "Copied" : "Copy"}
       </button>

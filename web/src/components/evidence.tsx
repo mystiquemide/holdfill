@@ -110,7 +110,7 @@ export function GapHistory({ days, unlocks }: { days: HistoryDay[]; unlocks: Unl
       </p>
 
       <details className="mt-4 text-sm">
-        <summary className="cursor-pointer py-2 text-ink underline underline-offset-4">Show every day in a table</summary>
+        <summary className="cursor-pointer py-3 text-ink underline underline-offset-4">Show every day in a table</summary>
         <div className="mt-3 max-h-80 overflow-auto rounded-[14px] border border-hairline">
           <table className="w-full text-left">
             <thead className="sticky top-0 bg-vellum text-xs uppercase tracking-[0.06em] text-slate">

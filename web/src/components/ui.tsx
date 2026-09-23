@@ -20,7 +20,7 @@ export function Button({ variant = "primary", className = "", children, ...rest 
   return (
     <button
       {...rest}
-      className={`inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-[15px] font-medium transition-colors duration-150 ease-out disabled:cursor-not-allowed ${variants[variant]} ${className}`}
+      className={`inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 text-[15px] font-medium transition-colors duration-150 ease-out disabled:cursor-not-allowed ${variants[variant]} ${className}`}
     >
       {children}
     </button>
@@ -29,7 +29,7 @@ export function Button({ variant = "primary", className = "", children, ...rest 
 
 /** Same look as Button, for links. Internal routes use client-side navigation. */
 export function ButtonLink({ variant = "primary", className = "", children, href = "", ...rest }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { variant?: keyof typeof variants }) {
-  const cls = `inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-[15px] font-medium transition-colors duration-150 ease-out ${variants[variant]} ${className}`;
+  const cls = `inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 text-[15px] font-medium transition-colors duration-150 ease-out ${variants[variant]} ${className}`;
   return href.startsWith("/") ? (
     <Link href={href} {...rest} className={cls}>{children}</Link>
   ) : (

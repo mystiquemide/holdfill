@@ -120,7 +120,7 @@ export function Header() {
       <div className="bg-cream">
         <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center text-[13px] text-ink sm:text-sm">
           <span>Orders run on devnet replicas. Market data is live mainnet.</span>
-          <Link href="/proof" className="inline-flex h-7 items-center rounded-full bg-ink px-3 text-xs font-medium text-paper hover:bg-black">See the proof</Link>
+          <Link href="/proof" className="hit inline-flex h-7 items-center rounded-full bg-ink px-3 text-xs font-medium text-paper hover:bg-black">See the proof</Link>
         </div>
       </div>
       <header className="sticky top-0 z-40">
@@ -142,7 +142,7 @@ export function Header() {
               ))}
             </ul>
             <div className="flex items-center gap-2">
-              <WalletButton />
+              <WalletButton compact />
               <button
                 className="inline-flex size-11 items-center justify-center rounded-full bg-vellum lg:hidden"
                 aria-expanded={menu}
@@ -179,7 +179,7 @@ export function Header() {
   );
 }
 
-export function WalletButton({ id, block }: { id?: string; block?: boolean }) {
+export function WalletButton({ id, block, compact }: { id?: string; block?: boolean; compact?: boolean }) {
   const { publicKey, connected, connecting, disconnect } = useWallet();
   const [open, setOpen] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -222,7 +222,12 @@ export function WalletButton({ id, block }: { id?: string; block?: boolean }) {
   return (
     <>
       <Button id={id} onClick={() => setOpen(true)} disabled={connecting} className={block ? "w-full" : ""}>
-        {connecting ? "Connecting..." : "Connect wallet"}
+        {connecting ? "Connecting..." : compact ? (
+          <>
+            <span className="max-[379px]:hidden">Connect wallet</span>
+            <span className="hidden max-[379px]:inline">Connect</span>
+          </>
+        ) : "Connect wallet"}
       </Button>
       {open && <WalletPicker onClose={() => setOpen(false)} />}
     </>
@@ -280,8 +285,8 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/30 p-4 sm:items-center" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div ref={box} role="dialog" aria-modal="true" aria-label={title} className="animate-rise w-full max-w-md rounded-[var(--radius-card-lg)] bg-paper p-6 shadow-[var(--shadow-lift)]">
         <div className="mb-3 flex items-center justify-between gap-4">
-          <h2 className="text-2xl tracking-[-0.01em]">{title}</h2>
-          <button onClick={onClose} aria-label="Close" className="inline-flex size-9 items-center justify-center rounded-full bg-vellum text-lg hover:bg-hairline">×</button>
+          <h2 className="text-xl tracking-[-0.01em] sm:text-2xl">{title}</h2>
+          <button onClick={onClose} aria-label="Close" className="inline-flex size-11 lg:pointer-fine:size-9 items-center justify-center rounded-full bg-vellum text-lg hover:bg-hairline">×</button>
         </div>
         {children}
       </div>

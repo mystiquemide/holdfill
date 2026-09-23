@@ -115,9 +115,9 @@ function ToastProvider({ children }: { children: ReactNode }) {
               <div className="min-w-0 flex-1 text-sm">
                 <p className="text-ink">{t.title}</p>
                 {t.body && <p className="mt-1 text-slate">{t.body}</p>}
-                {t.href && <a href={t.href} target="_blank" rel="noreferrer" className="mt-1 inline-block text-ink underline underline-offset-4">View transaction</a>}
+                {t.href && <a href={t.href} target="_blank" rel="noreferrer" className="tap mt-1 text-ink underline underline-offset-4">View transaction</a>}
               </div>
-              <button onClick={() => dismiss(t.id)} aria-label="Dismiss" className="-mr-1 -mt-1 rounded-full px-2 py-1 text-slate hover:bg-vellum">×</button>
+              <button onClick={() => dismiss(t.id)} aria-label="Dismiss" className="-mr-2 -mt-2 inline-flex size-11 shrink-0 items-center justify-center rounded-full text-slate hover:bg-vellum">×</button>
             </div>
           </div>
         ))}

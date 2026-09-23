@@ -303,7 +303,7 @@ function Ticket({ position, history, onDone }: { position: Position; history: Hi
           <div className="mt-2 flex items-center gap-2 rounded-[var(--radius-input)] bg-vellum p-1.5 pl-4 focus-within:outline focus-within:outline-2 focus-within:outline-ink">
             <input id="ticket-amount" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))} className="num min-w-0 flex-1 bg-transparent py-2 text-lg outline-none" aria-describedby="amount-help" />
             <span className="text-sm text-slate">shares</span>
-            <button type="button" onClick={() => setAmount(num(holdShares).replace(/,/g, ""))} className="h-9 rounded-full bg-paper px-3 text-sm font-medium hover:bg-hairline">Max</button>
+            <button type="button" onClick={() => setAmount(num(holdShares).replace(/,/g, ""))} className="h-11 rounded-full bg-paper px-4 text-sm font-medium hover:bg-hairline lg:pointer-fine:h-9 lg:pointer-fine:px-3">Max</button>
           </div>
           <p id="amount-help" className="num mt-1.5 text-xs text-slate">= {num(Number(sizeRaw) / 1e9)} raw tokens, you hold {num(holdShares)} shares</p>
         </div>
@@ -322,7 +322,7 @@ function Ticket({ position, history, onDone }: { position: Position; history: Hi
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2">
           <div>
             <label htmlFor="ticket-fallback" className="text-sm">Fallback date</label>
             <input id="ticket-fallback" type="date" min={tomorrow} max="2027-03-11" value={fallback} onChange={(e) => setFallback(e.target.value)} className="num mt-2 w-full rounded-[var(--radius-input)] bg-vellum px-3 py-3 text-sm outline-none focus:outline-2 focus:outline-ink" />
@@ -456,7 +456,7 @@ function OrderCard({ position, order, onChange, onRevoked }: { position: Positio
       {quote && <GapBar entitlement={5} market={isFilled ? 5 * (1 - (realized ?? 0) / 100) : quote.outSpcxx} limitBps={order.haircutNowBps} filled={isFilled} />}
 
       <dl className="mt-2 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
-        <Stat label="Filled" value={`${num(filled)} / ${num(size)}`} unit="shares" />
+        <Stat label="Filled" value={num(filled)} unit={`of ${num(size)} shares`} />
         <Stat label="Received" value={num(received)} unit="SPCXx" tone={received > 0 ? "text-fill" : undefined} />
         {isFilled ? (
           <>
@@ -489,7 +489,7 @@ function OrderCard({ position, order, onChange, onRevoked }: { position: Positio
         {!isFilled && <Button variant="secondary" onClick={runCheck} disabled={checking || deadlinePassed}>{checking ? "Checking the pool..." : "Check now"}</Button>}
         <Button variant={isFilled ? "secondary" : "danger"} onClick={() => setConfirm(true)} disabled={busy}>{isFilled ? "Close and set a new order" : "Revoke"}</Button>
       </div>
-      <Source>Order <a className="underline underline-offset-4" href={`https://explorer.solana.com/address/${order.address}?cluster=devnet`} target="_blank" rel="noreferrer">{shortAddr(order.address)}</a>, deadline {day(DEADLINE, true)} 23:59 UTC.</Source>
+      <Source>Order <a className="tap underline underline-offset-4" href={`https://explorer.solana.com/address/${order.address}?cluster=devnet`} target="_blank" rel="noreferrer">{shortAddr(order.address)}</a>, deadline {day(DEADLINE, true)} 23:59 UTC.</Source>
 
       {confirm && (
         <Modal title={isFilled ? "Close this order" : "Revoke this order"} onClose={() => !busy && setConfirm(false)}>
@@ -508,7 +508,7 @@ function Stat({ label, value, unit, tone }: { label: string; value: string; unit
   return (
     <div>
       <dt className="text-xs uppercase tracking-[0.06em] text-slate">{label}</dt>
-      <dd className={`num mt-1 text-lg ${tone ?? "text-ink"}`}>{value}</dd>
+      <dd className={`num mt-1 whitespace-nowrap text-lg ${tone ?? "text-ink"}`}>{value}</dd>
       <dd className="text-xs text-slate">{unit}</dd>
     </div>
   );
@@ -529,7 +529,7 @@ function Activity({ events }: { events: OrderEvent[] }) {
               <span className="num text-slate">{utcTime(e.time).replace(" UTC", "")}</span>
               <span className={e.kind === "filled" ? "text-fill" : e.kind === "rejected" ? "text-deadline" : "text-ink"}>{EVENT_LABEL[e.kind]}</span>
               <span className="num text-slate max-sm:col-span-3 max-sm:row-start-2 max-sm:-mt-1">{describe(e)}</span>
-              <a className="mono text-ink underline underline-offset-4 max-sm:col-start-3 max-sm:row-start-1" href={explorerTx(e.signature, "devnet")} target="_blank" rel="noreferrer">{shortAddr(e.signature)}</a>
+              <a className="tap mono text-ink underline underline-offset-4 max-sm:col-start-3 max-sm:row-start-1" href={explorerTx(e.signature, "devnet")} target="_blank" rel="noreferrer">{shortAddr(e.signature)}</a>
             </li>
           ))}
         </ul>

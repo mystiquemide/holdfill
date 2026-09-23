@@ -96,7 +96,7 @@ const ROWS: [string, string, string, string][] = [
 const COMPACT = new Set(["Waits for your price", "Minimum checked on chain", "Tokens stay in your wallet", "Cost"]);
 
 export function Compared({ compact = false }: { compact?: boolean }) {
-  const refused = (c: string) => (c === "Refused for PreStocks" ? <Link className="text-deadline underline underline-offset-4" href="/evidence#jupiter">{c}</Link> : c);
+  const refused = (c: string) => (c === "Refused for PreStocks" ? <Link className="tap text-deadline underline underline-offset-4" href="/evidence#jupiter">{c}</Link> : c);
   const rows = compact ? ROWS.filter(([k]) => COMPACT.has(k)) : ROWS;
   return (
     <>
@@ -162,11 +162,11 @@ export function Proof({ fork, devnetProof }: { fork: ForkProof; devnetProof: Dev
       <div className="rounded-[var(--radius-card)] border border-hairline bg-paper p-5 sm:p-6">
         <h3 className="text-lg">On cloned mainnet state</h3>
         <p className="mt-1 text-sm text-slate">Real SPACEX mint, real Meteora pool, real 1% transfer fee. Mainnet slot <span className="num">{int(fork.mainnet.slot)}</span>, run {day(fork.ranAt)}.</p>
-        <dl className="mt-3 flex flex-col gap-1 text-xs text-slate">
+        <dl className="mt-3 flex flex-col gap-3 text-xs text-slate sm:gap-1">
           {([["SPACEX mint", fork.mints.spacex], ["SPCXx mint", fork.mints.spcxx], ["Meteora pool", fork.pool]] as const).map(([k, a]) => (
             <div key={k} className="flex justify-between gap-3">
               <dt>{k}</dt>
-              <dd><a className="mono text-ink underline underline-offset-4" href={explorerAddr(a, "mainnet")} target="_blank" rel="noreferrer">{shortAddr(a)}</a></dd>
+              <dd><a className="tap mono text-ink underline underline-offset-4" href={explorerAddr(a, "mainnet")} target="_blank" rel="noreferrer">{shortAddr(a)}</a></dd>
             </div>
           ))}
         </dl>
@@ -190,7 +190,7 @@ export function Proof({ fork, devnetProof }: { fork: ForkProof; devnetProof: Dev
         <dl className="mt-4 flex flex-col gap-3 text-sm">
           <div className="flex flex-wrap justify-between gap-2">
             <dt className="text-slate">Program</dt>
-            <dd><a className="mono underline underline-offset-4" href={explorerAddr(devnetProof.programId, "devnet")} target="_blank" rel="noreferrer">{shortAddr(devnetProof.programId)}</a></dd>
+            <dd><a className="tap mono underline underline-offset-4" href={explorerAddr(devnetProof.programId, "devnet")} target="_blank" rel="noreferrer">{shortAddr(devnetProof.programId)}</a></dd>
           </div>
           <ProgramAuthority />
         </dl>
@@ -202,7 +202,7 @@ export function Proof({ fork, devnetProof }: { fork: ForkProof; devnetProof: Dev
             return (
               <li key={key} className="flex flex-wrap items-baseline justify-between gap-2 py-3">
                 <span className={failed ? "text-deadline" : "text-ink"}>{label}</span>
-                <a className="mono underline underline-offset-4" href={explorerTx(t.signature, "devnet")} target="_blank" rel="noreferrer">{shortAddr(t.signature)}</a>
+                <a className="tap mono underline underline-offset-4" href={explorerTx(t.signature, "devnet")} target="_blank" rel="noreferrer">{shortAddr(t.signature)}</a>
               </li>
             );
           })}
@@ -286,19 +286,19 @@ export function Footer() {
         </div>
         <nav aria-label="Product" className="text-sm">
           <p className="text-slate">Product</p>
-          <ul className="mt-3 flex flex-col gap-2">
-            <li><HowItWorksLink className="underline-offset-4 hover:underline" /></li>
-            <li><Link className="underline-offset-4 hover:underline" href="/order">Your order</Link></li>
-            <li><Link className="underline-offset-4 hover:underline" href="/evidence">Evidence</Link></li>
-            <li><Link className="underline-offset-4 hover:underline" href="/proof">Proof</Link></li>
+          <ul className="mt-1 flex flex-col">
+            <li><HowItWorksLink className="inline-block py-2.5 underline-offset-4 hover:underline" /></li>
+            <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/order">Your order</Link></li>
+            <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/evidence">Evidence</Link></li>
+            <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/proof">Proof</Link></li>
           </ul>
         </nav>
         <nav aria-label="Build" className="text-sm">
           <p className="text-slate">Build</p>
-          <ul className="mt-3 flex flex-col gap-2">
-            <li><a className="underline-offset-4 hover:underline" href="https://github.com/mystiquemide/holdfill" target="_blank" rel="noreferrer">GitHub</a></li>
-            <li><a className="underline-offset-4 hover:underline" href="https://github.com/mystiquemide/holdfill/blob/main/docs/ARCHITECTURE.md" target="_blank" rel="noreferrer">Architecture</a></li>
-            <li><Link className="underline-offset-4 hover:underline" href="/proof">Run the proof</Link></li>
+          <ul className="mt-1 flex flex-col">
+            <li><a className="inline-block py-2.5 underline-offset-4 hover:underline" href="https://github.com/mystiquemide/holdfill" target="_blank" rel="noreferrer">GitHub</a></li>
+            <li><a className="inline-block py-2.5 underline-offset-4 hover:underline" href="https://github.com/mystiquemide/holdfill/blob/main/docs/ARCHITECTURE.md" target="_blank" rel="noreferrer">Architecture</a></li>
+            <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/proof">Run the proof</Link></li>
           </ul>
         </nav>
       </div>
