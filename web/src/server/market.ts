@@ -3,7 +3,7 @@ import BN from "bn.js";
 import DLMM from "@meteora-ag/dlmm";
 import { TOKEN_2022_PROGRAM_ID, getEpochFee, getMint, getTransferFeeConfig } from "@solana/spl-token";
 import { cached } from "./cache";
-import { MAINNET, SPACEX_TERMS, mainnet } from "./env";
+import { DEVNET, MAINNET, SPACEX_TERMS, devnet, mainnet } from "./env";
 
 const RAW = 1_000_000_000n;   // 1 raw SPACEX token (9 decimals) = 5 shares
 const SPCXX_UNIT = 100_000_000; // 8 decimals
@@ -86,3 +86,17 @@ async function loadMarket(): Promise<Market> {
 }
 
 export const getMarket = () => cached("market", 15_000, loadMarket);
+
+export type DevnetQuote = { inRawTokens: 1; outSpcxx: number; gapPct: number; asOf: string; source: string };
+
+/** Executable quote for 1 raw replica token on the devnet pool, where orders fill. Fees included. */
+export const getDevnetQuote = () => cached("devnet-quote", 15_000, async (): Promise<DevnetQuote> => {
+  const pool = await DLMM.create(devnet(), DEVNET.pool, { cluster: "devnet" as never });
+  const bins = await pool.getBinArrayForSwap(true, 8);
+  const q = pool.swapQuote(new BN(RAW.toString()), true, new BN(0), bins);
+  const outSpcxx = Number(q.outAmount.toString()) / 1e8;
+  return {
+    inRawTokens: 1, outSpcxx, gapPct: (1 - outSpcxx / SPACEX_TERMS.sharesPerToken) * 100,
+    asOf: new Date().toISOString(), source: `Meteora DLMM ${DEVNET.pool.toBase58()} (devnet) swap quote, fees included`,
+  };
+});

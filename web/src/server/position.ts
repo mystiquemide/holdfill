@@ -3,6 +3,7 @@ import { Keypair, LAMPORTS_PER_SOL, PublicKey, type Connection } from "@solana/w
 import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { loadProgram, orders } from "../../../keeper/program";
 import { cached } from "./cache";
+import { getDevnetQuote, type DevnetQuote } from "./market";
 import { DEVNET, MAINNET, SPACEX_TERMS, devnet, mainnet } from "./env";
 
 type TokenBalance = { raw: string; ui: number; shares?: number };
@@ -14,6 +15,7 @@ export type Position = {
   devnet: {
     network: "devnet";
     sol: number;
+    quote: DevnetQuote | null;
     replicaSpacex: TokenBalance & { delegate: string | null; delegatedRaw: string };
     replicaSpcxx: TokenBalance;
     order: null | {
@@ -52,12 +54,13 @@ async function loadPosition(owner: PublicKey): Promise<Position> {
   const program = loadProgram(devnet(), Keypair.generate());
   const orderPda = PublicKey.findProgramAddressSync([Buffer.from("order"), owner.toBuffer(), DEVNET.spacex.toBuffer()], DEVNET.programId)[0];
 
-  const [main, rSpacex, rSpcxx, sol, order] = await Promise.all([
+  const [main, rSpacex, rSpcxx, sol, order, quote] = await Promise.all([
     balanceByMint(mainnet(), owner, MAINNET.spacex, 9),
     balanceByMint(devnet(), owner, DEVNET.spacex, 9),
     balanceByMint(devnet(), owner, DEVNET.spcxx, 8),
     devnet().getBalance(owner, "confirmed"),
     orders(program).fetchNullable(orderPda),
+    getDevnetQuote().catch(() => null),
   ]);
 
   const shares = (ui: number) => ui * SPACEX_TERMS.sharesPerToken;
@@ -90,6 +93,7 @@ async function loadPosition(owner: PublicKey): Promise<Position> {
     devnet: {
       network: "devnet",
       sol: sol / LAMPORTS_PER_SOL,
+      quote,
       replicaSpacex: { raw: rSpacex.raw.toString(), ui: rSpacex.ui, shares: shares(rSpacex.ui), delegate: rSpacex.delegate, delegatedRaw: rSpacex.delegatedRaw.toString() },
       replicaSpcxx: { raw: rSpcxx.raw.toString(), ui: rSpcxx.ui },
       order: orderView,
