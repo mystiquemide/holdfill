@@ -3,6 +3,7 @@ import history from "../../../data/haircut-history.json";
 import forkProof from "../../../data/proof-fork.json";
 import devnetProof from "../../../data/proof-devnet.json";
 import { backtest, type HistoryDay } from "@/server/backtest";
+import { PendingSectionScroll } from "@/components/chrome";
 import { EvidencePreview, PreviewCard } from "@/components/hero";
 import { Compared, FinalCta, HowItWorks, ProofPreview } from "@/components/sections";
 import { ButtonLink, Keycap, SectionHead } from "@/components/ui";
@@ -14,6 +15,7 @@ const at20 = backtest(history.days as HistoryDay[], 2000);
 export default function Home() {
   return (
     <>
+      <PendingSectionScroll />
       <section id="top" className="px-3 pt-3 sm:px-4 sm:pt-4">
         <div className="relative mx-auto max-w-[1440px] overflow-hidden rounded-[var(--radius-card-lg)]">
           <Image
@@ -41,7 +43,6 @@ export default function Home() {
               <PreviewCard />
             </div>
           </div>
-          <p className="absolute bottom-3 right-4 text-xs text-paper/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">Photo: SpaceX on Unsplash</p>
         </div>
       </section>
 

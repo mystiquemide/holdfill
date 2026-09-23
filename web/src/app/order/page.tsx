@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import history from "../../../../data/haircut-history.json";
 import type { HistoryDay } from "@/server/backtest";
 import { OrderSection } from "@/components/order";
+import { BackHome } from "@/components/chrome";
 import { SectionHead } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Your order" };
 
 export default function OrderPage() {
   return (
-    <section id="order" className="mx-auto max-w-[1200px] scroll-mt-20 px-4 pt-16 md:px-6">
+    <section id="order" className="mx-auto max-w-[1200px] scroll-mt-20 px-4 pt-8 pb-24 md:px-6">
+      <div className="mb-10"><BackHome /></div>
       <SectionHead
         level={1}
         label="Your order"

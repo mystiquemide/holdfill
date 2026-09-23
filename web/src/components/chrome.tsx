@@ -11,17 +11,68 @@ import { Button } from "./ui";
 import { Logo } from "./logo";
 
 const NAV = [
-  { href: "/#how", label: "How it works" },
   { href: "/order", label: "Your order" },
   { href: "/evidence", label: "Evidence" },
   { href: "/proof", label: "Proof" },
 ];
+
+// "How it works" is a section of the landing page. It scrolls there without putting a # in the URL.
+let pendingSection: string | null = null;
+
+export function HowItWorksLink({ className = "", onNavigate }: { className?: string; onNavigate?: () => void }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  return (
+    <Link
+      href="/"
+      className={className}
+      onClick={(e) => {
+        onNavigate?.();
+        if (pathname === "/") {
+          e.preventDefault();
+          document.getElementById("how")?.scrollIntoView({ behavior: "smooth" });
+          return;
+        }
+        e.preventDefault();
+        pendingSection = "how";
+        router.push("/");
+      }}
+    >
+      How it works
+    </Link>
+  );
+}
+
+/** On the landing page, finishes a "How it works" click that started on another page. */
+export function PendingSectionScroll() {
+  useEffect(() => {
+    if (!pendingSection) return;
+    const id = pendingSection;
+    pendingSection = null;
+    requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }));
+  }, []);
+  return null;
+}
 
 const KNOWN_WALLETS = [
   { name: "Phantom", url: "https://phantom.com/download" },
   { name: "Solflare", url: "https://solflare.com/download" },
   { name: "Backpack", url: "https://backpack.app/downloads" },
 ];
+
+/** The footer belongs to the landing page only; the product pages end with their own content. */
+export function LandingOnly({ children }: { children: React.ReactNode }) {
+  return usePathname() === "/" ? <>{children}</> : null;
+}
+
+/** Link back to the landing page, at the top of /order, /evidence, and /proof. */
+export function BackHome() {
+  return (
+    <Link href="/" className="inline-flex h-10 items-center gap-2 rounded-full bg-vellum px-4 text-sm font-medium text-ink transition-colors duration-150 hover:bg-hairline">
+      <span aria-hidden>←</span> Back to home
+    </Link>
+  );
+}
 
 /** "O" opens the order page (or focuses the ticket when already there), unless the viewer is typing. */
 function useOrderShortcut(pathname: string, go: (href: string) => void) {
@@ -39,12 +90,18 @@ function useOrderShortcut(pathname: string, go: (href: string) => void) {
   }, [pathname, go]);
 }
 
-/** After a connection the viewer started from the wallet picker, open the order page. */
-function useRedirectOnConnect(pathname: string, go: (href: string) => void) {
+/**
+ * After a connection the viewer started from the wallet picker, open the order page. After a
+ * disconnect while on the order page, go home. Automatic reconnects on load never redirect.
+ */
+function useWalletRedirects(pathname: string, go: (href: string) => void) {
   const { connected } = useWallet();
   const { consumeConnectIntent } = useConnectIntent();
+  const was = useRef(connected);
   useEffect(() => {
     if (connected && consumeConnectIntent() && pathname !== "/order") go("/order");
+    if (was.current && !connected && pathname === "/order") go("/");
+    was.current = connected;
   }, [connected, consumeConnectIntent, pathname, go]);
 }
 
@@ -54,8 +111,8 @@ export function Header() {
   const router = useRouter();
   const go = useCallback((href: string) => router.push(href), [router]);
   useOrderShortcut(pathname, go);
-  useRedirectOnConnect(pathname, go);
-  const isActive = (href: string) => !href.includes("#") && pathname === href;
+  useWalletRedirects(pathname, go);
+  const isActive = (href: string) => pathname === href;
 
   return (
     <>
@@ -71,6 +128,7 @@ export function Header() {
           <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-4 md:px-6">
             <Link href="/" aria-label="Holdfill home"><Logo /></Link>
             <ul className="hidden items-center gap-6 text-sm lg:flex">
+              <li><HowItWorksLink className="inline-block py-3 text-ink underline-offset-8 hover:underline" /></li>
               {NAV.map((n) => (
                 <li key={n.href}>
                 <Link
@@ -99,6 +157,7 @@ export function Header() {
           {menu && (
             <div id="mobile-menu" className="border-t border-hairline bg-paper px-4 py-3 lg:hidden">
               <ul className="flex flex-col">
+                <li><HowItWorksLink onNavigate={() => setMenu(false)} className="block rounded-[14px] px-3 py-3 text-base text-ink hover:bg-vellum" /></li>
                 {NAV.map((n) => (
                   <li key={n.href}>
                     <Link

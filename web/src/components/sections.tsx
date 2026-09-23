@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { day, explorerAddr, explorerTx, int, num, pct, shortAddr } from "@/lib/format";
 import { Logo } from "./logo";
+import { HowItWorksLink } from "./chrome";
 import { ProgramAuthority, CopyCommand } from "./proof-live";
 import { ButtonLink, NetBadge, Source } from "./ui";
 
@@ -74,7 +75,7 @@ export function RealDeadline({ data }: { data: CaseStudy }) {
         <p className="mt-6 text-lg">
           <span className="num">{int(x.walletsHolding)}</span> wallets still hold <span className="num">{num(x.xaiHeld, 1)}</span> XAI after that deadline.
         </p>
-        <Source>Counted on chain {day(x.checkedAt)}: token accounts for the XAI mint with a balance above zero. Photo: Wilhelm Gunkel on Unsplash.</Source>
+        <Source>Counted on chain {day(x.checkedAt)}: token accounts for the XAI mint with a balance above zero.</Source>
       </div>
     </div>
   );
@@ -271,7 +272,6 @@ export function FinalCta() {
         </h2>
         <ButtonLink href="/order" variant="light" className="mt-10">Set an order</ButtonLink>
       </div>
-      <p className="absolute bottom-3 left-4 text-xs text-paper/80">Photo: SpaceX on Unsplash</p>
     </div>
   );
 }
@@ -287,7 +287,7 @@ export function Footer() {
         <nav aria-label="Product" className="text-sm">
           <p className="text-slate">Product</p>
           <ul className="mt-3 flex flex-col gap-2">
-            <li><Link className="underline-offset-4 hover:underline" href="/#how">How it works</Link></li>
+            <li><HowItWorksLink className="underline-offset-4 hover:underline" /></li>
             <li><Link className="underline-offset-4 hover:underline" href="/order">Your order</Link></li>
             <li><Link className="underline-offset-4 hover:underline" href="/evidence">Evidence</Link></li>
             <li><Link className="underline-offset-4 hover:underline" href="/proof">Proof</Link></li>
@@ -304,7 +304,7 @@ export function Footer() {
       </div>
       <div className="mx-auto max-w-[1200px] border-t border-hairline px-4 py-6 text-xs leading-relaxed text-slate md:px-6">
         <p>Built for Stocklana. Holdfill does not set prices or guarantee conversion value. Orders run on devnet replica tokens; market data is live mainnet.</p>
-        <p className="mt-1">Photos: SpaceX and Wilhelm Gunkel on Unsplash. Holdfill is not affiliated with SpaceX or PreStocks.</p>
+        <p className="mt-1">Holdfill is not affiliated with SpaceX or PreStocks.</p>
       </div>
     </footer>
   );

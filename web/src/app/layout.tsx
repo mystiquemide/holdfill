@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Header } from "@/components/chrome";
+import { Header, LandingOnly } from "@/components/chrome";
 import { Providers } from "@/components/providers";
 import { Footer } from "@/components/sections";
 import "./globals.css";
@@ -37,7 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Providers>
           <Header />
           <main id="main">{children}</main>
-          <Footer />
+          <LandingOnly><Footer /></LandingOnly>
         </Providers>
       </body>
     </html>
