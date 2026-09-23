@@ -12,10 +12,10 @@ Holdfill is a standing order demo for PreStocks holders. The holder keeps tokens
 
 ## See it
 
-- [Product preview](https://holdfill-preview.midelabs.xyz/), with SpaceX, Anthropic, and OpenAI markets in the [app](https://holdfill-preview.midelabs.xyz/app)
-- [Every PreStocks market, live](https://holdfill-preview.midelabs.xyz/markets) and the [issuer view](https://holdfill-preview.midelabs.xyz/issuer)
-- [Wallet-free walkthrough](https://holdfill-preview.midelabs.xyz/demo)
-- [Evidence](https://holdfill-preview.midelabs.xyz/evidence) and [proof](https://holdfill-preview.midelabs.xyz/proof)
+- [Live app](https://holdfill.vercel.app/), with SpaceX, Anthropic, and OpenAI markets in the [app](https://holdfill.vercel.app/app)
+- [Every PreStocks market, live](https://holdfill.vercel.app/markets) and the [issuer view](https://holdfill.vercel.app/issuer)
+- [Wallet-free walkthrough](https://holdfill.vercel.app/demo)
+- [Evidence](https://holdfill.vercel.app/evidence) and [proof](https://holdfill.vercel.app/proof)
 
 The walkthrough links recorded devnet transactions for order creation, a successful fill, a below-minimum rejection, revocation, a price order into USDC, and an armed order activated by a simulated issuer event on a separate demo token. It does not require a wallet.
 
