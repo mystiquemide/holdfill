@@ -69,7 +69,9 @@ function describe(e: OrderEvent): string {
   if (e.kind === "created") return `${num(Number(e.sizeRaw ?? 0) / BASE)} tokens, at least ${usd(e.pricePerToken ?? 0)} each`;
   if (e.kind === "armed") return `${num(Number(e.sizeRaw ?? 0) / BASE)} tokens, largest gap ${pct((e.limitBps ?? 0) / 100, 0)}`;
   if (e.kind === "activated") return "issuer terms copied in";
-  if (e.kind === "filled") return `${num(Number(e.amountInRaw ?? 0) / BASE)} tokens at ${usd(e.pricePerToken ?? 0)} each`;
+  if (e.kind === "filled") return e.outAmount !== undefined
+    ? `${num(Number(e.amountInRaw ?? 0) / BASE)} tokens for ${num(e.outAmount)} successor tokens`
+    : `${num(Number(e.amountInRaw ?? 0) / BASE)} tokens at ${usd(e.pricePerToken ?? 0)} each`;
   if (e.kind === "cancelled") return Number(e.amountInRaw ?? 0) > 0 ? `closed after selling ${num(Number(e.amountInRaw) / BASE)} tokens` : "revoked before any fill";
   return explainError(e.error);
 }
@@ -328,15 +330,18 @@ function OrderCard({ position, order, onChange, onEnded }: { position: MarketPos
   const [checking, setChecking] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [now] = useState(() => Date.now());
 
   const size = Number(order.sizeRaw) / BASE;
   const filled = Number(order.filledRaw) / BASE;
-  const received = Number(order.receivedRaw) / 1e6;
+  const received = Number(order.receivedRaw) / 10 ** order.outDecimals;
+  const out = order.outSymbol || "USDC";
   const isFilled = order.status === "filled";
   const armed = order.kind === "armed";
-  const blocked = !isFilled && !order.approvalInPlace;
+  const expired = !isFilled && !!order.expiresAt && Date.parse(order.expiresAt) <= now;
+  const blocked = !isFilled && (!order.approvalInPlace || expired);
   const tone = isFilled ? "filled" : blocked ? "blocked" : filled > 0 ? "partial" : "armed";
-  const label = isFilled ? "filled" : blocked ? "blocked" : armed ? "waiting for issuer" : filled > 0 ? "partial" : "armed";
+  const label = isFilled ? "filled" : expired ? "expired" : blocked ? "blocked" : armed ? "waiting for issuer" : filled > 0 ? "partial" : "armed";
 
   const runCheck = async () => {
     setChecking(true);
@@ -349,8 +354,12 @@ function OrderCard({ position, order, onChange, onEnded }: { position: MarketPos
       const a = body.attempts?.[0];
       if (!a) { setCheck({ tone: "wait", text: armed ? `Checked ${at}. No issuer event yet.` : `Checked ${at}. Nothing to do.` }); return; }
       if (a.action === "filled") {
-        toasts.push({ tone: "ok", title: `Filled. About ${num(Number(a.quotedOut ?? 0) / 1e6, 2)} USDC landed in your wallet.`, href: explorerTx(a.signature, "devnet") });
+        toasts.push({ tone: "ok", title: `Filled. About ${num(Number(a.quotedOut ?? 0) / 10 ** order.outDecimals, 2)} ${out} landed in your wallet.`, href: explorerTx(a.signature, "devnet") });
         setCheck({ tone: "ok", text: `Filled at ${at}.` });
+        onChange();
+      } else if (a.action === "activated") {
+        toasts.push({ tone: "ok", title: "The issuer named a successor. Your order is now active at your terms.", href: explorerTx(a.signature, "devnet") });
+        setCheck({ tone: "ok", text: `Activated at ${at}. The keeper fills it once the pool meets your limit.` });
         onChange();
       } else if (a.action === "waiting") {
         setCheck({ tone: "wait", text: `Checked ${at}. ${a.reason.charAt(0).toUpperCase()}${a.reason.slice(1)}. No fill yet.` });
@@ -390,8 +399,10 @@ function OrderCard({ position, order, onChange, onEnded }: { position: MarketPos
           </>
         ) : (
           <>
-            <Stat label="Received" value={num(received, 2)} unit="USDC" tone={received > 0 ? "text-fill" : undefined} />
-            <Stat label="Least per token" value={order.minUsdcPerToken === null ? "n/a" : usd(order.minUsdcPerToken)} unit="USDC, after fees" />
+            <Stat label="Received" value={num(received, 2)} unit={out} tone={received > 0 ? "text-fill" : undefined} />
+            {order.minUsdcPerToken === null
+              ? <Stat label="Largest gap" value={pct(order.limitBps / 100, 0)} unit="set when armed" />
+              : <Stat label="Least per token" value={usd(order.minUsdcPerToken)} unit="USDC, after fees" />}
             <Stat label="Expires" value={order.expiresAt ? day(order.expiresAt, true) : "n/a"} unit={order.expiresAt ? utcTime(order.expiresAt) : ""} />
           </>
         )}
@@ -399,7 +410,9 @@ function OrderCard({ position, order, onChange, onEnded }: { position: MarketPos
 
       <div className="mt-5 min-h-6 text-sm" aria-live="polite">
         {isFilled ? (
-          <p className="text-fill">Filled. You received {num(received, 2)} USDC, {usd(filled > 0 ? received / filled : 0)} per token after fees.</p>
+          <p className="text-fill">Filled. You received {num(received, 2)} {out}{out === "USDC" ? `, ${usd(filled > 0 ? received / filled : 0)} per token after fees` : ""}.</p>
+        ) : expired ? (
+          <p className="text-deadline">This order expired. Revoke to close it and get its deposit back.</p>
         ) : blocked ? (
           <p className="text-deadline">Your approval was removed. Revoke to close the order.</p>
         ) : check ? (

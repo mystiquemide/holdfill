@@ -228,7 +228,7 @@ No database. State lives on chain (orders, fills) or in read-through caches:
 | Keeper passes a low minimum | Program computes `required` from stored terms and uses the max of both. Output delta is checked after the CPI. |
 | Keeper substitutes a different pool or fake reserves | `lb_pair` must equal `order.pool`. Pool mints must equal order mints. The program derives `reserve_x`, `reserve_y`, and `oracle` itself and compares, without relying on DLMM's closed-source checks. |
 | Caller routes the referral fee to itself via `host_fee_in` | Program requires the "none" placeholder and rejects anything else. |
-| Caller passes a fake token program | Both token program accounts must equal the Token-2022 program id. |
+| Caller passes a fake token program | `token_x_program` must be Token-2022. `token_y_program` must be SPL Token or Token-2022 and must own the output mint. |
 | Output sent to another account | `user_token_out` must be the owner's ATA for the output mint. Balance delta measured on that account. |
 | Over-spending the approval | Approval equals size. Program tracks `filled` and checks delegated amount. |
 | Fills after cancel | Cancel closes the account and the same transaction revokes the approval. |
@@ -237,7 +237,12 @@ No database. State lives on chain (orders, fills) or in read-through caches:
 | Issuer uses the permanent delegate | Outside Holdfill's control. Disclosed on the order ticket. |
 | Sandwich around a fill | Holder always receives at least `required`. Documented as the guarantee boundary. |
 | Rounding against the holder | `required` is computed with a single division and rounds up. u128 math, checked arithmetic. |
-| Faucet abuse | Per-wallet and global limits. Replica tokens only. |
+| Faucet abuse | Per-wallet and global limits, with slots taken before any network call so concurrent requests can't pass the same check. Replica tokens only. The issuer key keeps a reserve: no grants below 0.2 devnet SOL, no SOL top-ups below 0.5 SOL, at most six top-ups an hour. |
+| Scripted requests exhaust the shared RPC quota | Per-client budgets per minute on every route that calls Solana RPC (position and orders 60, transactions 30, check now 20, faucet 6), answered with 429 and Retry-After. The client is the first `X-Forwarded-For` entry, which the Caddy proxy overwrites for untrusted clients (checked with spoofed values on the live preview). |
+| Price order outlives an issuer event registered after it | Accepted. `create_price_order` refuses an expiry past an existing event's deadline, but `execute` does not re-read events, so an event registered later does not shorten the order. The holder is not harmed: the order sells a token that is about to expire. |
+| Armed order activates inside its fallback window | By design. If the issuer's deadline is closer than the holder's fallback offset, the floor applies at once. The swap still pays the pool price; the floor is only the minimum. The app limits floors to 40 to 70%. |
+| Order kind is inferred, not stored | Price orders are recognized by limit 0, a 100% floor, and fallback equal to expiry, which `create_order` cannot produce because it requires the fallback before expiry. Storing a kind byte would change the account layout and strand existing orders. Any new instruction must keep that invariant. |
+| Activated order has no account for the successor token | The keeper creates the holder's associated token account for the output in the fill transaction. The holder owns it; the keeper pays the rent and still holds no tokens. |
 | Secret leakage | Keypairs only in server env. No secrets in the repo. `.env.example` has names only. |
 
 ## 11. Architecture decisions

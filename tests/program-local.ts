@@ -372,6 +372,14 @@ async function main() {
   });
   const r2 = await marketHolder(1_000_000_000n);
   const pdaR2 = await armOrder(r2, { size: 200_000_000n, limitBps: 2000, days: 30 });
+  // r3 never held the output token: no account to receive into until the keeper creates one.
+  const r3 = Keypair.generate();
+  await conn.confirmTransaction(await conn.requestAirdrop(r3.publicKey, 2 * LAMPORTS_PER_SOL), "confirmed");
+  await sendAndConfirmTransaction(conn, new Transaction().add(
+    createAssociatedTokenAccountIdempotentInstruction(r3.publicKey, ata(r3.publicKey, ANTH), r3.publicKey, ANTH, TOKEN_2022_PROGRAM_ID),
+  ), [r3]);
+  await mintTo(conn, issuer, ANTH, ata(r3.publicKey, ANTH), issuer, 1_000_000_000n, [], { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
+  const pdaR3 = await armOrder(r3, { size: 100_000_000n, limitBps: 2000, days: 30 });
   await expectPass("keeper leaves an armed order alone while no event exists", async () => {
     const out = await tick({ connection: conn, program, keeper, cluster: "devnet", onlyOrder: pdaR2 });
     if (out.length) throw new Error(`${out[0].action}: ${out[0].reason}`);
@@ -415,6 +423,18 @@ async function main() {
     const [second] = await tick({ connection: conn, program, keeper, cluster: "devnet", onlyOrder: pdaR2 });
     if (second?.action !== "filled") throw new Error(`${second?.action}: ${second?.reason}`);
     return `activated, then ${second.reason} (${Number(second.amountIn) / 1e9} token)`;
+  });
+  await expectPass("keeper creates the holder's output account when it is missing, then fills", async () => {
+    if (await conn.getAccountInfo(usdcAta(r3.publicKey))) throw new Error("output account already existed");
+    const [first] = await tick({ connection: conn, program, keeper, cluster: "devnet", onlyOrder: pdaR3 });
+    if (first?.action !== "activated") throw new Error(`${first?.action}: ${first?.reason}`);
+    const [second] = await tick({ connection: conn, program, keeper, cluster: "devnet", onlyOrder: pdaR3 });
+    if (second?.action !== "filled") throw new Error(`${second?.action}: ${second?.reason}`);
+    const out = await getAccount(conn, usdcAta(r3.publicKey), "confirmed", TOKEN_PROGRAM_ID);
+    if (!out.owner.equals(r3.publicKey)) throw new Error("output account not owned by the holder");
+    const keeperTokens = (await conn.getTokenAccountsByOwner(keeper.publicKey, { programId: TOKEN_PROGRAM_ID })).value.length;
+    if (keeperTokens) throw new Error("keeper holds token accounts");
+    return `account created for the holder, ${Number(out.amount) / 1e6} USDC received, keeper holds nothing`;
   });
 
   // Issuer raises the transfer fee; it takes effect two epochs later.

@@ -1,9 +1,9 @@
 import "server-only";
-import { Keypair } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 import { TOKEN_2022_PROGRAM_ID, getAssociatedTokenAddressSync, unpackAccount } from "@solana/spl-token";
 import { loadProgram, orderKind, orders } from "../../../keeper/program";
 import { cached } from "./cache";
-import { DEVNET, SPACEX_TERMS, USDC_MARKETS, devnet } from "./env";
+import { DEVNET, DEVNET_USDC, SPACEX_TERMS, USDC_MARKETS, devnet } from "./env";
 import { getMarkets } from "./markets";
 
 /** Devnet replica mints that orders can use, by PreStocks symbol. Shares per raw token and output decimals differ. */
@@ -15,7 +15,7 @@ const BASE = 1e9;
 
 export type IssuerOrder = {
   address: string; owner: string; symbol: string; kind: "convert" | "price" | "armed";
-  status: "armed" | "partial" | "filled" | "blocked";
+  status: "armed" | "partial" | "filled" | "blocked" | "expired";
   limitBps: number; sizeShares: number; filledShares: number; received: number; createdAt: string;
 };
 
@@ -38,6 +38,11 @@ async function load(): Promise<IssuerView> {
   const atas = all.map(({ account }) => getAssociatedTokenAddressSync(account.inputMint, account.owner, false, TOKEN_2022_PROGRAM_ID));
   const infos = atas.length ? await conn.getMultipleAccountsInfo(atas, "confirmed") : [];
 
+  // Output decimals per mint: an activated armed order pays out in the successor, not the market default.
+  const outMints = [...new Set(all.map(({ account }) => account.outputMint.toBase58()))].filter((m) => m !== "11111111111111111111111111111111");
+  const outInfos = outMints.length ? await conn.getMultipleAccountsInfo(outMints.map((m) => new PublicKey(m)), "confirmed") : [];
+  const decimalsOf = new Map(outMints.map((m, i) => [m, outInfos[i]?.data[44] ?? 6]));
+  const nowSec = Math.floor(Date.now() / 1000);
   const rows: IssuerOrder[] = [];
   const remaining = new Map<string, number>();
   all.forEach(({ publicKey, account }, i) => {
@@ -49,12 +54,17 @@ async function load(): Promise<IssuerView> {
     const token = info ? unpackAccount(atas[i], info, TOKEN_2022_PROGRAM_ID) : null;
     const approved = !!token?.delegate?.equals(publicKey) && token.delegatedAmount > 0n;
     const isFilled = "filled" in account.status;
-    const status = isFilled ? "filled" : !approved ? "blocked" : filled > 0n ? "partial" : "armed";
+    const isArmed = "armed" in account.status;
+    const expired = !isFilled && !isArmed && nowSec >= Number(account.expiryTs.toString());
+    const status = isFilled ? "filled" : expired ? "expired" : !approved ? "blocked" : filled > 0n ? "partial" : "armed";
     const shares = (v: bigint) => (Number(v) / BASE) * market.sharesPerRaw;
     rows.push({
       address: publicKey.toBase58(), owner: account.owner.toBase58(), symbol: market.symbol, kind: orderKind(account), status,
       limitBps: account.limitBps, sizeShares: shares(size), filledShares: shares(filled),
-      received: Number(account.received.toString()) / 10 ** market.outDecimals,
+      // Only fills in the market's usual output (SPCXx or USDC) add to "received"; successor fills count as shares.
+      received: account.outputMint.toBase58() === (market.symbol === "SPACEX" ? DEVNET.spcxx : DEVNET_USDC).toBase58()
+        ? Number(account.received.toString()) / 10 ** (decimalsOf.get(account.outputMint.toBase58()) ?? market.outDecimals)
+        : 0,
       createdAt: new Date(Number(account.createdAt.toString()) * 1000).toISOString(),
     });
     if (status === "armed" || status === "partial") remaining.set(publicKey.toBase58(), shares(size - filled));

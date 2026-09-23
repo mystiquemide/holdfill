@@ -25,6 +25,10 @@ export function rateLimit(request: Request, bucket: string, perMinute: number): 
   }
   hits.push(now);
   windows.set(key, hits);
-  if (windows.size > 10_000) for (const [k, v] of windows) if (now - v[v.length - 1] > WINDOW_MS) windows.delete(k);
+  if (windows.size > 10_000) {
+    for (const [k, v] of windows) if (now - v[v.length - 1] > WINDOW_MS) windows.delete(k);
+    // Still too many live keys means someone is rotating identities: start over rather than grow.
+    if (windows.size > 20_000) windows.clear();
+  }
   return null;
 }

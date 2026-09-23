@@ -10,7 +10,8 @@ import { BN as AnchorBN } from "@anchor-lang/core";
 import { loadProgram, orderKind, orders } from "../../../keeper/program";
 import { cached } from "./cache";
 import { DEVNET, DEVNET_USDC, USDC_MARKETS, devnet, mainnet } from "./env";
-import { TxInputError, unsigned } from "./tx";
+import { orderAddress } from "./orders";
+import { TxInputError, ata as ata2022, unsigned } from "./tx";
 
 export type UsdcMarket = (typeof USDC_MARKETS)[string];
 
@@ -20,11 +21,8 @@ export function usdcMarket(symbol: string | null | undefined): UsdcMarket {
   return m;
 }
 
-export const orderAddressFor = (owner: PublicKey, mint: PublicKey) =>
-  PublicKey.findProgramAddressSync([Buffer.from("order"), owner.toBuffer(), mint.toBuffer()], DEVNET.programId)[0];
 const eventAddressFor = (mint: PublicKey) =>
   PublicKey.findProgramAddressSync([Buffer.from("event"), mint.toBuffer()], DEVNET.programId)[0];
-const ata2022 = (owner: PublicKey, mint: PublicKey) => getAssociatedTokenAddressSync(mint, owner, false, TOKEN_2022_PROGRAM_ID);
 const usdcAta = (owner: PublicKey) => getAssociatedTokenAddressSync(DEVNET_USDC, owner, false, TOKEN_PROGRAM_ID);
 
 export type MarketQuote = { inTokens: 1; outUsdc: number; asOf: string; source: string };
@@ -64,6 +62,9 @@ export type MarketOrder = {
   /** Armed orders: terms relative to the entitlement the issuer will name. */
   limitBps: number; fallbackDaysBefore: number | null; fallbackFloorBps: number;
   outputMint: string;
+  /** What fills pay out in: replica USDC, or the successor token once an armed order is activated. */
+  outSymbol: string;
+  outDecimals: number;
 };
 
 export type MarketPosition = {
@@ -75,7 +76,7 @@ export type MarketPosition = {
 async function loadMarketPosition(owner: PublicKey, m: UsdcMarket): Promise<MarketPosition> {
   const conn = devnet();
   const program = loadProgram(conn, Keypair.generate());
-  const pda = orderAddressFor(owner, m.mint);
+  const pda = orderAddress(owner, m.mint);
   const [mainBal, tok, usdc, sol, order, quote] = await Promise.all([
     tokenBalance(mainnet(), owner, m.mainnetMint, TOKEN_2022_PROGRAM_ID),
     tokenBalance(conn, owner, m.mint, TOKEN_2022_PROGRAM_ID),
@@ -87,6 +88,9 @@ async function loadMarketPosition(owner: PublicKey, m: UsdcMarket): Promise<Mark
   let view: MarketOrder | null = null;
   if (order) {
     const kind = orderKind(order);
+    const isUsdc = order.outputMint.equals(DEVNET_USDC);
+    const outInfo = kind === "armed" || isUsdc ? null : await conn.getAccountInfo(order.outputMint, "confirmed");
+    const outDecimals = outInfo ? outInfo.data[44] : 6; // Mint layout: decimals at byte 44 in SPL Token and Token-2022
     view = {
       address: pda.toBase58(), kind,
       status: kind === "armed" ? "armed" : "filled" in order.status ? "filled" : "active",
@@ -98,6 +102,8 @@ async function loadMarketPosition(owner: PublicKey, m: UsdcMarket): Promise<Mark
       fallbackDaysBefore: kind === "armed" ? Number(order.fallbackTs.toString()) / 86_400 : null,
       fallbackFloorBps: order.fallbackFloorBps,
       outputMint: order.outputMint.toBase58(),
+      outSymbol: kind === "armed" ? "" : isUsdc ? "USDC" : "successor tokens",
+      outDecimals,
     };
   }
   return {
@@ -116,7 +122,7 @@ export const FALLBACK_DAYS = [7, 14, 30, 60, 90] as const;
 async function preflight(owner: PublicKey, m: UsdcMarket, sizeRaw: bigint) {
   const conn = devnet();
   const program = loadProgram(conn, Keypair.generate());
-  const order = orderAddressFor(owner, m.mint);
+  const order = orderAddress(owner, m.mint);
   const [existing, balance] = await Promise.all([
     orders(program).fetchNullable(order),
     conn.getTokenAccountBalance(ata2022(owner, m.mint), "confirmed").then((b) => BigInt(b.value.amount), () => 0n),

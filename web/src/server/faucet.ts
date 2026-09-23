@@ -51,23 +51,38 @@ export async function grant(owner: PublicKey, market?: UsdcMarket): Promise<Fauc
   if (balance >= HOLDING_CAP_RAW) {
     return { ok: false, status: 429, error: `This wallet already holds ${Number(balance) / 1e9} replica ${symbol}. The faucet only tops up empty wallets.` };
   }
-  // A wallet whose last order sold everything can refill right away; the hourly limit covers the rest.
-  const last = lastGrant.get(key);
-  const emptyAndIdle = balance === 0n && !order;
-  if (!emptyAndIdle && last && now - last < WALLET_COOLDOWN_MS) {
-    return { ok: false, status: 429, error: "One faucet request per wallet per hour.", retryAt: new Date(last + WALLET_COOLDOWN_MS).toISOString() };
-  }
-
   const issuer = keypairFromEnv("ISSUER_KEYPAIR");
   const issuerLamports = await conn.getBalance(issuer.publicKey, "confirmed");
   if (issuerLamports < ISSUER_RESERVE_FOR_GRANTS) {
     return { ok: false, status: 503, error: "The devnet faucet is out of SOL for now. Try the recorded demo, or come back later." };
   }
-  const topupAllowed = issuerLamports >= ISSUER_RESERVE_FOR_TOPUPS && recentTopups.length < SOL_TOPUPS_PER_HOUR;
-  if (lamports < SOL_TOPUP_BELOW && !topupAllowed) {
+
+  // Every shared cap is checked again here, after the awaits, and its slot is taken synchronously,
+  // so concurrent requests can't all pass the same check. A failed send gives the slots back.
+  const at = Date.now();
+  while (recentGrants.length && at - recentGrants[0] > HOUR) recentGrants.shift();
+  while (recentTopups.length && at - recentTopups[0] > HOUR) recentTopups.shift();
+  if (recentGrants.length >= GLOBAL_LIMIT_PER_HOUR) {
+    return { ok: false, status: 429, error: "The faucet is busy. Try again later.", retryAt: new Date(recentGrants[0] + HOUR).toISOString() };
+  }
+  // A wallet whose last order sold everything can refill right away; the hourly limit covers the rest.
+  const last = lastGrant.get(key);
+  if (!(balance === 0n && !order) && last && at - last < WALLET_COOLDOWN_MS) {
+    return { ok: false, status: 429, error: "One faucet request per wallet per hour.", retryAt: new Date(last + WALLET_COOLDOWN_MS).toISOString() };
+  }
+  const needsSol = lamports < SOL_TOPUP_BELOW;
+  if (needsSol && !(issuerLamports >= ISSUER_RESERVE_FOR_TOPUPS && recentTopups.length < SOL_TOPUPS_PER_HOUR)) {
     return { ok: false, status: 429, error: "Your wallet needs a little devnet SOL for fees, and the faucet's SOL allowance is used up for this hour. Get devnet SOL at faucet.solana.com, then try again." };
   }
-  const sol = lamports < SOL_TOPUP_BELOW ? SOL_TOPUP : 0;
+  const sol = needsSol ? SOL_TOPUP : 0;
+  recentGrants.push(at);
+  if (sol > 0) recentTopups.push(at);
+  lastGrant.set(key, at);
+  const release = () => {
+    recentGrants.splice(recentGrants.indexOf(at), 1);
+    if (sol > 0) recentTopups.splice(recentTopups.indexOf(at), 1);
+    if (last === undefined) lastGrant.delete(key); else lastGrant.set(key, last);
+  };
   // The account the order sells into: SPCXx for SPACEX, replica USDC (classic SPL Token) otherwise.
   const out = market
     ? createAssociatedTokenAccountIdempotentInstruction(issuer.publicKey, getAssociatedTokenAddressSync(DEVNET_USDC, owner, false, TOKEN_PROGRAM_ID), owner, DEVNET_USDC, TOKEN_PROGRAM_ID)
@@ -81,14 +96,12 @@ export async function grant(owner: PublicKey, market?: UsdcMarket): Promise<Fauc
 
   try {
     const signature = await sendAndConfirmTransaction(conn, tx, [issuer], { commitment: "confirmed" });
-    lastGrant.set(key, now);
-    recentGrants.push(now);
-    if (sol > 0) recentTopups.push(now);
     return {
       ok: true, network: "devnet", symbol, signature, sentRaw: GRANT_RAW.toString(), sentShares: market ? 1 : 5,
       sentSol: sol / LAMPORTS_PER_SOL, explorer: `https://explorer.solana.com/tx/${signature}?cluster=devnet`,
     };
   } catch (e) {
+    release();
     return { ok: false, status: 503, error: `Faucet transaction failed: ${String((e as Error).message).split("\n")[0].slice(0, 160)}` };
   }
 }

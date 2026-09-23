@@ -16,7 +16,7 @@ const MAX_LIMIT_BPS = 6000;
 
 export class TxInputError extends Error {}
 
-const ata = (owner: PublicKey, mint: PublicKey) => getAssociatedTokenAddressSync(mint, owner, false, TOKEN_2022_PROGRAM_ID);
+export const ata = (owner: PublicKey, mint: PublicKey) => getAssociatedTokenAddressSync(mint, owner, false, TOKEN_2022_PROGRAM_ID);
 
 export async function unsigned(owner: PublicKey, ixs: TransactionInstruction[]) {
   const { blockhash, lastValidBlockHeight } = await devnet().getLatestBlockhash("confirmed");

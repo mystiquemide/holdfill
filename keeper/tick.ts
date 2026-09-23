@@ -2,8 +2,8 @@
 // minimum, and fill the largest amount that does. Anyone can run this; the program enforces terms.
 import { Connection, Keypair, PublicKey, Transaction, sendAndConfirmTransaction } from "@solana/web3.js";
 import {
-  TOKEN_2022_PROGRAM_ID, getAccount, getAssociatedTokenAddressSync, getEpochFee, getMint,
-  getPausableConfig, getTransferFeeConfig,
+  TOKEN_2022_PROGRAM_ID, createAssociatedTokenAccountIdempotentInstruction, getAccount,
+  getAssociatedTokenAddressSync, getEpochFee, getMint, getPausableConfig, getTransferFeeConfig,
 } from "@solana/spl-token";
 import { BN, Program } from "@anchor-lang/core";
 import DLMM from "@meteora-ag/dlmm";
@@ -116,12 +116,17 @@ export async function tick(params: {
     const fee = feeConfig ? Number(getEpochFee(feeConfig, BigInt(epoch)).transferFeeBasisPoints) : 0;
     if (fee !== o.feeBps) { skip(`issuer changed the transfer fee from ${o.feeBps} to ${fee} bps`); continue; }
 
-    // Holder accounts: approval still in place and an SPCXx account to receive into.
+    // Holder accounts: approval still in place, and an account to receive the output. An activated
+    // armed order pays out in a successor token the holder may never have held, so the keeper
+    // creates that account in the fill transaction (owned by the holder; the keeper pays the rent).
     const inAta = getAssociatedTokenAddressSync(o.inputMint, o.owner, false, TOKEN_2022_PROGRAM_ID);
-    const outAta = getAssociatedTokenAddressSync(o.outputMint, o.owner, false, await tokenProgramOf(o.outputMint));
+    const outProgram = await tokenProgramOf(o.outputMint);
+    const outAta = getAssociatedTokenAddressSync(o.outputMint, o.owner, false, outProgram);
     const inAcct = await getAccount(connection, inAta, "confirmed", TOKEN_2022_PROGRAM_ID).catch(() => null);
     if (!inAcct?.delegate?.equals(publicKey)) { skip("holder removed the approval"); continue; }
-    if (!(await connection.getAccountInfo(outAta, "confirmed"))) { skip("holder has no output token account"); continue; }
+    const createOut = (await connection.getAccountInfo(outAta, "confirmed"))
+      ? null
+      : createAssociatedTokenAccountIdempotentInstruction(keeper.publicKey, outAta, o.owner, o.outputMint, outProgram);
     const fillable = [remaining, inAcct.delegatedAmount, inAcct.amount].reduce((a, b) => (a < b ? a : b));
 
     let dlmm = pools.get(o.pool.toBase58());
@@ -150,7 +155,8 @@ export async function tick(params: {
         program, connection, orderPda: publicKey, order: o, amountIn: new BN(best.amount.toString()),
         keeper: keeper.publicKey, keeperMinOut: new BN(required(best.amount).toString()), cluster, dlmm,
       });
-      const signature = await sendAndConfirmTransaction(connection, new Transaction().add(ix), [keeper], { commitment: "confirmed" });
+      const tx = createOut ? new Transaction().add(createOut, ix) : new Transaction().add(ix);
+      const signature = await sendAndConfirmTransaction(connection, tx, [keeper], { commitment: "confirmed" });
       push({ ...base, action: "filled", haircutBps: Number(haircut), amountIn: best.amount.toString(), quotedOut: best.out.toString(),
         required: required(best.amount).toString(), signature,
         reason: best.amount === remaining ? "filled the remaining size" : "partial fill sized to available liquidity" });
