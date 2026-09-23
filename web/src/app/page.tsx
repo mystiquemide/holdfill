@@ -31,11 +31,11 @@ export default function Home() {
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.86)_0%,rgba(255,255,255,0.7)_42%,rgba(255,255,255,0)_78%)]" />
           <div className="relative mx-auto flex max-w-[1200px] flex-col items-center px-4 pt-16 pb-10 text-center sm:pt-24 md:px-6">
             <h1 className="rise-1 text-[40px] leading-[1.02] tracking-[-0.03em] sm:text-6xl md:text-7xl">
-              Hold through the lockup.
-              <span className="block text-[#4a4a4a]">Fill before the deadline.</span>
+              Limit orders for pre-IPO tokens.
+              <span className="block text-[#4a4a4a]">At your price, before the deadline.</span>
             </h1>
             <p className="rise-2 mt-6 max-w-xl text-lg leading-relaxed text-ink">
-              Standing orders for PreStocks. Convert before the issuer&apos;s deadline, sell into USDC at your price, or arm an order for the next IPO. Your tokens stay in your wallet until the market meets your terms.
+              PreStocks can sell far below what they convert into, and they expire if not swapped before the issuer&apos;s deadline. Set the least you&apos;ll accept and sign once. Your tokens stay in your wallet until the market pays your price.
             </p>
             <div className="rise-3 mt-8 flex flex-wrap items-center justify-center gap-4">
               <AppEntryButton />
