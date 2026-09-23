@@ -16,6 +16,7 @@ const ADDRESSES: [string, string][] = [
 
 const API: [string, string][] = [
   ["GET /api/market", "Live mainnet quote, pool fee, transfer fee, and the issuer's conversion value."],
+  ["GET /api/markets", "Every PreStocks market: holders, value at mark, pool price, issuer fee, Jupiter Trigger result, and lifecycle events."],
   ["GET /api/history", "Daily close gap since listing, with dated unlocks."],
   ["GET /api/backtest?limit=2000", "How many trading days a limit, in basis points, would have filled."],
   ["GET /api/position?owner=", "Mainnet SPACEX (read only), devnet replica balances, and the open order."],

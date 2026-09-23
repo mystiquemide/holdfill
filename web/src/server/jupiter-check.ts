@@ -15,7 +15,8 @@ export type JupiterCheck = {
   control: { inputMint: string; label: string; httpStatus: number; accepted: boolean };
 };
 
-async function createOrder(inputMint: string, makingAmount: string) {
+/** Asks Jupiter Trigger V1 to build a limit order. Nothing is signed or sent. */
+export async function createOrder(inputMint: string, makingAmount: string) {
   const res = await fetch(ENDPOINT, {
     method: "POST",
     headers: { "content-type": "application/json" },
