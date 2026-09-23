@@ -304,6 +304,38 @@ export function NeverDoes() {
   );
 }
 
+// ---------- Built on ----------
+
+const BUILT_ON = [
+  { name: "Solana", logo: "/logos/solana.svg", href: "https://solana.com", scale: "size-9", use: "The order program runs on Solana. Token-2022 mints carry the issuer's fee, pause, and delegate rules." },
+  { name: "PreStocks", logo: "/logos/prestocks.svg", href: "https://www.prestocks.com", scale: "size-11", use: "The pre-IPO tokens holders convert or sell. Mark prices, supply, and issuer terms come from PreStocks." },
+  { name: "Meteora", logo: "/logos/meteora.svg", href: "https://www.meteora.ag", scale: "size-11", use: "Every fill swaps through a Meteora DLMM pool, with the order program signing as the holder's delegate." },
+  { name: "Jupiter", logo: "/logos/jupiter.svg", href: "https://jup.ag", scale: "size-9", use: "Token prices, holder counts, and a live check that its trigger API refuses PreStocks mints." },
+  { name: "Helius", logo: "/logos/helius.svg", href: "https://www.helius.dev", scale: "size-9", use: "RPC for every mainnet read and devnet order, with a separate key for the keeper." },
+  { name: "xStocks", logo: "/logos/xstocks.svg", href: "https://xstocks.fi", scale: "size-8", use: "SPCXx, the listed SpaceX token that SpaceX PreStocks convert into." },
+];
+
+export function BuiltOn() {
+  return (
+    <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {BUILT_ON.map((b, i) => (
+        <li key={b.name} data-item style={{ "--i": i } as React.CSSProperties}>
+          <a href={b.href} target="_blank" rel="noreferrer" className="group flex h-full items-start gap-4 rounded-[var(--radius-card)] border border-hairline bg-paper p-5 transition-colors duration-150 hover:bg-vellum">
+            <span className="flex size-14 shrink-0 items-center justify-center rounded-[14px] bg-vellum transition-colors duration-150 group-hover:bg-paper">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={b.logo} alt="" width={56} height={56} className={`${b.scale} object-contain`} />
+            </span>
+            <span>
+              <span className="flex items-center gap-1.5 text-lg text-ink">{b.name}<span aria-hidden className="text-sm text-slate transition-transform duration-150 group-hover:translate-x-0.5">↗</span></span>
+              <span className="mt-1 block text-sm leading-relaxed text-slate">{b.use}</span>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function FinalCta() {
   return (
     <div className="relative overflow-hidden rounded-[var(--radius-card-lg)] bg-ink">

@@ -5,7 +5,7 @@ import devnetProof from "../../../data/proof-devnet.json";
 import { backtest, type HistoryDay } from "@/server/backtest";
 import { AppEntryButton } from "@/components/chrome";
 import { EvidencePreview, PreviewCard } from "@/components/hero";
-import { Compared, FinalCta, HowItWorks, ProofPreview } from "@/components/sections";
+import { BuiltOn, Compared, FinalCta, HowItWorks, ProofPreview } from "@/components/sections";
 import { Reveal } from "@/components/reveal";
 import { ButtonLink, DemoBadge, EligibilityNotice, SectionHead } from "@/components/ui";
 
@@ -67,6 +67,12 @@ export default function Home() {
       <section className="mx-auto max-w-[1200px] px-4 pt-24 md:px-6">
         <Reveal><SectionHead label="Proof" title="Checked on chain, twice." /></Reveal>
         <Reveal><ProofPreview fork={forkProof} devnetProof={devnetProof} /></Reveal>
+      </section>
+
+      <section className="mx-auto max-w-[1200px] px-4 pt-24 md:px-6">
+        <Reveal><SectionHead label="Built on" title="Built on Solana, with the tools PreStocks holders already use." /></Reveal>
+        <Reveal><BuiltOn /></Reveal>
+        <p className="mt-4 text-xs leading-relaxed text-slate">Logos belong to their owners and appear to credit the services Holdfill uses. Holdfill is not affiliated with or endorsed by any of them.</p>
       </section>
 
       <section className="mx-auto max-w-[1200px] px-3 pt-24 sm:px-4 md:px-6">

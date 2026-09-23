@@ -51,6 +51,9 @@ export async function grant(owner: PublicKey, market?: UsdcMarket): Promise<Fauc
   if (balance >= HOLDING_CAP_RAW) {
     return { ok: false, status: 429, error: `This wallet already holds ${Number(balance) / 1e9} replica ${symbol}. The faucet only tops up empty wallets.` };
   }
+  if (!process.env.ISSUER_KEYPAIR) {
+    return { ok: false, status: 503, error: "This copy of Holdfill has no faucet key. Get replica tokens from the faucet at holdfill.vercel.app, then set orders here." };
+  }
   const issuer = keypairFromEnv("ISSUER_KEYPAIR");
   const issuerLamports = await conn.getBalance(issuer.publicKey, "confirmed");
   if (issuerLamports < ISSUER_RESERVE_FOR_GRANTS) {
