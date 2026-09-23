@@ -85,7 +85,7 @@ Full opacity, never blurred, a white scrim behind hero text and an ink scrim beh
 
 ## 8. Page
 
-The landing page, `/evidence`, and `/proof` share the honesty strip and marketing nav with the wallet button. The nav marks the current marketing route with a hold-colored underline. "How it works" scrolls to the landing section without adding a # to the URL. `/app` has its own focused header with the logo and wallet button, without the marketing strip or navigation. Only the landing page has the footer. The three standalone pages open with a "Back to home" button.
+The landing page, `/evidence`, and `/proof` share the honesty strip and marketing nav with the wallet button. The nav marks the current marketing route with a hold-colored underline. "How it works" links to `/#how` from every page. `/app` has its own focused header with the logo and wallet button, without the marketing strip or navigation. Only the landing page has the footer. The three standalone pages open with a "Back to home" button.
 
 | Route | Contents |
 |---|---|
@@ -95,6 +95,8 @@ The landing page, `/evidence`, and `/proof` share the honesty strip and marketin
 | `/proof` | Cloned-mainnet run with mint and pool links, devnet program, upgrade authority, signatures, what Holdfill never does. |
 
 Connecting from the wallet picker opens `/app`. Disconnecting while on `/app` returns to `/`. A wallet that reconnects on its own after a refresh never redirects. Landing CTAs open the wallet picker, or open `/app` for a wallet that is already connected. `/order` redirects to `/app` for older links. A direct visit to `/app` without a wallet shows the connect state.
+
+The landing and app explain entitlement, the live pool quote, and the minimum implied by the viewer's limit in plain language. PreStocks' U.S. and U.S.-person restriction appears by the wallet CTAs and before the order interface, with a link to the issuer's eligibility terms. The Jupiter check announces loading, the response time, its cached check time, and refresh errors.
 
 The order section states, in order: not connected, loading, no replica tokens (faucet), holding (ticket), armed, partial, filled, blocked (paused, fee changed, deadline passed, approval removed), revoked banner. Transactions are built by the server, signed in the wallet, and relayed by the server to devnet.
 

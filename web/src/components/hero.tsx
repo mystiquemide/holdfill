@@ -1,7 +1,7 @@
 "use client";
 
 import { day, int, pct, usd, utcTime } from "@/lib/format";
-import { GapBar } from "./gap-bar";
+import { GapBar, GapExplanation } from "./gap-bar";
 import { useLimit, useMarket } from "./providers";
 import { ButtonLink, NetBadge } from "./ui";
 
@@ -27,6 +27,7 @@ export function PreviewCard() {
             entitlementUsd={data.entitlementUsdPerToken.value}
             deadline={{ label: `${day(data.deadline.value.at, true)} 23:59 UTC`, daysLeft: data.deadline.value.daysLeft }}
           />
+          <GapExplanation entitlement={data.quote.value.entitlementSpcxx} limitBps={limitBps} />
           <p className="mt-2 text-xs leading-relaxed text-slate">
             Meteora DLMM quote for 1 raw token (5 shares), pool fee and the 1% issuer transfer fee included. Entitlement in USD is 5 x the PreStocks mark.
           </p>

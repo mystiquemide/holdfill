@@ -74,3 +74,12 @@ export function Chip({ tone, children }: { tone: ChipTone; children: ReactNode }
 export function Source({ children }: { children: ReactNode }) {
   return <p className="mt-1 text-xs leading-relaxed text-slate">{children}</p>;
 }
+
+export function EligibilityNotice({ className = "" }: { className?: string }) {
+  return (
+    <p className={`text-sm leading-relaxed ${className}`}>
+      PreStocks are unavailable in the U.S. and to U.S. persons.{" "}
+      <a href="https://prestocks.com/faq?tab=legal" target="_blank" rel="noreferrer" className="underline underline-offset-4">Issuer eligibility terms</a>.
+    </p>
+  );
+}

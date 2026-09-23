@@ -4,7 +4,7 @@ import { day, explorerAddr, explorerTx, int, num, pct, shortAddr } from "@/lib/f
 import { Logo } from "./logo";
 import { AppEntryButton, HowItWorksLink } from "./chrome";
 import { ProgramAuthority, CopyCommand } from "./proof-live";
-import { ButtonLink, NetBadge, Source } from "./ui";
+import { ButtonLink, EligibilityNotice, NetBadge, Source } from "./ui";
 
 // ---------- How it works ----------
 
@@ -45,7 +45,7 @@ export function RealSale({ data }: { data: CaseStudy }) {
   const later = s.context.firstCloseAtOrUnder20;
   return (
     <div className="flex h-full flex-col rounded-[var(--radius-card)] border border-hairline bg-paper p-5 sm:p-6">
-      <div className="mb-3 flex items-center justify-between gap-2"><h3 className="text-lg">One real sale</h3><NetBadge net="mainnet" /></div>
+      <div className="mb-3 flex items-center justify-between gap-2"><h2 className="text-lg">One real sale</h2><NetBadge net="mainnet" /></div>
       <p className="flex-1 text-lg leading-relaxed">
         On {day(s.date)}, wallet <span className="mono text-[0.9em]">{s.walletShort}</span> sold <span className="num">{int(s.throughPool.shares)}</span> shares through the pool in <span className="num">{s.throughPool.swaps}</span> swaps and received <span className="num">{int(s.throughPool.receivedSpcxx)}</span> SPCXx, <span className="num">{pct(s.throughPool.gapPct)}</span> less than those shares convert into.
         {later && <> The daily close gap first reached 20% on {day(later.date)}, <span className="num">{later.daysLater}</span> days later.</>}
@@ -67,7 +67,7 @@ export function RealDeadline({ data }: { data: CaseStudy }) {
         <Image src="/images/hourglass.jpg" alt="An hourglass with the last dark sand running into the lower glass" fill sizes="(min-width: 768px) 480px, 100vw" className="object-cover" />
       </div>
       <div className="flex flex-col justify-center p-6 sm:p-10">
-        <div className="mb-4 flex items-center justify-between gap-2"><h3 className="text-lg">One real deadline</h3><NetBadge net="mainnet" /></div>
+        <div className="mb-4 flex items-center justify-between gap-2"><h2 className="text-lg">One real deadline</h2><NetBadge net="mainnet" /></div>
         <blockquote className="text-2xl leading-snug tracking-[-0.01em]">&ldquo;{x.issuerTerms.text.replace("xAI was acquired by SpaceX. ", "").replace(", or it will expire worthless.", ".")}&rdquo;</blockquote>
         <p className="mt-3 text-sm text-slate">
           xAI PreStocks terms, <a className="text-ink underline underline-offset-4" href={x.issuerTerms.source} target="_blank" rel="noreferrer">prestocks.com/xai</a>
@@ -160,7 +160,7 @@ export function Proof({ fork, devnetProof }: { fork: ForkProof; devnetProof: Dev
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="rounded-[var(--radius-card)] border border-hairline bg-paper p-5 sm:p-6">
-        <h3 className="text-lg">On cloned mainnet state</h3>
+        <h2 className="text-lg">On cloned mainnet state</h2>
         <p className="mt-1 text-sm text-slate">Real SPACEX mint, real Meteora pool, real 1% transfer fee. Mainnet slot <span className="num">{int(fork.mainnet.slot)}</span>, run {day(fork.ranAt)}.</p>
         <dl className="mt-3 flex flex-col gap-3 text-xs text-slate sm:gap-1">
           {([["SPACEX mint", fork.mints.spacex], ["SPCXx mint", fork.mints.spcxx], ["Meteora pool", fork.pool]] as const).map(([k, a]) => (
@@ -186,7 +186,7 @@ export function Proof({ fork, devnetProof }: { fork: ForkProof; devnetProof: Dev
       </div>
 
       <div className="rounded-[var(--radius-card)] border border-hairline bg-paper p-5 sm:p-6">
-        <div className="flex items-center justify-between gap-2"><h3 className="text-lg">On devnet</h3><NetBadge net="devnet" /></div>
+        <div className="flex items-center justify-between gap-2"><h2 className="text-lg">On devnet</h2><NetBadge net="devnet" /></div>
         <dl className="mt-4 flex flex-col gap-3 text-sm">
           <div className="flex flex-wrap justify-between gap-2">
             <dt className="text-slate">Program</dt>
@@ -271,6 +271,7 @@ export function FinalCta() {
           <span className="block text-paper/75">Holdfill fills it or waits.</span>
         </h2>
         <AppEntryButton variant="light" className="mt-10" />
+        <EligibilityNotice className="mt-3 max-w-md text-paper/80" />
       </div>
     </div>
   );

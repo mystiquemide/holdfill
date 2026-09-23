@@ -3,7 +3,7 @@ import history from "../../../../data/haircut-history.json";
 import type { HistoryDay } from "@/server/backtest";
 import { OrderSection } from "@/components/order";
 import { BackHome } from "@/components/chrome";
-import { SectionHead } from "@/components/ui";
+import { EligibilityNotice, SectionHead } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Your order" };
 
@@ -18,6 +18,7 @@ export default function AppPage() {
         muted="Watch mainnet next to it."
         intro="Orders run against replica SPACEX and SPCXx that copy the mainnet tokens' fee and decimals, on a devnet pool kept in line with the mainnet price. Mainnet balances are read only."
       />
+      <EligibilityNotice className="mb-6 rounded-[14px] bg-cream px-4 py-3 text-ink" />
       <OrderSection history={history.days as HistoryDay[]} />
     </section>
   );

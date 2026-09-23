@@ -7,7 +7,7 @@ import type { Position } from "@/server/position";
 import type { OrderHistory, OrderEvent } from "@/server/orders";
 import { backtest, type HistoryDay } from "@/server/backtest";
 import { daysUntil, day, explainError, explorerTx, num, pct, shortAddr, usd, utcTime } from "@/lib/format";
-import { GapBar } from "./gap-bar";
+import { GapBar, GapExplanation } from "./gap-bar";
 import { Modal, WalletButton } from "./chrome";
 import { useLimit, useMarket, useToasts } from "./providers";
 import { Button, Chip, NetBadge, Source } from "./ui";
@@ -93,12 +93,13 @@ function MarketCard() {
   return (
     <div className="rounded-[var(--radius-card)] border border-hairline bg-paper p-5 sm:p-6">
       <div className="mb-4 flex items-center justify-between gap-2">
-        <h3 className="text-lg">Market</h3>
+        <h2 className="text-lg">Market</h2>
         <NetBadge net="mainnet" />
       </div>
       {data ? (
         <>
           <GapBar entitlement={data.quote.value.entitlementSpcxx} market={data.quote.value.outSpcxx} limitBps={limitBps} />
+          <GapExplanation entitlement={data.quote.value.entitlementSpcxx} limitBps={limitBps} />
           <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-4 text-sm">
             <Fact label="Pool mid gap" value={pct(data.midGapPct.value)} source="active bin price" />
             <Fact label="PreStocks mark" value={usd(data.prestocksMarkUsd.value)} source="per share" />
@@ -136,7 +137,7 @@ function PositionPanel({ history }: { history: HistoryDay[] }) {
 
   const shell = (children: React.ReactNode, badge = true) => (
     <div className="flex h-full flex-col rounded-[var(--radius-card)] border border-hairline bg-paper p-5 sm:p-6">
-      {badge && <div className="mb-4 flex items-center justify-between gap-2"><h3 className="text-lg">Your position</h3><NetBadge net="devnet" /></div>}
+      {badge && <div className="mb-4 flex items-center justify-between gap-2"><h2 className="text-lg">Your position</h2><NetBadge net="devnet" /></div>}
       {children}
     </div>
   );
@@ -289,7 +290,7 @@ function Ticket({ position, history, onDone }: { position: Position; history: Hi
 
   return (
     <div className="rounded-[var(--radius-card)] border border-hairline bg-paper p-5 shadow-[var(--shadow-lift)] sm:p-6">
-      <div className="mb-5 flex items-center justify-between gap-2"><h3 className="text-lg">Order ticket</h3><NetBadge net="devnet" /></div>
+      <div className="mb-5 flex items-center justify-between gap-2"><h2 className="text-lg">Order ticket</h2><NetBadge net="devnet" /></div>
       <p className="text-sm text-slate">You hold <span className="num text-ink">{num(holdShares)}</span> replica shares (<span className="num">{num(position.devnet.replicaSpacex.ui)}</span> raw) and <span className="num">{num(position.devnet.sol, 3)}</span> devnet SOL. Mainnet SPACEX, read only: <span className="num">{num(position.mainnet.spacex.shares ?? 0)}</span> shares.</p>
       {position.devnet.quote && (
         <div className="mt-4 mb-6">
@@ -315,6 +316,7 @@ function Ticket({ position, history, onDone }: { position: Position; history: Hi
           </div>
           <input id="ticket-limit" type="range" min={0} max={60} step={1} value={limitBps / 100} onChange={(e) => setLimitBps(Number(e.target.value) * 100)} className="limit mt-3 w-full" aria-describedby="limit-help" />
           <p id="limit-help" className="mt-2 text-xs leading-relaxed text-slate">
+            A {pct(limitBps / 100, 0)} limit means at least {num(minBefore)} SPCXx per share before your fallback date. The gap is how far the pool payout falls below the issuer&apos;s conversion amount.{" "}
             {gapToday !== undefined && <>Today the devnet pool pays {pct(gapToday)} under. </>}
             {bt.fillDays > 0
               ? <>On mainnet, this limit would have filled on <span className="num text-ink">{bt.fillDays} of {bt.tradingDays}</span> trading days since listing, first on {day(bt.firstFill!.date)}.</>
@@ -449,7 +451,7 @@ function OrderCard({ position, order, onChange, onRevoked }: { position: Positio
   return (
     <div className="rounded-[var(--radius-card)] border border-hairline bg-paper p-5 shadow-[var(--shadow-lift)] sm:p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-3"><h3 className="text-lg">Your order</h3><Chip tone={tone}>{tone}</Chip></div>
+        <div className="flex items-center gap-3"><h2 className="text-lg">Your order</h2><Chip tone={tone}>{tone}</Chip></div>
         <NetBadge net="devnet" />
       </div>
 
@@ -519,7 +521,7 @@ function Stat({ label, value, unit, tone }: { label: string; value: string; unit
 function Activity({ events }: { events: OrderEvent[] }) {
   return (
     <div className="rounded-[var(--radius-card)] border border-hairline bg-paper p-5 sm:p-6">
-      <div className="mb-3 flex items-center justify-between gap-2"><h3 className="text-lg">Activity</h3><NetBadge net="devnet" /></div>
+      <div className="mb-3 flex items-center justify-between gap-2"><h2 className="text-lg">Activity</h2><NetBadge net="devnet" /></div>
       {events.length === 0 ? (
         <p className="text-sm text-slate">No activity yet. The keeper&apos;s first check runs within 10 seconds of signing.</p>
       ) : (

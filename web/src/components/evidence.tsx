@@ -52,7 +52,7 @@ export function GapHistory({ days, unlocks }: { days: HistoryDay[]; unlocks: Unl
     <div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h3 className="text-2xl tracking-[-0.01em]">The gap since listing</h3>
+          <h2 className="text-2xl tracking-[-0.01em]">The gap since listing</h2>
           <p className="mt-1 text-sm text-slate">Daily closes on the Meteora pool, priced in SPCXx. Drag your limit.</p>
         </div>
         <NetBadge net="mainnet" />
@@ -63,6 +63,7 @@ export function GapHistory({ days, unlocks }: { days: HistoryDay[]; unlocks: Unl
         <input id="chart-limit" type="range" min={0} max={45} step={1} value={limitPct} onChange={(e) => setLimitBps(Number(e.target.value) * 100)} className="limit w-full max-w-sm" />
         <span className="num w-12 text-right text-lg">{pct(limitPct, 0)}</span>
       </div>
+      <p className="mt-2 text-sm text-slate">On this chart, a {pct(limitPct, 0)} limit includes days when the pool&apos;s closing price was at most {pct(limitPct, 0)} below the issuer&apos;s conversion amount. A real order checks a live quote with fees.</p>
 
       <div ref={ref} className="relative mt-4 w-full">
         {width > 0 && (
@@ -145,12 +146,14 @@ type JupiterResult = {
 export function JupiterCheck() {
   const [data, setData] = useState<JupiterResult | null>(null);
   const [state, setState] = useState<"idle" | "running" | "error">("running");
+  const [receivedAt, setReceivedAt] = useState<string | null>(null);
 
   const load = async () => {
     try {
       const res = await fetch("/api/jupiter-check", { cache: "no-store" });
       if (!res.ok) throw new Error();
       setData(await res.json());
+      setReceivedAt(new Date().toISOString());
       setState("idle");
     } catch {
       setState("error");
@@ -164,7 +167,7 @@ export function JupiterCheck() {
 
   return (
     <div className="flex h-full flex-col rounded-[var(--radius-card)] border border-hairline bg-paper p-5 sm:p-6">
-      <div className="mb-3 flex items-center justify-between gap-2"><h3 className="text-lg">Jupiter limit orders refuse PreStocks</h3><NetBadge net="mainnet" /></div>
+      <div className="mb-3 flex items-center justify-between gap-2"><h2 className="text-lg">Jupiter limit orders refuse PreStocks</h2><NetBadge net="mainnet" /></div>
       <p className="text-sm text-slate">We ask Jupiter&apos;s limit order API to create a SPACEX order, live, and the same order for SPCXx as a control.</p>
       <div className="mono mt-4 flex-1 break-all rounded-[14px] bg-vellum p-4 text-xs leading-relaxed">
         {data ? (
@@ -180,7 +183,12 @@ export function JupiterCheck() {
           <p className="text-slate">Asking Jupiter...</p>
         )}
       </div>
-      <div className="mt-4"><Button variant="secondary" onClick={run} disabled={state === "running"}>{state === "running" ? "Checking..." : "Run the check again"}</Button></div>
+      <div className="mt-4"><Button variant="secondary" onClick={run} disabled={state === "running"} aria-describedby="jupiter-check-status">{state === "running" ? "Checking..." : "Run the check again"}</Button></div>
+      <p id="jupiter-check-status" role="status" className={`mt-3 min-h-5 text-sm ${state === "error" ? "text-deadline" : "text-slate"}`}>
+        {state === "running" ? "Checking Jupiter now..." : state === "error"
+          ? data ? `Couldn't refresh the check. Last Jupiter result: ${utcTime(data.checkedAt)}.` : "Couldn't reach Jupiter. Try again."
+          : data && receivedAt ? `Response received ${utcTime(receivedAt)}. Jupiter last checked ${utcTime(data.checkedAt)}. Results may be cached for up to 60 seconds.` : ""}
+      </p>
     </div>
   );
 }

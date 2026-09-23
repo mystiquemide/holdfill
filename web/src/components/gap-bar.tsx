@@ -45,6 +45,15 @@ export function GapBar({ entitlement, market, limitBps, entitlementUsd, deadline
   );
 }
 
+export function GapExplanation({ entitlement, limitBps }: { entitlement: number; limitBps: number }) {
+  const minimum = entitlement * (1 - limitBps / 10_000);
+  return (
+    <p className="mt-3 text-sm leading-relaxed text-slate">
+      Entitlement is the issuer&apos;s conversion amount: <span className="num text-ink">{num(entitlement)}</span> SPCXx for one raw SPACEX token. Pool pays is the current sale quote after fees. A <span className="num text-ink">{pct(limitBps / 100, 0)}</span> limit waits for at least <span className="num text-ink">{num(minimum)}</span> SPCXx per raw token before the fallback date.
+    </p>
+  );
+}
+
 function Row({ label, value, right }: { label: string; value: React.ReactNode; right?: React.ReactNode }) {
   return (
     <div className="flex flex-wrap items-baseline gap-x-4 gap-y-0.5 border-b border-hairline py-2 last:border-b-0">

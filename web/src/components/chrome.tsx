@@ -7,7 +7,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletReadyState, type WalletName } from "@solana/wallet-adapter-base";
 import { shortAddr } from "@/lib/format";
 import { useConnectIntent } from "./providers";
-import { Button } from "./ui";
+import { Button, EligibilityNotice } from "./ui";
 import { Logo } from "./logo";
 
 const NAV = [
@@ -15,42 +15,12 @@ const NAV = [
   { href: "/proof", label: "Proof" },
 ];
 
-// "How it works" is a section of the landing page. It scrolls there without putting a # in the URL.
-let pendingSection: string | null = null;
-
 export function HowItWorksLink({ className = "", onNavigate }: { className?: string; onNavigate?: () => void }) {
-  const pathname = usePathname();
-  const router = useRouter();
   return (
-    <Link
-      href="/"
-      className={className}
-      onClick={(e) => {
-        onNavigate?.();
-        if (pathname === "/") {
-          e.preventDefault();
-          document.getElementById("how")?.scrollIntoView({ behavior: "smooth" });
-          return;
-        }
-        e.preventDefault();
-        pendingSection = "how";
-        router.push("/");
-      }}
-    >
+    <Link href="/#how" className={className} onClick={onNavigate}>
       How it works
     </Link>
   );
-}
-
-/** On the landing page, finishes a "How it works" click that started on another page. */
-export function PendingSectionScroll() {
-  useEffect(() => {
-    if (!pendingSection) return;
-    const id = pendingSection;
-    pendingSection = null;
-    requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }));
-  }, []);
-  return null;
 }
 
 const KNOWN_WALLETS = [
@@ -241,6 +211,7 @@ function WalletPicker({ onClose }: { onClose: () => void }) {
   return (
     <Modal title="Connect a wallet" onClose={onClose}>
       <p className="text-sm text-slate">Holdfill asks your wallet to sign. It never sees your keys, and orders run on devnet.</p>
+      <EligibilityNotice className="mt-3 text-slate" />
       <ul className="mt-5 flex flex-col gap-2">
         {detected.map((w) => (
           <li key={w.adapter.name}>

@@ -3,10 +3,10 @@ import history from "../../../data/haircut-history.json";
 import forkProof from "../../../data/proof-fork.json";
 import devnetProof from "../../../data/proof-devnet.json";
 import { backtest, type HistoryDay } from "@/server/backtest";
-import { AppEntryButton, PendingSectionScroll } from "@/components/chrome";
+import { AppEntryButton } from "@/components/chrome";
 import { EvidencePreview, PreviewCard } from "@/components/hero";
 import { Compared, FinalCta, HowItWorks, ProofPreview } from "@/components/sections";
-import { SectionHead } from "@/components/ui";
+import { EligibilityNotice, SectionHead } from "@/components/ui";
 
 // The landing page introduces Holdfill. The app, full evidence, and full proof live on
 // /app, /evidence, and /proof.
@@ -15,7 +15,6 @@ const at20 = backtest(history.days as HistoryDay[], 2000);
 export default function Home() {
   return (
     <>
-      <PendingSectionScroll />
       <section id="top" className="px-3 pt-3 sm:px-4 sm:pt-4">
         <div className="relative mx-auto max-w-[1440px] overflow-hidden rounded-[var(--radius-card-lg)]">
           <Image
@@ -38,6 +37,7 @@ export default function Home() {
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
               <AppEntryButton />
             </div>
+            <EligibilityNotice className="mt-3 max-w-md text-ink" />
             <div className="mt-14 w-full max-w-3xl text-left sm:mt-20">
               <PreviewCard />
             </div>
