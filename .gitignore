@@ -1,0 +1,35 @@
+# Dependencies and builds
+node_modules/
+.next/
+out/
+target/
+.anchor/
+test-ledger/
+.surfpool/
+*.tsbuildinfo
+next-env.d.ts
+
+# Secrets: env files and keypairs never enter the repo
+.env
+.env.*
+!.env.example
+*-keypair.json
+keys/
+id.json
+
+# Internal working documents (kept locally, never published)
+memory.md
+AGENTS.md
+CLAUDE.md
+docs/PRD.md
+docs/PRD.docx
+docs/TASKS.md
+web/AGENTS.md
+web/CLAUDE.md
+
+# OS and editor
+.DS_Store
+*.rs.bk
+.vscode/
+.idea/
+*.log

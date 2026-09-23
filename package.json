@@ -1,0 +1,15 @@
+{
+  "name": "holdfill",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build:program": "anchor build",
+    "test:program": "cargo test -p holdfill_orders",
+    "build:web": "npm --prefix web run build",
+    "dev:web": "npm --prefix web run dev"
+  }
+}
