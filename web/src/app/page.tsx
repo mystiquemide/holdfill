@@ -6,7 +6,7 @@ import { backtest, type HistoryDay } from "@/server/backtest";
 import { AppEntryButton } from "@/components/chrome";
 import { EvidencePreview, PreviewCard } from "@/components/hero";
 import { Compared, FinalCta, HowItWorks, ProofPreview } from "@/components/sections";
-import { EligibilityNotice, SectionHead } from "@/components/ui";
+import { ButtonLink, DemoBadge, EligibilityNotice, SectionHead } from "@/components/ui";
 
 // The landing page introduces Holdfill. The app, full evidence, and full proof live on
 // /app, /evidence, and /proof.
@@ -32,10 +32,11 @@ export default function Home() {
               <span className="block text-[#4a4a4a]">Fill before the deadline.</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink">
-              Set your price once. Holdfill converts your SpaceX PreStocks into SPCXx when the pool pays it, never below your terms and never after 12 Mar 2027.
+              Set your price once. Holdfill waits to convert SpaceX PreStocks into SPCXx at your terms. This demo executes with devnet replicas; the market snapshot uses live mainnet data.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-              <AppEntryButton />
+              <div className="flex items-center gap-2"><AppEntryButton /><DemoBadge /></div>
+              <ButtonLink href="/demo" variant="secondary">Watch demo</ButtonLink>
             </div>
             <EligibilityNotice className="mt-3 max-w-md text-ink" />
             <div className="mt-14 w-full max-w-3xl text-left sm:mt-20">
@@ -45,7 +46,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="how" className="mx-auto max-w-[1200px] scroll-mt-20 px-4 pt-24 md:px-6">
+      <section className="mx-auto max-w-[1200px] px-4 pt-24 md:px-6">
         <SectionHead label="How it works" title="One signature. Your terms. The program enforces them." />
         <HowItWorks />
       </section>
@@ -57,7 +58,7 @@ export default function Home() {
 
       <section className="mx-auto max-w-[1200px] px-4 pt-24 md:px-6">
         <SectionHead label="Compared" title="What a holder can do today." />
-        <Compared compact />
+        <Compared />
       </section>
 
       <section className="mx-auto max-w-[1200px] px-4 pt-24 md:px-6">

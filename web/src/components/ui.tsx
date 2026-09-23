@@ -9,6 +9,10 @@ export function NetBadge({ net }: { net: "mainnet" | "devnet" }) {
   );
 }
 
+export function DemoBadge() {
+  return <span className="inline-flex h-6 shrink-0 items-center rounded-full bg-cream px-2.5 text-xs uppercase tracking-[0.06em] text-hold">Devnet demo</span>;
+}
+
 const variants = {
   primary: "bg-ink text-paper hover:bg-black disabled:bg-[#bdbdbd]",
   secondary: "bg-vellum text-ink hover:bg-hairline disabled:text-slate",
@@ -78,8 +82,8 @@ export function Source({ children }: { children: ReactNode }) {
 export function EligibilityNotice({ className = "" }: { className?: string }) {
   return (
     <p className={`text-sm leading-relaxed ${className}`}>
-      PreStocks are unavailable in the U.S. and to U.S. persons.{" "}
-      <a href="https://prestocks.com/faq?tab=legal" target="_blank" rel="noreferrer" className="underline underline-offset-4">Issuer eligibility terms</a>.
+      PreStocks provide economic exposure, not ownership rights, and secondary-market liquidity is not guaranteed. They are unavailable in the U.S. and to U.S. persons.{" "}
+      <a href="https://prestocks.com/faq?tab=legal" target="_blank" rel="noreferrer" className="underline underline-offset-4">Issuer terms</a>.
     </p>
   );
 }

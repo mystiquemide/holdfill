@@ -71,7 +71,7 @@ export function StatsRow() {
   );
 }
 
-/** Landing-page summary of the evidence: live gap, historical fill rate, and the Jupiter refusal. */
+/** Landing-page summary of the evidence: live gap, historical fill rate, and the scoped V1 test. */
 export function EvidencePreview({ fillDays, tradingDays, firstFill }: { fillDays: number; tradingDays: number; firstFill: string | null }) {
   const { data } = useMarket();
   const facts = [
@@ -86,9 +86,9 @@ export function EvidencePreview({ fillDays, tradingDays, firstFill }: { fillDays
       source: firstFill ? `Daily closes since listing, first on ${day(firstFill)}` : "Daily closes since listing",
     },
     {
-      value: "Refused",
-      label: "Jupiter limit orders for PreStocks",
-      source: "The API rejects the token's transfer fee. Checked live on the evidence page.",
+      value: "V1 test",
+      label: "Jupiter Trigger V1 order for SPACEX",
+      source: "See the live response on Evidence. V2 price orders have not been tested for this mint.",
     },
   ];
   return (

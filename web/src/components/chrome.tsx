@@ -7,21 +7,14 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletReadyState, type WalletName } from "@solana/wallet-adapter-base";
 import { shortAddr } from "@/lib/format";
 import { useConnectIntent } from "./providers";
-import { Button, EligibilityNotice } from "./ui";
+import { Button, DemoBadge, EligibilityNotice } from "./ui";
 import { Logo } from "./logo";
 
 const NAV = [
+  { href: "/how", label: "How it works" },
   { href: "/evidence", label: "Evidence" },
   { href: "/proof", label: "Proof" },
 ];
-
-export function HowItWorksLink({ className = "", onNavigate }: { className?: string; onNavigate?: () => void }) {
-  return (
-    <Link href="/#how" className={className} onClick={onNavigate}>
-      How it works
-    </Link>
-  );
-}
 
 const KNOWN_WALLETS = [
   { name: "Phantom", url: "https://phantom.com/download" },
@@ -34,7 +27,7 @@ export function LandingOnly({ children }: { children: React.ReactNode }) {
   return usePathname() === "/" ? <>{children}</> : null;
 }
 
-/** Link back to the landing page, at the top of /app, /evidence, and /proof. */
+/** Link back to the landing page from standalone routes. */
 export function BackHome() {
   return (
     <Link href="/" className="inline-flex h-10 items-center gap-2 rounded-full bg-vellum px-4 text-sm font-medium text-ink transition-colors duration-150 hover:bg-hairline">
@@ -69,7 +62,7 @@ export function Header() {
 
   return (
     <>
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-paper">Skip to content</a>
+      <button type="button" onClick={() => document.getElementById("main")?.focus()} className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-paper">Skip to content</button>
       {!isApp && <div className="bg-cream">
         <div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-center text-[13px] text-ink sm:text-sm">
           <span>Orders run on devnet replicas. Market data is live mainnet.</span>
@@ -81,7 +74,6 @@ export function Header() {
           <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-4 md:px-6">
             <Link href="/" aria-label="Holdfill home"><Logo /></Link>
             {!isApp && <ul className="hidden items-center gap-6 text-sm lg:flex">
-              <li><HowItWorksLink className="inline-block py-3 text-ink underline-offset-8 hover:underline" /></li>
               {NAV.map((n) => (
                 <li key={n.href}>
                   <Link
@@ -110,7 +102,6 @@ export function Header() {
           {!isApp && menu && (
             <div id="mobile-menu" className="border-t border-hairline bg-paper px-4 py-3 lg:hidden">
               <ul className="flex flex-col">
-                <li><HowItWorksLink onNavigate={() => setMenu(false)} className="block rounded-[14px] px-3 py-3 text-base text-ink hover:bg-vellum" /></li>
                 {NAV.map((n) => (
                   <li key={n.href}>
                     <Link
@@ -210,6 +201,7 @@ function WalletPicker({ onClose }: { onClose: () => void }) {
 
   return (
     <Modal title="Connect a wallet" onClose={onClose}>
+      <div className="mb-3"><DemoBadge /></div>
       <p className="text-sm text-slate">Holdfill asks your wallet to sign. It never sees your keys, and orders run on devnet.</p>
       <EligibilityNotice className="mt-3 text-slate" />
       <ul className="mt-5 flex flex-col gap-2">

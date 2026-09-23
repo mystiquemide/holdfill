@@ -21,7 +21,7 @@ export default function EvidencePage() {
       <section className="mx-auto max-w-[1200px] px-4 pt-16 pb-24 md:px-6">
         <GapHistory days={history.days as HistoryDay[]} unlocks={history.unlocks.dates} />
         <div className="mt-10 grid gap-6 lg:grid-cols-2 [&>*]:min-w-0">
-          <div id="jupiter" className="scroll-mt-20"><JupiterCheck /></div>
+          <div><JupiterCheck /></div>
           <RealSale data={caseStudy} />
         </div>
         <div className="mt-6"><RealDeadline data={caseStudy} /></div>

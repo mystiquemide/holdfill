@@ -1,6 +1,6 @@
 # Holdfill architecture
 
-Version 1.0, 23 September 2026. Status: awaiting approval.
+Version 1.0, 23 September 2026. Status: implemented devnet demo.
 
 ## 1. System overview
 
@@ -19,7 +19,7 @@ flowchart LR
     OA[(Order PDA)]
   end
   subgraph Offchain
-    WEB[Next.js app on Vercel]
+    WEB[Next.js web app]
     API[API routes]
     KEEP[Keeper worker]
     SYNC[Price sync script]
@@ -46,7 +46,7 @@ Two networks, one rule: mainnet is only read, devnet is where orders execute. Ev
 | Component | Runtime | Responsibility |
 |---|---|---|
 | `programs/holdfill_orders` | Solana program, Anchor 1.2.0 | Stores order terms. Enforces limit, fallback, issuer deadline, size cap, fee and pause state. Executes the swap as delegate via CPI into Meteora DLMM `swap2`. |
-| `web/` | Next.js 16.3.6, React 19.2, Tailwind v4, Vercel | App Router pages: `/` (introduction), `/app` (the order app), `/evidence`, `/proof`; `/order` redirects to `/app`. Wallet connect opens the app. The server builds order and revoke transactions; the wallet signs; the server relays to devnet. |
+| `web/` | Next.js 16.3.6, React 19.2, Tailwind v4 | App Router pages: `/` (introduction), `/how`, `/demo` (wallet-free proof walkthrough), `/app` (the order app), `/evidence`, `/proof`; `/order` redirects to `/app`. Wallet connect opens the app. The server builds order and revoke transactions; the wallet signs; the server relays to devnet. |
 | `web/src/app/api/*` | Next.js route handlers (Node runtime) | Mainnet reads, history, backtest, faucet, keeper tick. Server-only keys. |
 | `keeper/` | Node 22 worker, same code as the tick route | Polls active orders, quotes the pool, calls `execute` when the order's minimum is reachable. |
 | `scripts/sync-devnet-price.ts` | Node 22 script, run on demand | Moves the devnet pool price to the live mainnet SPACEX/SPCXx price by trading issuer inventory. Run after setup, before recording, and before deploy. |
@@ -66,7 +66,7 @@ Two networks, one rule: mainnet is only read, devnet is where orders execute. Ev
 | Pool | `5XhZb6WKSu5cDMwGCV7qv7DTLPqcYMRnjZkeXn9fjLzM`, bin step 10, preset `4vP4DFDJLRz85NBCfJALYPNdieWwzQSstrUuTms1gekn`. Pool fee 10% (every devnet preset) vs 5% on the mainnet pool. |
 | Seed liquidity | 7 Spot positions: 600 SPCXx from -20% to the active bin, 150 SPACEX from the active bin to +15%. |
 | Price matching | `scripts/sync-devnet-price.ts` matches the executable quote for 0.1 raw SPACEX (fees included), not the mid price, so the devnet gap equals the mainnet gap despite the fee difference. |
-| Gate G1 | Primary path: `createLbPair2` with an existing bin step 10 `PresetParameter2` on devnet (4 exist, checked 23 Sep). If it rejects the replica mints for missing token badges, recreate replicas without PermanentDelegate and Pausable; transfer fee and multiplier must stay. If the preset path fails for any other reason, use `createCustomizablePermissionlessLbPair2`, which takes bin step and fee directly and needs no preset account. Record the path taken in memory.md. |
+| Gate G1 | Passed with `createLbPair2` and a bin step 10 `PresetParameter2`. Probe runs showed which mint extensions the permissionless pool rejects. The selected replicas keep the 1% transfer fee; the fork proof covers the real mint with its additional extensions. |
 
 ## 4. Order program
 
@@ -133,11 +133,7 @@ PDA seeds: `["order", owner, input_mint]`. One active order per holder per token
 
 ### 4.5 Gate G2 (first program task): passed 23 Sep 2026
 
-`npm run test:local` (tests/program-local.ts) against a local validator that clones the devnet market: 13 of 13 checks pass. The order PDA signs DLMM `swap2` through CPI as the holder's delegate; substituted token program, host fee account, wrong reserve, overfill, below-minimum fill, and fill after revoke are all rejected. Results in `data/program-local.json`.
-
-Original gate definition:
-
-The fork test proved a keypair delegate can swap from the owner's account. G2 proves the same with the order PDA signing through CPI. Test on a local validator that clones the devnet DLMM program and the replica pool. If DLMM rejects a PDA signer, fallback: keeper signs the swap as delegate inside the same transaction, and the program checks input and output deltas in a following instruction using instruction introspection. The on-chain minimum stays enforced by the program either way.
+`npm run test:local` (tests/program-local.ts) against a local validator that clones the devnet market: 20 of 20 checks pass. The order PDA signs DLMM `swap2` through CPI as the holder's delegate; substituted token program, host fee account, wrong reserve, overfill, below-minimum fill, and fill after revoke are all rejected. Results are in `data/program-local.json`.
 
 ## 5. Keeper
 
@@ -146,6 +142,7 @@ The fork test proved a keypair delegate can swap from the owner's account. G2 pr
 - Build the DLMM `swap2` instruction with the SDK using `user = owner`, take its accounts and `remaining_accounts_info`, and call `execute` with those accounts. No token accounts belong to the keeper.
 - Retry on blockhash expiry once. Log every attempt with order, amount, quoted out, required, result, signature.
 - The same `tick()` function is exported to `POST /api/keeper/tick` so the app can trigger a check. Anyone can crank because the program enforces the terms.
+- If the worker stops, the on-chain order remains open and the holder's tokens remain in their wallet. No fill happens until a keeper or other caller submits `execute`. The app's manual check path can prompt another attempt.
 
 ## 6. Price sync script
 
@@ -180,7 +177,7 @@ All return JSON with `network` and `asOf` fields.
 | `/api/program` | GET | Program id and current upgrade authority, read from the ProgramData account | Helius devnet |
 | `/api/faucet` | POST `{owner}` | Mints 1 replica SPACEX to a devnet wallet. One per wallet per hour, 20 per hour global. | issuer keypair, devnet |
 | `/api/keeper/tick` | POST | Runs one keeper pass, returns attempts | keeper lib |
-| `/api/jupiter-check` | GET | Live Jupiter Trigger response for the SPACEX mint | Jupiter Trigger API |
+| `/api/jupiter-check` | GET | Live Trigger V1 create-order response for the SPACEX mint and an SPCXx control; does not establish V2 compatibility | Jupiter Trigger V1 API |
 
 ## 8. Data model off chain
 

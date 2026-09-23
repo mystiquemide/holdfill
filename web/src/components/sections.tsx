@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { day, explorerAddr, explorerTx, int, num, pct, shortAddr } from "@/lib/format";
 import { Logo } from "./logo";
-import { AppEntryButton, HowItWorksLink } from "./chrome";
+import { AppEntryButton } from "./chrome";
 import { ProgramAuthority, CopyCommand } from "./proof-live";
 import { ButtonLink, EligibilityNotice, NetBadge, Source } from "./ui";
 
@@ -83,58 +83,57 @@ export function RealDeadline({ data }: { data: CaseStudy }) {
 
 // ---------- Compared ----------
 
-const ROWS: [string, string, string, string][] = [
-  ["Waits for your price", "Yes", "No", "Refused for PreStocks"],
-  ["Minimum checked on chain", "Yes, on every fill", "Slippage setting only", "Not available"],
-  ["Tokens stay in your wallet", "Yes, until the fill", "No", "Not available"],
-  ["Handles the 12 Mar 2027 deadline", "Fallback floor", "Yes, by selling today", "Not available"],
-  ["Stop anytime", "Revoke, one transaction", "Nothing to stop", "Not available"],
-  ["Cost", "Network fees and a refundable account deposit", "Network fees", "Not available"],
+const ROWS: [string, string, string, string, string][] = [
+  ["Where tokens wait", "In your wallet until fill", "Sold immediately", "In a Privy-managed vault", "In DLMM pool bins"],
+  ["Minimum output", "Fixed floor enforced by the program", "Swap quote and slippage bound", "V2 derives a floor; output can vary", "Bin price; net output for this mint unverified"],
+  ["SPACEX transfer fee", "1% tested on cloned mainnet state", "Included in the live quote", "V1 checked live on Evidence; V2 untested", "Exact pool limit-order handling unverified"],
+  ["Cancel or reclaim", "Revoke approval and close order", "Already sold", "Cancel, then withdraw from vault", "Cancel and withdraw remaining deposit"],
+  ["Issuer deadline", "Fallback floor and hard cutoff", "Sells today", "Order expiry; no issuer-specific fallback shown", "Issuer deadline handling unverified"],
 ];
 
-// The landing page shows these four; no other page repeats the comparison.
-const COMPACT = new Set(["Waits for your price", "Minimum checked on chain", "Tokens stay in your wallet", "Cost"]);
-
-export function Compared({ compact = false }: { compact?: boolean }) {
-  const refused = (c: string) => (c === "Refused for PreStocks" ? <Link className="tap text-deadline underline underline-offset-4" href="/evidence#jupiter">{c}</Link> : c);
-  const rows = compact ? ROWS.filter(([k]) => COMPACT.has(k)) : ROWS;
+export function Compared() {
   return (
     <>
-      {/* Phones: one block per question, Holdfill first. */}
-      <ul className="flex flex-col gap-3 md:hidden">
-        {rows.map(([k, a, b, c]) => (
+      <ul className="flex flex-col gap-3 xl:hidden">
+        {ROWS.map(([k, a, b, c, d]) => (
           <li key={k} className="rounded-[var(--radius-card)] border border-hairline p-4">
             <p className="text-base">{k}</p>
             <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
-              <dt className="text-slate">Holdfill</dt><dd>{a}</dd>
+              <dt className="text-slate">Holdfill demo</dt><dd>{a}</dd>
               <dt className="text-slate">Sell now</dt><dd className="text-slate">{b}</dd>
-              <dt className="text-slate">Jupiter</dt><dd className="text-slate">{refused(c)}</dd>
+              <dt className="text-slate">Jupiter V2</dt><dd className="text-slate">{c}</dd>
+              <dt className="text-slate">Meteora</dt><dd className="text-slate">{d}</dd>
             </dl>
           </li>
         ))}
       </ul>
-      <div className="hidden overflow-x-auto rounded-[var(--radius-card-lg)] border border-hairline md:block">
-        <table className="w-full min-w-[640px] text-left text-[15px]">
+      <div className="hidden overflow-x-auto rounded-[var(--radius-card-lg)] border border-hairline xl:block">
+        <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-hairline">
-              <th className="w-[34%] p-4 font-normal text-slate sm:p-5"><span className="sr-only">Feature</span></th>
-              <th className="bg-vellum p-4 font-normal sm:p-5"><Logo /></th>
-              <th className="p-4 font-normal text-slate sm:p-5">Sell on the pool now</th>
-              <th className="p-4 font-normal text-slate sm:p-5">Jupiter limit order</th>
+              <th className="w-[18%] p-4 font-normal text-slate"><span className="sr-only">Feature</span></th>
+              <th className="w-[20%] bg-vellum p-4 font-normal"><Logo /></th>
+              <th className="w-[20%] p-4 font-normal text-slate">Sell on the pool now</th>
+              <th className="w-[21%] p-4 font-normal text-slate">Jupiter Trigger V2</th>
+              <th className="w-[21%] p-4 font-normal text-slate">Meteora DLMM limit order</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-hairline">
-            {rows.map(([k, a, b, c]) => (
+            {ROWS.map(([k, a, b, c, d]) => (
               <tr key={k}>
-                <th scope="row" className="p-4 font-normal sm:p-5">{k}</th>
-                <td className="bg-vellum p-4 sm:p-5">{a}</td>
-                <td className="p-4 text-slate sm:p-5">{b}</td>
-                <td className="p-4 text-slate sm:p-5">{refused(c)}</td>
+                <th scope="row" className="p-4 font-normal">{k}</th>
+                <td className="bg-vellum p-4">{a}</td>
+                <td className="p-4 text-slate">{b}</td>
+                <td className="p-4 text-slate">{c}</td>
+                <td className="p-4 text-slate">{d}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <p className="mt-4 text-xs leading-relaxed text-slate">
+        Holdfill executes on devnet replicas; its real-mint fee and minimum tests run on cloned mainnet state. The <Link href="/evidence" className="text-ink underline underline-offset-4">live Jupiter check</Link> covers Trigger V1 only. Jupiter V2 custody, output, and expiry come from its <a href="https://developers.jup.ag/docs/trigger" target="_blank" rel="noreferrer" className="text-ink underline underline-offset-4">current docs</a>. Meteora bin deposits and cancellation come from its <a href="https://github.com/MeteoraAg/docs/blob/main/developer-guides/dlmm/typescript-sdk/examples.mdx" target="_blank" rel="noreferrer" className="text-ink underline underline-offset-4">SDK examples</a>. An SPACEX limit order on the <a href="https://www.meteora.ag/dlmm/F9oJK3UC6bLVcAoYEZPHNteZACb7YzdZw7FHad4KFC6B" target="_blank" rel="noreferrer" className="text-ink underline underline-offset-4">exact Meteora pool</a> has not been executed here.
+      </p>
     </>
   );
 }
@@ -288,7 +287,7 @@ export function Footer() {
         <nav aria-label="Product" className="text-sm">
           <p className="text-slate">Product</p>
           <ul className="mt-1 flex flex-col">
-            <li><HowItWorksLink className="inline-block py-2.5 underline-offset-4 hover:underline" /></li>
+            <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/how">How it works</Link></li>
             <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/evidence">Evidence</Link></li>
             <li><Link className="inline-block py-2.5 underline-offset-4 hover:underline" href="/proof">Proof</Link></li>
           </ul>

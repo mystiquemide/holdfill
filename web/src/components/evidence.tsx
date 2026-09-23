@@ -167,14 +167,14 @@ export function JupiterCheck() {
 
   return (
     <div className="flex h-full flex-col rounded-[var(--radius-card)] border border-hairline bg-paper p-5 sm:p-6">
-      <div className="mb-3 flex items-center justify-between gap-2"><h2 className="text-lg">Jupiter limit orders refuse PreStocks</h2><NetBadge net="mainnet" /></div>
-      <p className="text-sm text-slate">We ask Jupiter&apos;s limit order API to create a SPACEX order, live, and the same order for SPCXx as a control.</p>
+      <div className="mb-3 flex items-center justify-between gap-2"><h2 className="text-lg">Jupiter Trigger V1: SPACEX check</h2><NetBadge net="mainnet" /></div>
+      <p className="text-sm text-slate">This live check asks Trigger V1 to create a SPACEX order and uses SPCXx as a control. It does not test Jupiter&apos;s current V2 price-order flow.</p>
       <div className="mono mt-4 flex-1 break-all rounded-[14px] bg-vellum p-4 text-xs leading-relaxed">
         {data ? (
           <>
             <p className="text-slate">POST {data.endpoint.replace("https://", "")}</p>
-            <p className="mt-2 break-words text-deadline">SPACEX: HTTP {data.prestocks.httpStatus}, &quot;{data.prestocks.response?.error?.replace("unable to validate create order request: ", "") ?? "refused"}&quot;</p>
-            <p className="mt-2 text-fill">SPCXx control: HTTP {data.control.httpStatus}, {data.control.accepted ? "accepted" : "refused"}</p>
+            <p className="mt-2 break-words text-deadline">SPACEX V1: HTTP {data.prestocks.httpStatus}, &quot;{data.prestocks.response?.error?.replace("unable to validate create order request: ", "") ?? "refused"}&quot;</p>
+            <p className="mt-2 text-fill">SPCXx V1 control: HTTP {data.control.httpStatus}, {data.control.accepted ? "accepted" : "refused"}</p>
             <p className="mt-2 text-slate">Checked {utcTime(data.checkedAt)}</p>
           </>
         ) : state === "error" ? (
@@ -189,6 +189,7 @@ export function JupiterCheck() {
           ? data ? `Couldn't refresh the check. Last Jupiter result: ${utcTime(data.checkedAt)}.` : "Couldn't reach Jupiter. Try again."
           : data && receivedAt ? `Response received ${utcTime(receivedAt)}. Jupiter last checked ${utcTime(data.checkedAt)}. Results may be cached for up to 60 seconds.` : ""}
       </p>
+      <p className="mt-2 text-xs text-slate">Jupiter focuses new development on <a href="https://developers.jup.ag/docs/trigger" target="_blank" rel="noreferrer" className="text-ink underline underline-offset-4">Trigger V2</a>. SPACEX compatibility in V2 remains unverified here.</p>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { explorerAddr, shortAddr, utcTime } from "@/lib/format";
 
 type ProgramState = { upgradeAuthority: string | null; asOf: string };
+const DEMO_ISSUER = "12fN9mtc7x93AyTCpwzLUDPdu2k5h5YswfNigayAYzDg";
 
 /** The program's upgrade authority, read live from its ProgramData account on devnet. */
 export function ProgramAuthority() {
@@ -19,7 +20,7 @@ export function ProgramAuthority() {
       <dd className="text-right">
         {data ? (
           data.upgradeAuthority ? (
-            <><a className="tap mono underline underline-offset-4" href={explorerAddr(data.upgradeAuthority, "devnet")} target="_blank" rel="noreferrer">{shortAddr(data.upgradeAuthority)}</a><span className="block text-xs text-slate">can upgrade the program, read {utcTime(data.asOf)}</span></>
+            <><a className="tap mono underline underline-offset-4" href={explorerAddr(data.upgradeAuthority, "devnet")} target="_blank" rel="noreferrer">{shortAddr(data.upgradeAuthority)}</a><span className="block text-xs text-slate">Program is upgradeable. {data.upgradeAuthority === DEMO_ISSUER ? "Holdfill's devnet demo issuer key controls upgrades." : "The linked authority controls upgrades."} Read {utcTime(data.asOf)}</span></>
           ) : (
             <>None, the program can no longer change<span className="block text-xs text-slate">read {utcTime(data.asOf)}</span></>
           )
