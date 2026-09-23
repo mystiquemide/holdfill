@@ -206,7 +206,7 @@ export function Proof({ fork, devnetProof }: { fork: ForkProof; devnetProof: Dev
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="rounded-[var(--radius-card)] border border-hairline bg-paper p-5 sm:p-6">
         <h2 className="text-lg">On cloned mainnet state</h2>
-        <p className="mt-1 text-sm text-slate">Real SPACEX mint, real Meteora pool, real 1% transfer fee. Mainnet slot <span className="num">{int(fork.mainnet.slot)}</span>, run {day(fork.ranAt)}.</p>
+        <p className="mt-1 text-sm text-slate">Real SPACEX and OPENAI mints, real Meteora pools, real 1% transfer fee. Mainnet slot <span className="num">{int(fork.mainnet.slot)}</span>, run {day(fork.ranAt)}.</p>
         <dl className="mt-3 flex flex-col gap-3 text-xs text-slate sm:gap-1">
           {([["SPACEX mint", fork.mints.spacex], ["SPCXx mint", fork.mints.spcxx], ["Meteora pool", fork.pool]] as const).map(([k, a]) => (
             <div key={k} className="flex justify-between gap-3">
@@ -309,7 +309,7 @@ export function ProofPreview({ fork, devnetProof }: { fork: ForkProof; devnetPro
   const rejected = shown.filter((t) => t.result.startsWith("failed")).length;
   const signed = shown.length;
   const facts = [
-    { value: `${fork.passed} of ${fork.total}`, label: "checks passed on cloned mainnet state", source: "real SPACEX mint, real Meteora pool, real 1% fee" },
+    { value: `${fork.passed} of ${fork.total}`, label: "checks passed on cloned mainnet state", source: "real SPACEX and OPENAI mints, real Meteora pools, real 1% fee" },
     { value: shortAddr(devnetProof.programId), label: "order program deployed on devnet", source: fork.program.sameBinaryAsDevnetDeployment ? "same binary as the fork run" : "devnet deployment", mono: true },
     { value: String(signed), label: "devnet transactions on Explorer", source: `${rejected} of them rejected on purpose, to prove the limits hold` },
   ];

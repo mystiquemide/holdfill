@@ -13,7 +13,7 @@ export default function TermsPage() {
       updated="23 September 2026"
     >
       <DocSection title="What Holdfill is">
-        <p>Holdfill is a demonstration of standing conversion orders for SpaceX PreStocks. Orders run on Solana devnet with replica tokens that have no value. Market data comes from Solana mainnet and is shown for information only.</p>
+        <p>Holdfill is a demonstration of standing orders for PreStocks: conversions before an issuer deadline, sales into USDC at a set price, and orders armed for a future IPO. Orders run on Solana devnet with replica tokens that have no value. Market data comes from Solana mainnet and is shown for information only.</p>
         <p>Holdfill is software. It isn&apos;t a broker, exchange, custodian, investment adviser, or issuer, and it doesn&apos;t hold your tokens or keys.</p>
       </DocSection>
 
@@ -35,7 +35,7 @@ export default function TermsPage() {
 
       <DocSection title="Risks">
         <ul>
-          <li>The issuer controls a transfer fee, a pause switch, a freeze authority, and a permanent delegate on the SpaceX PreStocks token. The issuer can change these at any time.</li>
+          <li>The issuer controls a transfer fee, a pause switch, a freeze authority, and a permanent delegate on every PreStocks token. The issuer can change these at any time.</li>
           <li>Pool liquidity can be thin. A fill can take a long time or never happen.</li>
           <li>The keeper, website, or API can stop or fail. Your tokens stay in your wallet when they do.</li>
           <li>The order program is new, unaudited, and upgradeable. Blockchain transactions can&apos;t be reversed once confirmed.</li>

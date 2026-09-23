@@ -18,7 +18,7 @@ export default function HowPage() {
       <h2 className="mb-5 text-2xl tracking-[-0.01em]">Three steps</h2>
       <HowItWorks />
       <div className="mt-10 rounded-[var(--radius-card)] border border-hairline bg-paper p-6 sm:p-8">
-        <h2 className="text-2xl tracking-[-0.01em]">What a 20% limit means</h2>
+        <h2 className="text-2xl tracking-[-0.01em]">What a 20% limit means for SpaceX</h2>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate">
           The issuer&apos;s conversion amount is 5 SPCXx for one raw SPACEX token. A 20% limit requires at least 4 SPCXx per raw token before the fallback date. The displayed pool payout is a current quote for selling one raw token after fees.
         </p>

@@ -13,7 +13,7 @@ export function PreviewCard() {
   return (
     <div className="rounded-[var(--radius-card-lg)] border border-hairline bg-paper p-5 shadow-[var(--shadow-lift)] sm:p-7">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <NetBadge net="mainnet" />
+        <span className="flex items-center gap-2"><NetBadge net="mainnet" /><span className="text-sm text-ink">SpaceX PreStocks</span></span>
         <span className={`text-xs ${error ? "text-deadline" : "text-slate"}`}>
           {error ? "Couldn't reach Solana. Retrying in 15 seconds." : data ? `Quote at ${utcTime(data.quote.asOf)}` : "Reading the pool..."}
         </span>
