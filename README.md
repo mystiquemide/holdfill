@@ -48,7 +48,7 @@ Conversion happens through normal trading, so the price a holder gets depends on
 
 The gap narrows as lockups end, but unevenly. A holder who wants a fair price has to watch the pool every day for months, and a holder who forgets loses everything at the deadline.
 
-The usual answer is a limit order. None exists for these tokens: every PreStocks mint carries a 1% Token-2022 transfer fee, and Jupiter's Trigger API refuses mints with a transfer fee. Holdfill checks this live for all eight PreStocks markets on the [markets page](https://holdfill.vercel.app/markets): 8 of 8 refused, "Mint ... has transfer fee".
+The usual answer is a limit order. None exists for these tokens: every PreStocks mint carries a 1% Token-2022 transfer fee, and Jupiter's Trigger API (V1, tested live) refuses mints with a transfer fee. Holdfill checks this live for all eight PreStocks markets on the [markets page](https://holdfill.vercel.app/markets): 8 of 8 refused, "Mint ... has transfer fee".
 
 Across all eight markets, about 109,000 holder accounts hold roughly $22 million at the PreStocks mark (live figures on the markets page).
 

@@ -9,10 +9,56 @@ import { ButtonLink, EligibilityNotice, NetBadge, Source } from "./ui";
 // ---------- How it works ----------
 
 const STEPS = [
-  { n: "1", title: "Approve", body: "Pick an amount and the largest gap you accept. One signature approves the order program for that amount only. Revoke anytime." },
+  { n: "1", title: "Approve", body: "Pick a market, an amount, and your terms. One signature approves the order program for that amount only. Revoke anytime." },
   { n: "2", title: "Wait", body: "Your tokens stay in your wallet. A keeper checks the pool every 10 seconds and does nothing until the price meets your terms." },
-  { n: "3", title: "Fill", body: "When the pool pays your minimum, the program swaps and checks that you received at least that much. From your fallback date, your floor applies." },
+  { n: "3", title: "Fill", body: "When the pool pays your minimum, the program swaps through Meteora and checks you received at least that much. Anything less reverts." },
 ];
+
+// ---------- Order types ----------
+
+const ORDER_TYPES = [
+  {
+    title: "Convert before the deadline",
+    body: "Swap SpaceX PreStocks into SPCXx at no worse than the gap you accept. A fallback floor covers the final weeks, and nothing converts after 12 Mar 2027.",
+    markets: ["spacex"], tag: "SpaceX", href: "/app", cta: "Set a SpaceX order",
+  },
+  {
+    title: "Sell at your price",
+    body: "Name the least USDC you'll take per token. The order waits in your wallet and fills only at that price or better. Jupiter's Trigger V1 limit orders refuse these tokens.",
+    markets: ["anthropic", "openai"], tag: "Anthropic, OpenAI", href: "/app?market=ANTHROPIC", cta: "Sell at a price",
+  },
+  {
+    title: "Arm for the IPO",
+    body: "Set your terms before the issuer names a successor token. When the event lands, the keeper activates your order and fills it at your limit.",
+    markets: ["openai", "anthropic"], tag: "Anthropic, OpenAI", href: "/app?market=OPENAI", cta: "Arm an order",
+  },
+];
+
+export function OrderTypes() {
+  return (
+    <ul className="grid gap-4 md:grid-cols-3">
+      {ORDER_TYPES.map((o, i) => (
+        <li key={o.title} data-item style={{ "--i": i } as React.CSSProperties}>
+          <Link href={o.href} className="group flex h-full flex-col rounded-[var(--radius-card)] border border-hairline bg-paper p-6 transition-colors duration-150 hover:bg-vellum">
+            <div className="flex items-center justify-between gap-3">
+              <span className="flex -space-x-2">
+                {o.markets.map((m) => (
+                  <Image key={m} src={`/logos/markets/${m}.png`} alt="" width={32} height={32} className="rounded-full border-2 border-paper" />
+                ))}
+              </span>
+              <span className="text-xs uppercase tracking-[0.06em] text-slate">{o.tag}</span>
+            </div>
+            <h3 className="mt-5 text-xl">{o.title}</h3>
+            <p className="mt-2 flex-1 text-[15px] leading-relaxed text-slate">{o.body}</p>
+            <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-ink">
+              {o.cta}<span aria-hidden className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export function HowItWorks() {
   return (
@@ -343,8 +389,8 @@ export function FinalCta() {
       <div className="absolute inset-0 bg-ink/35" />
       <div className="relative flex min-h-[420px] flex-col items-center justify-center px-6 py-16 text-center">
         <h2 className="text-4xl leading-[1.05] tracking-[-0.02em] text-paper md:text-6xl">
-          Set your price once.
-          <span className="block text-paper/75">Holdfill fills it or waits.</span>
+          Set your terms once.
+          <span className="block text-paper/75">Holdfill fills them or waits.</span>
         </h2>
         <AppEntryButton variant="light" className="mt-10" />
         <EligibilityNotice className="mt-3 max-w-md text-paper/80" />

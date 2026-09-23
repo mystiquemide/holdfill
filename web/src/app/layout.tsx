@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const metadata: Metadata = {
   title: { default: "Holdfill: hold through the lockup, fill before the deadline", template: "%s | Holdfill" },
   description:
-    "Standing exit orders for SpaceX PreStocks. Set your price once. Holdfill converts into SPCXx when the pool pays it, never below your terms and never after the issuer deadline.",
+    "Standing orders for PreStocks on Solana. Convert SpaceX PreStocks into SPCXx before the issuer deadline, sell any PreStocks into USDC at your price, or arm an order for the next IPO. Never below your terms.",
   openGraph: {
     title: "Holdfill",
     description: "Hold through the lockup. Fill before the deadline.",

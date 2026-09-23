@@ -13,7 +13,7 @@ export default function HowPage() {
         level={1}
         label="How it works"
         title="Approve. Wait. Fill."
-        intro="Set the least SPCXx you will accept. Your replica SPACEX stays in your wallet until the devnet pool can fill your order at that minimum."
+        intro="Set the least you will accept, in SPCXx for SpaceX or in USDC for other PreStocks. Your tokens stay in your wallet until the pool can fill your order at that minimum. Armed orders wait for the issuer's event first."
       />
       <h2 className="mb-5 text-2xl tracking-[-0.01em]">Three steps</h2>
       <HowItWorks />

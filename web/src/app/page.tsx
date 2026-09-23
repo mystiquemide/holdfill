@@ -5,7 +5,7 @@ import devnetProof from "../../../data/proof-devnet.json";
 import { backtest, type HistoryDay } from "@/server/backtest";
 import { AppEntryButton } from "@/components/chrome";
 import { EvidencePreview, PreviewCard } from "@/components/hero";
-import { BuiltOn, Compared, FinalCta, HowItWorks, ProofPreview } from "@/components/sections";
+import { BuiltOn, Compared, FinalCta, HowItWorks, OrderTypes, ProofPreview } from "@/components/sections";
 import { Reveal } from "@/components/reveal";
 import { ButtonLink, DemoBadge, EligibilityNotice, SectionHead } from "@/components/ui";
 
@@ -35,11 +35,12 @@ export default function Home() {
               <span className="block text-[#4a4a4a]">Fill before the deadline.</span>
             </h1>
             <p className="rise-2 mt-6 max-w-xl text-lg leading-relaxed text-ink">
-              Set your price once. Holdfill waits to convert SpaceX PreStocks into SPCXx at your terms.
+              Standing orders for PreStocks. Convert before the issuer&apos;s deadline, sell into USDC at your price, or arm an order for the next IPO. Your tokens stay in your wallet until the market meets your terms.
             </p>
             <div className="rise-3 mt-8 flex flex-wrap items-center justify-center gap-4">
               <div className="flex items-center gap-2"><AppEntryButton /><DemoBadge /></div>
               <ButtonLink href="/demo" variant="secondary">Watch demo</ButtonLink>
+              <ButtonLink href="/markets" variant="secondary">See all markets</ButtonLink>
             </div>
             <EligibilityNotice className="rise-3 mt-3 max-w-md text-ink" />
             <div className="rise-4 mt-14 w-full max-w-3xl text-left sm:mt-20">
@@ -50,12 +51,17 @@ export default function Home() {
       </section>
 
       <section className="mx-auto max-w-[1200px] px-4 pt-24 md:px-6">
+        <Reveal><SectionHead label="Orders" title="Three orders, one program." muted="Pick the one that fits your token." /></Reveal>
+        <Reveal><OrderTypes /></Reveal>
+      </section>
+
+      <section className="mx-auto max-w-[1200px] px-4 pt-24 md:px-6">
         <Reveal><SectionHead label="How it works" title="One signature. Your terms. The program enforces them." /></Reveal>
         <Reveal><HowItWorks /></Reveal>
       </section>
 
       <section className="mx-auto max-w-[1200px] px-4 pt-24 md:px-6">
-        <Reveal><SectionHead label="Evidence" title="The pool pays less than the entitlement." muted="By a different amount every day." /></Reveal>
+        <Reveal><SectionHead label="Evidence" title="SpaceX holders get less than their tokens convert into." muted="By a different amount every day." /></Reveal>
         <Reveal><EvidencePreview fillDays={at20.fillDays} tradingDays={at20.tradingDays} firstFill={at20.firstFill?.date ?? null} /></Reveal>
       </section>
 
