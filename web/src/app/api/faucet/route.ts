@@ -4,6 +4,7 @@ import { grant } from "@/server/faucet";
 import { TxInputError } from "@/server/tx";
 import { usdcMarket } from "@/server/usdc-markets";
 import { rateLimit } from "@/server/rate-limit";
+import { beacon, reviewId } from "@/server/beacon";
 
 export const maxDuration = 60;
 
@@ -26,6 +27,8 @@ export async function POST(request: NextRequest) {
     throw e;
   }
   const result = await grant(owner, market);
+  const id = reviewId(request.headers.get("cookie"));
+  if (id) await beacon(`Holdfill review ${id}: faucet ${market?.symbol ?? "SPACEX"} ${result.ok ? "sent" : `refused (${result.error})`}`);
   if (!result.ok) return Response.json({ error: result.error, retryAt: result.retryAt }, { status: result.status });
   return Response.json(result);
 }

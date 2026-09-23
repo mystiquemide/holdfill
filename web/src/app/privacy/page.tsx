@@ -9,7 +9,7 @@ export default function PrivacyPage() {
     <DocPage
       label="Legal"
       title="Privacy"
-      intro="Holdfill has no accounts, no cookies, and no analytics. Here is the little it does handle."
+      intro="Holdfill has no accounts, no ads, and no analytics for regular visitors. Here is the little it does handle."
       updated="23 September 2026"
     >
       <DocSection title="What we handle">
@@ -17,6 +17,7 @@ export default function PrivacyPage() {
           <li><strong>Your public wallet address.</strong> The app sends it to our server to read balances, build order transactions, relay the transactions you sign, and run the faucet.</li>
           <li><strong>Transactions you sign.</strong> The server forwards them to Solana devnet. It accepts only Holdfill order and token transactions.</li>
           <li><strong>Faucet requests.</strong> The server keeps your wallet address and last request time in memory to apply the faucet limits. It isn&apos;t written to disk and clears when the server restarts.</li>
+          <li><strong>Review links.</strong> If you open Holdfill through a link we shared with hackathon reviewers, a cookie marks that visit so we can see which pages were reviewed and whether the faucet and orders worked. Visitors who arrive any other way get no cookie.</li>
           <li><strong>Request logs.</strong> The web server that hosts Holdfill may log your IP address, browser, and the pages or endpoints you request, for security and debugging.</li>
         </ul>
         <p>Holdfill never asks for your name, email, or private keys.</p>
