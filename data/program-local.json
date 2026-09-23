@@ -1,11 +1,11 @@
 {
-  "ranAt": "2026-09-23T00:35:52.408Z",
+  "ranAt": "2026-09-23T12:50:36.678Z",
   "network": "local validator cloned from devnet",
   "results": [
     {
       "name": "register lifecycle event (SPACEX -> SPCXx, 5 shares per token, 12 Mar 2027)",
       "pass": true,
-      "detail": "5FdSd8M8tgVHpFRk"
+      "detail": "4XvqZX5w6QHa2R61"
     },
     {
       "name": "register event from a non-admin key",
@@ -15,7 +15,7 @@
     {
       "name": "holder A creates order: 0.5 raw, 40% limit, approval to order PDA",
       "pass": true,
-      "detail": "order 89P91mZw, delegate = order PDA, allowance 500000000"
+      "detail": "order HmnkGL7f, delegate = order PDA, allowance 500000000"
     },
     {
       "name": "substituted token program (legacy SPL Token)",
@@ -40,12 +40,12 @@
     {
       "name": "G2: order PDA signs DLMM swap2 through CPI as delegate (0.1 raw)",
       "pass": true,
-      "detail": "spent 0.1 raw, received 0.35396549 SPCXx (29.2% gap), order filled 100000000/500000000, keeper holds nothing, sig 3Cbbpd25pk9UqGX6"
+      "detail": "spent 0.1 raw, received 0.35206246 SPCXx (29.6% gap), order filled 100000000/500000000, keeper holds nothing, sig 5hcusW2fkSBLgbMy"
     },
     {
       "name": "second partial fill accumulates (0.2 raw)",
       "pass": true,
-      "detail": "filled 300000000/500000000, received 106161809"
+      "detail": "filled 300000000/500000000, received 105618739"
     },
     {
       "name": "holder A revokes and cancels in one transaction",
@@ -55,7 +55,7 @@
     {
       "name": "fill after revoke and cancel",
       "pass": true,
-      "detail": "Account does not exist or has no data 89P91mZwNKK64AeHfkPCQA1QsAHLao7JAPgMxQmcBRia"
+      "detail": "Account does not exist or has no data HmnkGL7fZzJWR8fSpwMWBWbUwR1jfYA36Cd9vkJ8nJh9"
     },
     {
       "name": "fill below the holder's minimum (10% limit)",
@@ -75,7 +75,7 @@
     {
       "name": "order fills its full size and becomes Filled",
       "pass": true,
-      "detail": "filled 200000000/200000000, status Filled, received 70765260"
+      "detail": "filled 200000000/200000000, status Filled, received 70412493"
     },
     {
       "name": "fill on a filled order",
@@ -90,12 +90,92 @@
     {
       "name": "after the fallback date, the 50% floor applies and the order fills",
       "pass": true,
-      "detail": "filled 100000000/100000000 at the fallback floor, received 35382630"
+      "detail": "filled 100000000/100000000 at the fallback floor, received 35206246"
     },
     {
       "name": "fill after the issuer deadline",
       "pass": true,
       "detail": "IssuerDeadlinePassed"
+    },
+    {
+      "name": "price order: 0.5 ANTHROPIC at a $800 minimum, approval to order PDA",
+      "pass": true,
+      "detail": "order C4eh7FQE, min 800 USDC per token, expiry in 300 days"
+    },
+    {
+      "name": "output token program swapped for Token-2022 while USDC is classic",
+      "pass": true,
+      "detail": "WrongTokenProgram"
+    },
+    {
+      "name": "price order fills into classic-token USDC above the holder's price (0.2 token)",
+      "pass": true,
+      "detail": "0.2 token -> 185.283489 USDC (926.42 per token, min 800)"
+    },
+    {
+      "name": "price order above what the pool pays ($2,000) does not fill",
+      "pass": true,
+      "detail": "ExceededAmountSlippageTolerance"
+    },
+    {
+      "name": "price order on a pool that trades a different pair",
+      "pass": true,
+      "detail": "WrongPoolMints"
+    },
+    {
+      "name": "price order that outlives the issuer deadline (SPACEX)",
+      "pass": true,
+      "detail": "InvalidExpiry"
+    },
+    {
+      "name": "price order after its expiry",
+      "pass": true,
+      "detail": "IssuerDeadlinePassed"
+    },
+    {
+      "name": "arm an ANTHROPIC order before any issuer event (20% limit, fallback 30 days before)",
+      "pass": true,
+      "detail": "order z8P3yqwa armed, approval to order PDA, no output or pool yet"
+    },
+    {
+      "name": "revoke an armed order",
+      "pass": true,
+      "detail": "armed order closed, approval removed"
+    },
+    {
+      "name": "an armed order cannot fill",
+      "pass": true,
+      "detail": "WrongPool"
+    },
+    {
+      "name": "activate before the issuer names a successor",
+      "pass": true,
+      "detail": "AccountNotInitialized"
+    },
+    {
+      "name": "arm a token that already has an event (SPACEX)",
+      "pass": true,
+      "detail": "EventAlreadyRegistered"
+    },
+    {
+      "name": "issuer registers the event: ANTHROPIC into USDC at 1,100 per token (local only)",
+      "pass": true,
+      "detail": "X4QiqGha6BFnnB6Y"
+    },
+    {
+      "name": "anyone activates the armed order with the issuer's terms",
+      "pass": true,
+      "detail": "active, output USDC, fallback 2027-02-10, limit 20% kept"
+    },
+    {
+      "name": "the activated order fills above its 20% limit (0.1 token)",
+      "pass": true,
+      "detail": "0.1 token -> 92.641744 USDC (min 88 = 1,100 x 0.1 x 80%)"
+    },
+    {
+      "name": "activate an order that is already active",
+      "pass": true,
+      "detail": "NotArmed"
     },
     {
       "name": "fill after the issuer changed the transfer fee",

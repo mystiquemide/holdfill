@@ -24,7 +24,7 @@ pub enum HoldfillError {
     WrongMint,
     #[msg("Pool account does not match the derived DLMM address")]
     WrongPoolAccount,
-    #[msg("Token program must be Token-2022")]
+    #[msg("Token program does not match the mint")]
     WrongTokenProgram,
     #[msg("A host fee account is not allowed")]
     HostFeeNotAllowed,
@@ -42,4 +42,14 @@ pub enum HoldfillError {
     InsufficientOutput,
     #[msg("Arithmetic overflow")]
     MathOverflow,
+    #[msg("This token already has a lifecycle event; create a regular order instead")]
+    EventAlreadyRegistered,
+    #[msg("Order is not armed")]
+    NotArmed,
+    #[msg("Minimum price must be above zero")]
+    InvalidPrice,
+    #[msg("Expiry must be in the future, within 400 days, and before any issuer deadline")]
+    InvalidExpiry,
+    #[msg("Pool must be a Meteora DLMM pair with the input as token X and the output as token Y")]
+    WrongPoolMints,
 }

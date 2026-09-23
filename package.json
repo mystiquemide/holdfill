@@ -13,6 +13,7 @@
     "dev:web": "npm --prefix web run dev",
     "typecheck": "tsc -p tsconfig.json",
     "devnet:setup": "tsx scripts/setup-devnet.ts",
+    "devnet:markets": "tsx scripts/setup-markets.ts",
     "devnet:check": "tsx scripts/check-devnet-pool.ts",
     "devnet:sync": "tsx scripts/sync-devnet-price.ts",
     "devnet:probe-extensions": "tsx scripts/probe-dlmm-extensions.ts",

@@ -50,5 +50,20 @@
   },
   "syncBasis": "executable quote for 0.1 raw SPACEX incl. fees",
   "programId": "A6UhawZdBQiMwpDYzFXKzTJD5voF29rLmrViUT6WaSGV",
-  "lifecycleEvent": "GZ1kZNmd9CDb8LgUTDRrpVbBnHADP1pWa5r3ub1vMUsQ"
+  "lifecycleEvent": "GZ1kZNmd9CDb8LgUTDRrpVbBnHADP1pWa5r3ub1vMUsQ",
+  "markets": {
+    "ANTHROPIC": {
+      "name": "Anthropic",
+      "mint": "GNYxLkRru8ywfA13kPTf3ZSitkd5fy3QYF6mGueLoC2g",
+      "mainnetMint": "Pren1FvFX6J3E4kXhJuCiAD5aDmGEb7qJRncwA8Lkhw",
+      "mainnetPool": "9thgWVMJUKiiotrVmzhEy1MWPyvkNsUSwKbp8ZFsuhA2",
+      "pool": "BtUcU2wWJo9EXXcJcGFJ8UmcJztCdRCjUZT9CrXbqYhr",
+      "initialActiveId": 40,
+      "positions": [
+        "UWvxP4VqEygGyN3wvodTSv59sAHgPheUjUHpybZ8Pg3",
+        "2jjaaTkuNyet2ebTEHFxEhBwKiUXKjnTGqW1KxcPCGo3"
+      ]
+    }
+  },
+  "replicaUsdc": "BD2BV4vyLJNJzgkA7DPNwdCB6CLG6W231JtCPWaXc88i"
 }

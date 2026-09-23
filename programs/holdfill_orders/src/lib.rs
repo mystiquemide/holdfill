@@ -40,4 +40,16 @@ pub mod holdfill_orders {
     pub fn cancel_order(ctx: Context<CancelOrder>) -> Result<()> {
         crate::instructions::cancel_order::handle_cancel_order(ctx)
     }
+
+    pub fn create_price_order(ctx: Context<CreatePriceOrder>, params: CreatePriceOrderParams) -> Result<()> {
+        crate::instructions::create_price_order::handle_create_price_order(ctx, params)
+    }
+
+    pub fn arm_order(ctx: Context<ArmOrder>, params: ArmOrderParams) -> Result<()> {
+        crate::instructions::arm_order::handle_arm_order(ctx, params)
+    }
+
+    pub fn activate(ctx: Context<Activate>) -> Result<()> {
+        crate::instructions::activate::handle_activate(ctx)
+    }
 }

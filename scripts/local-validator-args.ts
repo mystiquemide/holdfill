@@ -23,6 +23,18 @@ async function main() {
     pool.lbPair.reserveX.toBase58(), pool.lbPair.reserveY.toBase58(), pool.lbPair.oracle.toBase58(),
     bitmap.toBase58(), ...bins.map((b) => b.publicKey.toBase58()),
   ]);
+  // Price-order markets (replica PreStocks / replica USDC), cloned the same way.
+  const markets = Object.values((cfg.markets ?? {}) as Record<string, { mint: string; pool?: string }>);
+  if (cfg.replicaUsdc) accounts.add(cfg.replicaUsdc as string);
+  for (const m of markets) {
+    if (!m.pool) continue;
+    const mp = await DLMM.create(conn, new PublicKey(m.pool), { cluster: "devnet" });
+    const mlo = binIdToBinArrayIndex(new BN(mp.lbPair.activeId - 150)).toNumber();
+    const mhi = binIdToBinArrayIndex(new BN(mp.lbPair.activeId + 150)).toNumber();
+    for (let i = mlo; i <= mhi; i++) accounts.add(deriveBinArray(mp.pubkey, new BN(i), DLMM_PROGRAM_ID)[0].toBase58());
+    [m.mint, m.pool, mp.lbPair.reserveX.toBase58(), mp.lbPair.reserveY.toBase58(), mp.lbPair.oracle.toBase58(),
+      deriveBinArrayBitmapExtension(mp.pubkey, DLMM_PROGRAM_ID)[0].toBase58()].forEach((a) => accounts.add(a));
+  }
   const programId = JSON.parse(fs.readFileSync(path.join(ROOT, "idl/holdfill_orders.json"), "utf8")).address;
   const args = [
     "--reset", "--quiet", "--ledger", path.join(ROOT, "test-ledger"),

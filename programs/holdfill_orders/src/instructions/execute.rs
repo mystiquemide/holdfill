@@ -4,7 +4,7 @@ use anchor_lang::solana_program::{
     program::invoke_signed,
 };
 use anchor_spl::{
-    associated_token::get_associated_token_address_with_program_id, token_2022,
+    associated_token::get_associated_token_address_with_program_id, token, token_2022,
     token_interface::TokenAccount,
 };
 
@@ -75,11 +75,14 @@ pub struct Execute<'info> {
     /// CHECK: host fees are not allowed; only the "none" placeholder is accepted.
     #[account(address = DLMM_PROGRAM_ID @ HoldfillError::HostFeeNotAllowed)]
     pub host_fee_in: UncheckedAccount<'info>,
-    /// CHECK: pinned to Token-2022.
+    /// CHECK: pinned to Token-2022 (every PreStocks mint).
     #[account(address = token_2022::ID @ HoldfillError::WrongTokenProgram)]
     pub token_x_program: UncheckedAccount<'info>,
-    /// CHECK: pinned to Token-2022.
-    #[account(address = token_2022::ID @ HoldfillError::WrongTokenProgram)]
+    /// CHECK: SPL Token (USDC, wrapped SOL) or Token-2022, and must own the output mint.
+    #[account(
+        constraint = (token_y_program.key() == token::ID || token_y_program.key() == token_2022::ID)
+            && token_y_program.key() == *token_y_mint.owner @ HoldfillError::WrongTokenProgram
+    )]
     pub token_y_program: UncheckedAccount<'info>,
     /// CHECK: SPL Memo, required by swap2.
     #[account(address = MEMO_PROGRAM_ID)]
@@ -131,7 +134,7 @@ pub fn handle_execute<'info>(
 
     // Holder accounts: the owner's ATAs, with this order approved as delegate.
     let in_ata = get_associated_token_address_with_program_id(&order.owner, &order.input_mint, &token_2022::ID);
-    let out_ata = get_associated_token_address_with_program_id(&order.owner, &order.output_mint, &token_2022::ID);
+    let out_ata = get_associated_token_address_with_program_id(&order.owner, &order.output_mint, &a.token_y_program.key());
     require_keys_eq!(a.user_token_in.key(), in_ata, HoldfillError::WrongOwnerAccount);
     require_keys_eq!(a.user_token_out.key(), out_ata, HoldfillError::WrongOwnerAccount);
     require!(

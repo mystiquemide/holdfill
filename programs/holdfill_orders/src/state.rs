@@ -21,6 +21,9 @@ pub struct LifecycleEvent {
 pub enum OrderStatus {
     Active,
     Filled,
+    /// Terms set before the issuer names a successor; `activate` copies the event in.
+    /// Appended last so existing accounts keep their encoding.
+    Armed,
 }
 
 #[account]

@@ -71,6 +71,22 @@ mod tests {
     }
 
     #[test]
+    fn price_order_minimum_is_the_holders_price() {
+        // $1,021 per whole token in USDC (6 decimals), input with 9 decimals, limit zero.
+        // 0.5 token must return at least 510.5 USDC.
+        assert_eq!(required_output(500_000_000, 1_021_000_000, 1_000_000_000, 0), Some(510_500_000));
+        // Rounds up: 1 base unit of input at that price is 1.021 USDC base units -> 2.
+        assert_eq!(required_output(1, 1_021_000_000, 1_000_000_000, 0), Some(2));
+    }
+
+    #[test]
+    fn price_order_never_discounts() {
+        // Price orders store limit 0, fallback at expiry, and a 100% floor: zero haircut throughout.
+        assert_eq!(haircut_bps(99, 100, 0, 10_000), 0);
+        assert_eq!(haircut_bps(100, 100, 0, 10_000), 0);
+    }
+
+    #[test]
     fn fallback_switches_to_floor() {
         assert_eq!(haircut_bps(99, 100, 2_000, 5_000), 2_000);
         assert_eq!(haircut_bps(100, 100, 2_000, 5_000), 5_000);

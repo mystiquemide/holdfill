@@ -20,6 +20,11 @@ const cfg = readConfig();
 const SPACEX = new PublicKey(cfg.replicaSpacex!);
 const SPCXX = new PublicKey(cfg.replicaSpcxx!);
 const POOL = new PublicKey(cfg.pool!);
+const MARKET = (cfg.markets as Record<string, { mint: string; pool: string }> | undefined)?.ANTHROPIC;
+if (!MARKET || !cfg.replicaUsdc) throw new Error("run npm run devnet:markets -- ANTHROPIC first");
+const ANTH = new PublicKey(MARKET.mint);
+const APOOL = new PublicKey(MARKET.pool);
+const USDC = new PublicKey(cfg.replicaUsdc as string);
 const EXPIRY = Math.floor(Date.parse("2027-03-12T23:59:00Z") / 1000);
 const FALLBACK = Math.floor(Date.parse("2027-03-01T00:00:00Z") / 1000);
 const idl = JSON.parse(fs.readFileSync(path.join(ROOT, "idl/holdfill_orders.json"), "utf8"));
@@ -252,6 +257,144 @@ async function main() {
     });
     await sendAndConfirmTransaction(conn, new Transaction().add(ix), [keeper]);
   });
+
+  // ---------- v2: price orders into USDC (classic SPL Token output) ----------
+  const orderFor = (owner: PublicKey, mint: PublicKey) =>
+    PublicKey.findProgramAddressSync([Buffer.from("order"), owner.toBuffer(), mint.toBuffer()], program.programId)[0];
+  const usdcAta = (owner: PublicKey) => getAssociatedTokenAddressSync(USDC, owner, false, TOKEN_PROGRAM_ID);
+  const eventFor = (mint: PublicKey) => PublicKey.findProgramAddressSync([Buffer.from("event"), mint.toBuffer()], program.programId)[0];
+
+  async function marketHolder(raw: bigint): Promise<Keypair> {
+    const h = Keypair.generate();
+    await conn.confirmTransaction(await conn.requestAirdrop(h.publicKey, 2 * LAMPORTS_PER_SOL), "confirmed");
+    await sendAndConfirmTransaction(conn, new Transaction().add(
+      createAssociatedTokenAccountIdempotentInstruction(h.publicKey, ata(h.publicKey, ANTH), h.publicKey, ANTH, TOKEN_2022_PROGRAM_ID),
+      createAssociatedTokenAccountIdempotentInstruction(h.publicKey, usdcAta(h.publicKey), h.publicKey, USDC, TOKEN_PROGRAM_ID),
+    ), [h]);
+    await mintTo(conn, issuer, ANTH, ata(h.publicKey, ANTH), issuer, raw, [], { commitment: "confirmed" }, TOKEN_2022_PROGRAM_ID);
+    return h;
+  }
+
+  async function createPriceOrder(h: Keypair, p: { size: bigint; usdPerToken: number; expiry: number; mint?: PublicKey; output?: PublicKey; pool?: PublicKey }) {
+    const mint = p.mint ?? ANTH;
+    const pda = orderFor(h.publicKey, mint);
+    const ix = await program.methods
+      .createPriceOrder({ size: new BN(p.size.toString()), minOutPerToken: new BN(Math.round(p.usdPerToken * 1e6)), expiryTs: new BN(p.expiry) })
+      .accountsStrict({
+        owner: h.publicKey, inputMint: mint, outputMint: p.output ?? USDC, pool: p.pool ?? APOOL, event: eventFor(mint),
+        ownerTokenIn: ata(h.publicKey, mint), order: pda, systemProgram: SystemProgram.programId,
+      })
+      .instruction();
+    const approve = createApproveCheckedInstruction(ata(h.publicKey, mint), mint, pda, h.publicKey, p.size, 9, [], TOKEN_2022_PROGRAM_ID);
+    await sendAndConfirmTransaction(conn, new Transaction().add(ix, approve), [h]);
+    return pda;
+  }
+
+  const inAYear = Math.floor(Date.now() / 1000) + 300 * 86_400;
+  const p1 = await marketHolder(1_000_000_000n);
+  let pdaP1 = PublicKey.default;
+  await expectPass("price order: 0.5 ANTHROPIC at a $800 minimum, approval to order PDA", async () => {
+    pdaP1 = await createPriceOrder(p1, { size: 500_000_000n, usdPerToken: 800, expiry: inAYear });
+    const o = await (program.account as any).order.fetch(pdaP1);
+    if (!o.outputMint.equals(USDC) || o.ratioNum.toString() !== "800000000" || o.ratioDen.toString() !== "1000000000" || o.limitBps !== 0) throw new Error("terms not stored");
+    return `order ${pdaP1.toBase58().slice(0, 8)}, min 800 USDC per token, expiry in 300 days`;
+  });
+  await expectReject("output token program swapped for Token-2022 while USDC is classic", ["WrongTokenProgram"], () =>
+    execute(pdaP1, new BN(100_000_000), { tokenYProgram: TOKEN_2022_PROGRAM_ID }));
+  await expectPass("price order fills into classic-token USDC above the holder's price (0.2 token)", async () => {
+    const before = (await getAccount(conn, usdcAta(p1.publicKey), "confirmed", TOKEN_PROGRAM_ID)).amount;
+    await execute(pdaP1, new BN(200_000_000));
+    const got = (await getAccount(conn, usdcAta(p1.publicKey), "confirmed", TOKEN_PROGRAM_ID)).amount - before;
+    if (got < 160_000_000n) throw new Error(`received ${got} below the $800 minimum`);
+    return `0.2 token -> ${Number(got) / 1e6} USDC (${(Number(got) / 1e6 / 0.2).toFixed(2)} per token, min 800)`;
+  });
+
+  const p2 = await marketHolder(1_000_000_000n);
+  const pdaP2 = await createPriceOrder(p2, { size: 200_000_000n, usdPerToken: 2000, expiry: inAYear });
+  await expectReject("price order above what the pool pays ($2,000) does not fill", ["ExceededAmountSlippageTolerance", "InsufficientOutput"], () =>
+    execute(pdaP2, new BN(100_000_000)));
+
+  await expectReject("price order on a pool that trades a different pair", ["WrongPoolMints"], async () => {
+    const h = await marketHolder(1_000_000_000n);
+    await createPriceOrder(h, { size: 100_000_000n, usdPerToken: 800, expiry: inAYear, pool: POOL });
+  });
+  await expectReject("price order that outlives the issuer deadline (SPACEX)", ["InvalidExpiry"], async () => {
+    const h = await newHolder(1_000_000_000n);
+    await createPriceOrder(h, { size: 100_000_000n, usdPerToken: 1, expiry: EXPIRY + 86_400, mint: SPACEX, output: SPCXX, pool: POOL });
+  });
+
+  const p3 = await marketHolder(1_000_000_000n);
+  const shortPrice = Math.floor(Date.now() / 1000) + 20;
+  const pdaP3 = await createPriceOrder(p3, { size: 100_000_000n, usdPerToken: 800, expiry: shortPrice });
+  await waitUntilChainTime(shortPrice + 2);
+  await expectReject("price order after its expiry", ["IssuerDeadlinePassed"], () => execute(pdaP3, new BN(100_000_000)));
+
+  // ---------- v2: arm for IPO, then the issuer names a successor ----------
+  async function armOrder(h: Keypair, p: { size: bigint; limitBps: number; days: number; mint?: PublicKey }) {
+    const mint = p.mint ?? ANTH;
+    const pda = orderFor(h.publicKey, mint);
+    const ix = await program.methods
+      .armOrder({ size: new BN(p.size.toString()), limitBps: p.limitBps, fallbackDaysBefore: p.days, fallbackFloorBps: 5000 })
+      .accountsStrict({ owner: h.publicKey, inputMint: mint, event: eventFor(mint), ownerTokenIn: ata(h.publicKey, mint), order: pda, systemProgram: SystemProgram.programId })
+      .instruction();
+    const approve = createApproveCheckedInstruction(ata(h.publicKey, mint), mint, pda, h.publicKey, p.size, 9, [], TOKEN_2022_PROGRAM_ID);
+    await sendAndConfirmTransaction(conn, new Transaction().add(ix, approve), [h]);
+    return pda;
+  }
+  // The keeper, not the holder or the admin, pays for and sends the activation.
+  const activate = async (pda: PublicKey) => {
+    const ix = await program.methods.activate().accountsStrict({ order: pda, event: eventFor(ANTH) }).instruction();
+    return sendAndConfirmTransaction(conn, new Transaction().add(ix), [keeper]);
+  };
+
+  const r1 = await marketHolder(1_000_000_000n);
+  let pdaR1 = PublicKey.default;
+  await expectPass("arm an ANTHROPIC order before any issuer event (20% limit, fallback 30 days before)", async () => {
+    pdaR1 = await armOrder(r1, { size: 300_000_000n, limitBps: 2000, days: 30 });
+    const o = await (program.account as any).order.fetch(pdaR1);
+    if (!("armed" in o.status) || o.fallbackTs.toString() !== String(30 * 86_400)) throw new Error(`status ${JSON.stringify(o.status)}`);
+    return `order ${pdaR1.toBase58().slice(0, 8)} armed, approval to order PDA, no output or pool yet`;
+  });
+  await expectPass("revoke an armed order", async () => {
+    const h = await marketHolder(1_000_000_000n);
+    const pda = await armOrder(h, { size: 100_000_000n, limitBps: 2000, days: 30 });
+    const cancelIx = await program.methods.cancelOrder().accountsStrict({ owner: h.publicKey, order: pda }).instruction();
+    await sendAndConfirmTransaction(conn, new Transaction().add(cancelIx, createRevokeInstruction(ata(h.publicKey, ANTH), h.publicKey, [], TOKEN_2022_PROGRAM_ID)), [h]);
+    if (await conn.getAccountInfo(pda)) throw new Error("order still exists");
+    return "armed order closed, approval removed";
+  });
+  await expectReject("an armed order cannot fill", ["WrongPool", "OrderNotActive"], async () => {
+    const o = (await (program.account as any).order.fetch(pdaR1)) as OrderAccount;
+    const { ix } = await buildExecuteIx({ program, connection: conn, orderPda: pdaR1, order: { ...o, pool: APOOL, outputMint: USDC }, amountIn: new BN(100_000_000), keeper: keeper.publicKey, cluster: "devnet" });
+    await sendAndConfirmTransaction(conn, new Transaction().add(ix), [keeper]);
+  });
+  await expectReject("activate before the issuer names a successor", ["AccountNotInitialized", "3012"], () => activate(pdaR1));
+  await expectReject("arm a token that already has an event (SPACEX)", ["EventAlreadyRegistered"], async () => {
+    const h = await newHolder(1_000_000_000n);
+    await armOrder(h, { size: 100_000_000n, limitBps: 2000, days: 30, mint: SPACEX });
+  });
+
+  await expectPass("issuer registers the event: ANTHROPIC into USDC at 1,100 per token (local only)", async () => {
+    const sig = await program.methods
+      .registerEvent({ outputMint: USDC, pool: APOOL, ratioNum: new BN(11), ratioDen: new BN(10), expiryTs: new BN(EXPIRY) })
+      .accountsStrict({ admin: issuer.publicKey, inputMint: ANTH, event: eventFor(ANTH), systemProgram: SystemProgram.programId })
+      .rpc();
+    return sig.slice(0, 16);
+  });
+  await expectPass("anyone activates the armed order with the issuer's terms", async () => {
+    await activate(pdaR1);
+    const o = await (program.account as any).order.fetch(pdaR1);
+    if (!("active" in o.status) || !o.pool.equals(APOOL) || o.fallbackTs.toNumber() !== EXPIRY - 30 * 86_400) throw new Error(JSON.stringify(o.status));
+    return `active, output USDC, fallback ${new Date(o.fallbackTs.toNumber() * 1000).toISOString().slice(0, 10)}, limit 20% kept`;
+  });
+  await expectPass("the activated order fills above its 20% limit (0.1 token)", async () => {
+    const before = (await getAccount(conn, usdcAta(r1.publicKey), "confirmed", TOKEN_PROGRAM_ID)).amount;
+    await execute(pdaR1, new BN(100_000_000));
+    const got = (await getAccount(conn, usdcAta(r1.publicKey), "confirmed", TOKEN_PROGRAM_ID)).amount - before;
+    if (got < 88_000_000n) throw new Error(`received ${got} below the 88 USDC minimum`);
+    return `0.1 token -> ${Number(got) / 1e6} USDC (min 88 = 1,100 x 0.1 x 80%)`;
+  });
+  await expectReject("activate an order that is already active", ["NotArmed"], () => activate(pdaR1));
 
   // Issuer raises the transfer fee; it takes effect two epochs later.
   const g = await newHolder(1_000_000_000n);

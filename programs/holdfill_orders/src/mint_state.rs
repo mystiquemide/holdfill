@@ -12,6 +12,7 @@ pub struct MintState {
     pub paused: bool,
     /// Transfer fee in force for `epoch`, 0 when the mint has no fee extension.
     pub fee_bps: u16,
+    pub decimals: u8,
 }
 
 /// Reads pause and transfer-fee state straight from the mint's extension data. Anchor's
@@ -28,5 +29,5 @@ pub fn read_mint_state(mint: &AccountInfo, epoch: u64) -> Result<MintState> {
         .get_extension::<TransferFeeConfig>()
         .map(|c| u16::from(c.get_epoch_fee(epoch).transfer_fee_basis_points))
         .unwrap_or(0);
-    Ok(MintState { paused, fee_bps })
+    Ok(MintState { paused, fee_bps, decimals: state.base.decimals })
 }

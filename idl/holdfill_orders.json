@@ -13,6 +13,159 @@
   ],
   "instructions": [
     {
+      "name": "activate",
+      "discriminator": [
+        194,
+        203,
+        35,
+        100,
+        151,
+        55,
+        170,
+        82
+      ],
+      "accounts": [
+        {
+          "name": "order",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  100,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "order.owner",
+                "account": "Order"
+              },
+              {
+                "kind": "account",
+                "path": "order.input_mint",
+                "account": "Order"
+              }
+            ]
+          }
+        },
+        {
+          "name": "event",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  118,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "order.input_mint",
+                "account": "Order"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "arm_order",
+      "discriminator": [
+        36,
+        236,
+        138,
+        80,
+        81,
+        212,
+        180,
+        239
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "input_mint"
+        },
+        {
+          "name": "event",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  118,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "input_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_token_in"
+        },
+        {
+          "name": "order",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  100,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "input_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "ArmOrderParams"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "cancel_order",
       "discriminator": [
         95,
@@ -154,6 +307,102 @@
       ]
     },
     {
+      "name": "create_price_order",
+      "discriminator": [
+        145,
+        11,
+        139,
+        221,
+        19,
+        109,
+        228,
+        11
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "input_mint"
+        },
+        {
+          "name": "output_mint"
+        },
+        {
+          "name": "pool"
+        },
+        {
+          "name": "event",
+          "docs": [
+            "issuer deadline."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  118,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "input_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_token_in"
+        },
+        {
+          "name": "order",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  100,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "input_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "CreatePriceOrderParams"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "execute",
       "discriminator": [
         130,
@@ -240,8 +489,7 @@
           "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
         },
         {
-          "name": "token_y_program",
-          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+          "name": "token_y_program"
         },
         {
           "name": "memo_program",
@@ -365,6 +613,32 @@
   ],
   "events": [
     {
+      "name": "OrderActivated",
+      "discriminator": [
+        226,
+        229,
+        114,
+        99,
+        59,
+        125,
+        122,
+        226
+      ]
+    },
+    {
+      "name": "OrderArmed",
+      "discriminator": [
+        128,
+        72,
+        156,
+        153,
+        218,
+        87,
+        93,
+        91
+      ]
+    },
+    {
       "name": "OrderCancelled",
       "discriminator": [
         108,
@@ -401,6 +675,19 @@
         116,
         174,
         30
+      ]
+    },
+    {
+      "name": "PriceOrderCreated",
+      "discriminator": [
+        221,
+        104,
+        107,
+        155,
+        107,
+        185,
+        213,
+        20
       ]
     }
   ],
@@ -463,7 +750,7 @@
     {
       "code": 6011,
       "name": "WrongTokenProgram",
-      "msg": "Token program must be Token-2022"
+      "msg": "Token program does not match the mint"
     },
     {
       "code": 6012,
@@ -504,9 +791,61 @@
       "code": 6019,
       "name": "MathOverflow",
       "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6020,
+      "name": "EventAlreadyRegistered",
+      "msg": "This token already has a lifecycle event; create a regular order instead"
+    },
+    {
+      "code": 6021,
+      "name": "NotArmed",
+      "msg": "Order is not armed"
+    },
+    {
+      "code": 6022,
+      "name": "InvalidPrice",
+      "msg": "Minimum price must be above zero"
+    },
+    {
+      "code": 6023,
+      "name": "InvalidExpiry",
+      "msg": "Expiry must be in the future, within 400 days, and before any issuer deadline"
+    },
+    {
+      "code": 6024,
+      "name": "WrongPoolMints",
+      "msg": "Pool must be a Meteora DLMM pair with the input as token X and the output as token Y"
     }
   ],
   "types": [
+    {
+      "name": "ArmOrderParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "size",
+            "type": "u64"
+          },
+          {
+            "name": "limit_bps",
+            "type": "u16"
+          },
+          {
+            "name": "fallback_days_before",
+            "docs": [
+              "The fallback floor applies this many days before the deadline the issuer will name."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "fallback_floor_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
     {
       "name": "CreateOrderParams",
       "type": {
@@ -527,6 +866,29 @@
           {
             "name": "fallback_floor_bps",
             "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreatePriceOrderParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "size",
+            "type": "u64"
+          },
+          {
+            "name": "min_out_per_token",
+            "docs": [
+              "Least output, in output base units, for one whole input token."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "expiry_ts",
+            "type": "i64"
           }
         ]
       }
@@ -743,6 +1105,62 @@
       }
     },
     {
+      "name": "OrderActivated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "order",
+            "type": "pubkey"
+          },
+          {
+            "name": "output_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "expiry_ts",
+            "type": "i64"
+          },
+          {
+            "name": "fallback_ts",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OrderArmed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "order",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "size",
+            "type": "u64"
+          },
+          {
+            "name": "limit_bps",
+            "type": "u16"
+          },
+          {
+            "name": "fallback_days_before",
+            "type": "u16"
+          },
+          {
+            "name": "fallback_floor_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
       "name": "OrderCancelled",
       "type": {
         "kind": "struct",
@@ -848,6 +1266,41 @@
           },
           {
             "name": "Filled"
+          },
+          {
+            "name": "Armed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PriceOrderCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "order",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "output_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "size",
+            "type": "u64"
+          },
+          {
+            "name": "min_out_per_token",
+            "type": "u64"
+          },
+          {
+            "name": "expiry_ts",
+            "type": "i64"
           }
         ]
       }
