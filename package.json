@@ -8,16 +8,19 @@
   },
   "scripts": {
     "build:program": "anchor build",
-    "test:program": "cargo test -p holdfill_orders",
+    "test:program": "cargo test -p holdfill_orders --lib",
     "build:web": "npm --prefix web run build",
     "dev:web": "npm --prefix web run dev",
     "typecheck": "tsc -p tsconfig.json",
     "devnet:setup": "tsx scripts/setup-devnet.ts",
     "devnet:check": "tsx scripts/check-devnet-pool.ts",
     "devnet:sync": "tsx scripts/sync-devnet-price.ts",
-    "devnet:probe-extensions": "tsx scripts/probe-dlmm-extensions.ts"
+    "devnet:probe-extensions": "tsx scripts/probe-dlmm-extensions.ts",
+    "local:args": "tsx scripts/local-validator-args.ts",
+    "test:local": "tsx tests/g2-local.ts"
   },
   "dependencies": {
+    "@anchor-lang/core": "1.2.0",
     "@meteora-ag/dlmm": "1.9.14",
     "@solana/spl-token": "0.4.15",
     "@solana/web3.js": "1.98.4",

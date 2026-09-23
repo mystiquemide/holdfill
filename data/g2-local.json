@@ -1,0 +1,71 @@
+{
+  "ranAt": "2026-09-23T00:29:46.952Z",
+  "network": "local validator cloned from devnet",
+  "results": [
+    {
+      "name": "register lifecycle event (SPACEX -> SPCXx, 5 shares per token, 12 Mar 2027)",
+      "pass": true,
+      "detail": "8xnQtn2SHCp4FyzD"
+    },
+    {
+      "name": "register event from a non-admin key",
+      "pass": true,
+      "detail": "Unauthorized"
+    },
+    {
+      "name": "holder A creates order: 0.5 raw, 40% limit, approval to order PDA",
+      "pass": true,
+      "detail": "order xqtKhMdT, delegate = order PDA, allowance 500000000"
+    },
+    {
+      "name": "substituted token program (legacy SPL Token)",
+      "pass": true,
+      "detail": "WrongTokenProgram"
+    },
+    {
+      "name": "host fee account supplied by the caller",
+      "pass": true,
+      "detail": "HostFeeNotAllowed"
+    },
+    {
+      "name": "wrong reserve account",
+      "pass": true,
+      "detail": "WrongPoolAccount"
+    },
+    {
+      "name": "fill larger than the order",
+      "pass": true,
+      "detail": "AmountExceedsRemaining"
+    },
+    {
+      "name": "G2: order PDA signs DLMM swap2 through CPI as delegate (0.1 raw)",
+      "pass": true,
+      "detail": "spent 0.1 raw, received 0.35396549 SPCXx (29.2% gap), order filled 100000000/500000000, keeper holds nothing, sig WRVn2e7bMc5PvsUW"
+    },
+    {
+      "name": "second partial fill accumulates (0.2 raw)",
+      "pass": true,
+      "detail": "filled 300000000/500000000, received 106161809"
+    },
+    {
+      "name": "holder A revokes and cancels in one transaction",
+      "pass": true,
+      "detail": "order closed, approval removed"
+    },
+    {
+      "name": "fill after revoke and cancel",
+      "pass": true,
+      "detail": "Account does not exist or has no data xqtKhMdTbQqGGEXX7etygW7J9y1ncSdz9gQWQLULRYJ"
+    },
+    {
+      "name": "fill below the holder's minimum (10% limit)",
+      "pass": true,
+      "detail": "ExceededAmountSlippageTolerance"
+    },
+    {
+      "name": "create order with limit above 60%",
+      "pass": true,
+      "detail": "InvalidLimit"
+    }
+  ]
+}

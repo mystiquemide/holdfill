@@ -72,6 +72,10 @@ Two networks, one rule: mainnet is only read, devnet is where orders execute. Ev
 
 Program: `holdfill_orders`. Token program: Token-2022 only. CPI target: Meteora DLMM `swap2` (discriminator `[65,75,63,76,235,91,91,136]`).
 
+### 4.0 Lifecycle event account
+
+PDA seeds: `["event", input_mint]`. Written once per issuer event by the event admin (`register_event`). Holds `input_mint`, `output_mint`, `pool`, `ratio_num`, `ratio_den`, `expiry_ts`. Orders copy these terms at creation, so a holder never enters a conversion ratio or deadline. For SpaceX PreStocks: ratio 1/2 in base units (5 SPCXx per raw token), deadline 2027-03-12T23:59:00Z.
+
 ### 4.1 Order account
 
 PDA seeds: `["order", owner, input_mint]`. One active order per holder per token.
@@ -97,7 +101,9 @@ PDA seeds: `["order", owner, input_mint]`. One active order per holder per token
 
 ### 4.2 Instructions
 
-**create_order(params)**, signer: owner.
+**register_event(params)**, signer: event admin. Creates the lifecycle event account. Rejects non-admin signers (`Unauthorized`), zero ratios, and past deadlines.
+
+**create_order(params)**, signer: owner. Params: `size`, `limit_bps`, `fallback_ts`, `fallback_floor_bps`. Ratio, pool, output mint, and deadline come from the event account.
 - Validates `0 < size <= owner input balance`, `limit_bps <= 6000`, `fallback_floor_bps` in 1000 to 10000, `now < fallback_ts < expiry_ts`.
 - Reads the input mint: rejects if paused. Stores current epoch transfer fee as `fee_bps`.
 - The same transaction, built by the app, carries `ApproveChecked(owner input ATA, delegate = order PDA, amount = size)` after this instruction.
@@ -125,7 +131,11 @@ PDA seeds: `["order", owner, input_mint]`. One active order per holder per token
 
 `OrderCreated {order, owner, size, limit_bps, fallback_ts, fallback_floor_bps}`, `OrderFilled {order, amount_in, amount_out, required, haircut_bps, filled, status}`, `OrderCancelled {order, filled, received}`.
 
-### 4.5 Gate G2 (first program task)
+### 4.5 Gate G2 (first program task): passed 23 Sep 2026
+
+`npm run test:local` (tests/g2-local.ts) against a local validator that clones the devnet market: 13 of 13 checks pass. The order PDA signs DLMM `swap2` through CPI as the holder's delegate; substituted token program, host fee account, wrong reserve, overfill, below-minimum fill, and fill after revoke are all rejected. Results in `data/g2-local.json`.
+
+Original gate definition:
 
 The fork test proved a keypair delegate can swap from the owner's account. G2 proves the same with the order PDA signing through CPI. Test on a local validator that clones the devnet DLMM program and the replica pool. If DLMM rejects a PDA signer, fallback: keeper signs the swap as delegate inside the same transaction, and the program checks input and output deltas in a following instruction using instruction introspection. The on-chain minimum stays enforced by the program either way.
 
