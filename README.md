@@ -11,7 +11,7 @@
 
 Holdfill gives PreStocks holders standing orders on Solana. A holder sets their terms once: the least they will accept, a fallback for the final weeks, and a hard stop at the issuer's deadline. Tokens stay in the holder's wallet until the market meets those terms, then an on-chain program sells through Meteora and checks that the holder received at least their minimum.
 
-[Live app](https://holdfill.midelabs.xyz) · [Order app](https://holdfill.midelabs.xyz/app) · [Wallet-free demo](https://holdfill.midelabs.xyz/demo) · [Proof](https://holdfill.midelabs.xyz/proof) · [Markets](https://holdfill.midelabs.xyz/markets) · [Docs](https://holdfill.midelabs.xyz/docs)
+[Live app](https://holdfill.midelabs.xyz) · [Order app](https://holdfill.midelabs.xyz/app) · [Wallet-free demo](https://holdfill.midelabs.xyz/demo) · [Proof](https://holdfill.midelabs.xyz/proof) · [Markets](https://holdfill.midelabs.xyz/markets) · [Docs](https://holdfill.midelabs.xyz/docs) · [Launch thread on X](https://x.com/holdfill_xyz/status/2103030916461334858)
 
 Built for [Stocklana](https://hackathons.solana.com/hackathons/stocklana): main track and the PreStocks bounty. Orders execute on Solana devnet against replicas of the real tokens; market data is live mainnet.
 
