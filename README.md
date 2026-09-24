@@ -5,6 +5,7 @@
 [![CI](https://github.com/mystiquemide/holdfill/actions/workflows/ci.yml/badge.svg)](https://github.com/mystiquemide/holdfill/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Live app](https://img.shields.io/badge/live-holdfill.midelabs.xyz-black)](https://holdfill.midelabs.xyz)
+[![X](https://img.shields.io/badge/X-@holdfill__xyz-black?logo=x)](https://x.com/holdfill_xyz)
 [![Solana devnet](https://img.shields.io/badge/Solana-devnet%20program-9945FF)](https://explorer.solana.com/address/A6UhawZdBQiMwpDYzFXKzTJD5voF29rLmrViUT6WaSGV?cluster=devnet)
 [![Stocklana](https://img.shields.io/badge/built%20for-Stocklana-14F195)](https://hackathons.solana.com/hackathons/stocklana)
 
