@@ -34,7 +34,8 @@ Built for [Stocklana](https://hackathons.solana.com/hackathons/stocklana): main 
 - [Tests](#tests)
 - [Run it locally](#run-it-locally)
 - [Open-source components](#open-source-components)
-- [Limits and roadmap](#limits-and-roadmap)
+- [Limits](#limits)
+- [Roadmap](#roadmap)
 
 ---
 
@@ -198,10 +199,52 @@ The program is unaudited and deployed only on devnet. Accepted risks are listed 
 
 ## Evidence and proof
 
-**On devnet**, recorded transactions for every path, each linked to Solana Explorer:
+**On devnet**, every path is recorded and opens on Solana Explorer. The raw results are in [data/proof-devnet.json](data/proof-devnet.json) and [data/proof-devnet-v2.json](data/proof-devnet-v2.json).
 
-- [data/proof-devnet.json](data/proof-devnet.json): conversion order created; filled at 0.354 SPCXx for 0.1 raw token against a 0.325 minimum; a 10% limit refused on chain; revoked; a fill after revoke refused.
-- [data/proof-devnet-v2.json](data/proof-devnet-v2.json): a price order filled at 926.42 USDC per token against an 800 minimum; a 2,000 USDC order refused on chain; a demo token armed with no event, activated by the keeper after a simulated issuer event, and filled 24.4% under entitlement against a 30% limit. The demo token and its event are simulated and labeled so; no real issuer announced them.
+**Convert before the deadline (SpaceX)**
+
+| Step | Result | Transaction |
+|---|---|---|
+| Register the SpaceX conversion event (5 SPCXx per token, deadline 12 Mar 2027) | confirmed | [4gNM…DNdh](https://explorer.solana.com/tx/4gNMtLdECtwWmckVuHULLfQh3DtDzmJ1V2aCR4S6eGBNCAWGoyKxU6Pn7DQEoSCMoHEYVBzUkDgQ1khY1KmXDNdh?cluster=devnet) |
+| Create a conversion order: 2.5 shares, 35% limit, 50% fallback floor | confirmed | [3R1A…wn53](https://explorer.solana.com/tx/3R1ABTPLUMcH7rHKrBRMPDZysPzdNyP68DN7MrQcRTPyzkoRxoMG6EBkCU3vuWtDTXF55c9GND568SC68UjFwn53?cluster=devnet) |
+| Keeper fills 0.1 raw SPACEX: 0.354 SPCXx received against a 0.325 minimum (29.2% gap) | confirmed | [4Bs8…HwZc](https://explorer.solana.com/tx/4Bs8GmHNn36FhRb2eoU9mZdkphbJcoELvuywNryocfWQE2Eqdbr3NMT9a4zEqo4g887NuwEPXo8byBdjTsaxHwZc?cluster=devnet) |
+| Fill at a 10% limit when the pool pays less | refused on chain | [hyxF…aefm](https://explorer.solana.com/tx/hyxFFgMh2sTddEKJkth8gfaCrBCvaFrczxC9XPtmW75dFMjyEzXNFuBHCethxXcMhyUtpL5EHpygfLRBu41aefm?cluster=devnet) |
+| Holder revokes: order closed and approval removed in one transaction | confirmed | [36Xn…bKeU](https://explorer.solana.com/tx/36XnRwGqZpFubBmU5u8NdV8ghJwft7JqwdGy5uVi2sz2CYXydMK9R6Aor7z28RHUpLmKyyfvxKtTVm3p1r9xbKeU?cluster=devnet) |
+| Keeper fill after the revoke | refused on chain | [24U4…Kj9j](https://explorer.solana.com/tx/24U4ySTnS8qnAPngPVp4JbJdMDkVpwfQ4xcrHb7M6qR6aQ3oUxBhArdKLFKUnmFL6GW8mdH7KehwwNW1dCG4Kj9j?cluster=devnet) |
+
+**Sell at your price (Anthropic, into USDC)**
+
+| Step | Result | Transaction |
+|---|---|---|
+| Create a price order: 0.3 ANTHROPIC at 800 USDC per token or better | confirmed | [3tWU…guak](https://explorer.solana.com/tx/3tWUhvQLptafdohGbGmSoXXwbBZ83N8Q7bPeLP5kpaDvRGN1dsaWxMeLsWCtXgTRBSn3i3zqzrMUVGw3kJBHguak?cluster=devnet) |
+| Keeper fills at 926.42 USDC per token | confirmed | [53Gq…6KFZ](https://explorer.solana.com/tx/53GqLikCoQ26iWCAqtviuCtbxxj9WceeLFGwmFU4yenD6NuvBBfQz6H9ynZYtvQ3gBAjLxYYVRVZfuTFDJwQ6KFZ?cluster=devnet) |
+| Price order at 2,000 USDC when the pool pays about 930 | refused on chain | [5vmj…S6o2](https://explorer.solana.com/tx/5vmjWHk3PxRtdUeTeT1b8nMHe1F7XYMuFbw9zBfM3R7NCv7zHvifgwbBvTzmks48wnbcN7bxLDgMfAkNFUvbS6o2?cluster=devnet) |
+
+**Arm for the IPO**
+
+| Step | Result | Transaction |
+|---|---|---|
+| Arm an order on a demo token before any issuer event (30% limit) | confirmed | [2dxa…tmkY](https://explorer.solana.com/tx/2dxabxXe1hzPYBKQoV4T88UeNS1bqFaGsiGk1XtVrppDAARgJPZnuoR7LPaH1ftYpjBd4j5iKuaGPsxq5QwhtmkY?cluster=devnet) |
+| Simulated issuer event for the demo token (labeled, devnet only) | confirmed | [3nwF…fRB2](https://explorer.solana.com/tx/3nwF4nTLGDw55f7NEUYSsbCKRdhxHHMNipxFiDEVSoBzfCp72HNBXjfz9sdMmRESvGXix1LyeG2tS1F63nuCfRB2?cluster=devnet) |
+| Keeper activates the order with the event's terms | confirmed | [24Bt…F4EX](https://explorer.solana.com/tx/24BtEY5JzbTyTy6UaCnsZmWizBXG6taswpt9mjTeNc72ZKyY5sRsbjhwgXXGKhUum7qQie6giJRD24LmEdSMF4EX?cluster=devnet) |
+| Keeper fills 24.4% under entitlement, inside the 30% limit | confirmed | [5MA8…hNqk](https://explorer.solana.com/tx/5MA8hpcmLuJHcEKK1RXTDo2JLa2pcwQX66qcYUKUADdZmadZEciM2EEjqFbtC9UQpiUmKuhCk46kmcABAYPWhNqk?cluster=devnet) |
+
+The demo token and its issuer event are simulated and labeled as such; no real issuer announced them.
+
+**Devnet accounts**
+
+| Account | Address |
+|---|---|
+| Order program | [`A6Uh…aSGV`](https://explorer.solana.com/address/A6UhawZdBQiMwpDYzFXKzTJD5voF29rLmrViUT6WaSGV?cluster=devnet) |
+| SpaceX lifecycle event | [`GZ1k…MUsQ`](https://explorer.solana.com/address/GZ1kZNmd9CDb8LgUTDRrpVbBnHADP1pWa5r3ub1vMUsQ?cluster=devnet) |
+| Replica SPACEX / SPCXx pool | [`5XhZ…jLzM`](https://explorer.solana.com/address/5XhZb6WKSu5cDMwGCV7qv7DTLPqcYMRnjZkeXn9fjLzM?cluster=devnet) |
+| Replica ANTHROPIC / USDC pool | [`BtUc…qYhr`](https://explorer.solana.com/address/BtUcU2wWJo9EXXcJcGFJ8UmcJztCdRCjUZT9CrXbqYhr?cluster=devnet) |
+| Replica OPENAI / USDC pool | [`Gv78…gbPF`](https://explorer.solana.com/address/Gv78piK6JkMvsktQ7yjiKiobhZYSck5nKLANPzpvgbPF?cluster=devnet) |
+| Replica SPACEX mint | [`5cY1…Ghsu`](https://explorer.solana.com/address/5cY1jzmozhRjZTQiCmNSUekcv8pnFV672L9Cm53TGhsu?cluster=devnet) |
+| Replica SPCXx mint | [`4gG3…HitZ`](https://explorer.solana.com/address/4gG3VgCCugr3rG2emLp1VRsZweTwhbirXEEfp1FWHitZ?cluster=devnet) |
+| Replica ANTHROPIC mint | [`GNYx…oC2g`](https://explorer.solana.com/address/GNYxLkRru8ywfA13kPTf3ZSitkd5fy3QYF6mGueLoC2g?cluster=devnet) |
+| Replica OPENAI mint | [`D5nC…P4tX`](https://explorer.solana.com/address/D5nC7RBFxBMH8A47pr5MEMh4ASfpe3wtZM42rkLBP4tX?cluster=devnet) |
+| Replica USDC mint | [`BD2B…c88i`](https://explorer.solana.com/address/BD2BV4vyLJNJzgkA7DPNwdCB6CLG6W231JtCPWaXc88i?cluster=devnet) |
 
 **On cloned mainnet state**, `npm run proof:fork` runs the same program binary as the devnet deployment against the real mints and pools, 7 of 7 passing ([data/proof-fork.json](data/proof-fork.json)):
 
@@ -286,19 +329,32 @@ Change `declare_id!` in `programs/holdfill_orders/src/lib.rs` and `EVENT_ADMIN` 
 
 Holdfill is original work, built during the hackathon. It uses these open-source libraries: [Anchor](https://github.com/solana-foundation/anchor) and anchor-spl, [@solana/web3.js](https://www.npmjs.com/package/@solana/web3.js), [@solana/spl-token](https://www.npmjs.com/package/@solana/spl-token), [Meteora DLMM SDK](https://github.com/MeteoraAg/dlmm-sdk), [Solana Wallet Adapter](https://github.com/anza-xyz/wallet-adapter), [Next.js](https://github.com/vercel/next.js), [React](https://github.com/facebook/react), and [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss). Photos are credited on the site.
 
-## Limits and roadmap
-
-Current limits:
+## Limits
 
 - Execution runs on devnet. Replica tokens keep the 1% transfer fee, but Meteora's devnet pools reject the pause, delegate, and scaled-amount extensions without an admin badge, so the fork proof covers the real mints.
 - Devnet pools charge a 10% fee (the only devnet preset), so devnet fills pay less than mainnet quotes.
 - The keeper fills only while it runs. If it stops, orders stay open and tokens stay in the wallet; anyone can still call `execute`, and the app's Check now runs one pass.
 - The program is unaudited and upgradeable; the authority is the demo issuer key, shown live on the proof page.
 
-Next:
+## Roadmap
 
-- Security review, then a mainnet deployment of the same program.
+**Shipped during Stocklana**
+
+- One order program with three order types: convert before the deadline, sell at your price into USDC, and arm for the IPO.
+- Keeper on a 10-second loop with partial fills, plus a permissionless `execute` anyone can call.
+- Live app on devnet with replica SpaceX, Anthropic, and OpenAI markets, a faucet, a wallet-free demo, a markets registry for all 8 PreStocks, and an issuer view.
+- Fork proof on cloned mainnet state (7 of 7), a 40-case program suite, and property tests that keep the program and keeper math in lockstep.
+
+**Next: mainnet**
+
+- Independent security review of the order program.
+- Mainnet deployment of the same program, with the upgrade authority moved to a multisig.
+- Keeper on dedicated RPC with monitoring and alerting.
+
+**Then: coverage**
+
 - Lifecycle events for Anthropic, OpenAI, and the other PreStocks markets as issuers announce them, so armed orders activate on their own.
+- Price orders on every PreStocks market with a USDC pool.
 - Notifications when an order fills or its fallback window starts.
 
 ## Disclaimer
