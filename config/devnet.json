@@ -43,10 +43,10 @@
     "refusedAfterRevoke": "24U4ySTnS8qnAPngPVp4JbJdMDkVpwfQ4xcrHb7M6qR6aQ3oUxBhArdKLFKUnmFL6GW8mdH7KehwwNW1dCG4Kj9j"
   },
   "lastSync": {
-    "at": "2026-09-23T00:16:06.725Z",
-    "mainnetPrice": 0.35470243,
-    "devnetPrice": 0.35396549,
-    "diffPct": -0.208
+    "at": "2026-09-23T19:33:09.520Z",
+    "mainnetPrice": 0.35824945,
+    "devnetPrice": 0.35738052,
+    "diffPct": -0.243
   },
   "syncBasis": "executable quote for 0.1 raw SPACEX incl. fees",
   "programId": "A6UhawZdBQiMwpDYzFXKzTJD5voF29rLmrViUT6WaSGV",
