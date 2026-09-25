@@ -355,7 +355,7 @@ function OrderCard({ position, order, onChange, onEnded }: { position: MarketPos
   const expired = !isFilled && !!order.expiresAt && Date.parse(order.expiresAt) <= now;
   const blocked = !isFilled && (!order.approvalInPlace || expired);
   const tone = isFilled ? "filled" : blocked ? "blocked" : filled > 0 ? "partial" : "armed";
-  const label = isFilled ? "filled" : expired ? "expired" : blocked ? "blocked" : armed ? "waiting for issuer" : filled > 0 ? "partial" : "armed";
+  const label = isFilled ? "filled" : expired ? "expired" : blocked ? "blocked" : armed ? "waiting for issuer" : filled > 0 ? "partial" : "live";
 
   const runCheck = async () => {
     setChecking(true);

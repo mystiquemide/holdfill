@@ -453,7 +453,7 @@ function OrderCard({ position, order, onChange, onEnded }: { position: Position;
   return (
     <div className="rounded-[var(--radius-card)] border border-hairline bg-paper p-5 shadow-[var(--shadow-lift)] sm:p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-3"><h2 className="text-lg">Your order</h2><Chip tone={tone}>{tone}</Chip></div>
+        <div className="flex items-center gap-3"><h2 className="text-lg">Your order</h2><Chip tone={tone}>{tone === "armed" ? "live" : tone}</Chip></div>
         <NetBadge net="devnet" />
       </div>
 

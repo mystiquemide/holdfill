@@ -88,7 +88,7 @@ function OrderList({ data }: { data: IssuerView }) {
               <td className="p-4 text-slate">{o.kind === "price" ? "At a price" : o.kind === "armed" ? "Armed for IPO" : "Conversion"}</td>
               <td className="num p-4 text-right">{o.kind === "price" ? "n/a" : pct(o.limitBps / 100, 0)}</td>
               <td className="num p-4 text-right">{num(o.filledShares, 2)} / {num(o.sizeShares, 2)}</td>
-              <td className="p-4"><Chip tone={o.status === "expired" ? "revoked" : o.status}>{o.kind === "armed" && o.status === "armed" ? "waiting for issuer" : o.status}</Chip></td>
+              <td className="p-4"><Chip tone={o.status === "expired" ? "revoked" : o.status}>{o.kind === "armed" && o.status === "armed" ? "waiting for issuer" : o.status === "armed" ? "live" : o.status}</Chip></td>
               <td className="p-4 text-slate">{day(o.createdAt)} {utcTime(o.createdAt)}</td>
             </tr>
           ))}
